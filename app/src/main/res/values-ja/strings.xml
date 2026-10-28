@@ -59,6 +59,7 @@
     <string name="camera_state_permission">カメラへのアクセスが必要です</string>
     <string name="camera_state_permission_body">カメラで日本語の読みをライブ表示したり、写真を撮影したりします。「ふりがな付きで保存」を選ぶまでは、画像はメモリ内だけに保持します。フローティングリーダーの権限は不要です。</string>
     <string name="camera_allow">カメラを許可</string>
+    <string name="camera_not_now">今はしない</string>
     <string name="camera_settings">アプリの設定を開く</string>
     <string name="camera_permission_continue">続ける</string>
     <string name="camera_state_processing">日本語を読み取り中…</string>

@@ -229,6 +229,12 @@ fun KanakoApp(
                 CameraReaderScreen(
                     viewModel = cameraReader,
                     preferences = preferences,
+                    onPermissionDenied = {
+                        coroutineScope.launch {
+                            repository.recordCameraPermissionDenial()
+                            if (backStack.lastOrNull() == Screen.Camera) openHome()
+                        }
+                    },
                     onBack = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) },
                     onCaptured = { if (backStack.lastOrNull() == Screen.Camera) backStack.add(Screen.CameraResult) },
                     onNavigateToPreferences = { backStack.add(Screen.Preferences) }

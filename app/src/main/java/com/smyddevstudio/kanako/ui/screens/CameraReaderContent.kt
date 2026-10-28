@@ -7,9 +7,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
@@ -28,6 +32,10 @@ import androidx.compose.material.icons.rounded.ZoomIn
 import androidx.compose.material.icons.rounded.ZoomOut
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +44,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.res.stringResource
@@ -46,6 +55,7 @@ import com.smyddevstudio.kanako.camera.CameraReaderUiState
 import com.smyddevstudio.kanako.camera.CameraReadingStatus
 import com.smyddevstudio.kanako.ui.theme.KanakoTheme
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun CameraReaderContent(
     state: CameraReaderUiState,
@@ -61,7 +71,8 @@ internal fun CameraReaderContent(
     viewfinder: @Composable (Modifier) -> Unit = { Box(it.background(MaterialTheme.colorScheme.surfaceVariant)) }
 ) {
     BoxWithConstraints(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        val compact = maxHeight < 400.dp || LocalDensity.current.fontScale > 1.3f
+        val density = LocalDensity.current
+        val compact = maxHeight < 400.dp || density.fontScale > 1.3f
         if (granted) viewfinder(Modifier.fillMaxSize())
         Spacer(Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.safeDrawing)
             .background(MaterialTheme.colorScheme.background).align(Alignment.TopCenter))
@@ -69,17 +80,32 @@ internal fun CameraReaderContent(
             .background(MaterialTheme.colorScheme.background).align(Alignment.BottomCenter))
         Column(Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally) {
-            CameraReaderTopBar(onBack, onPreferences)
+            CameraReaderTopBar(onBack, onPreferences, appBar = true)
             if (!granted) {
-                Box(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()), contentAlignment = Alignment.Center) {
-                    Surface(shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.surface) {
+                Box(Modifier.weight(1f).fillMaxWidth().padding(horizontal = 16.dp)
+                    .verticalScroll(rememberScrollState()), contentAlignment = Alignment.Center) {
+                    Surface(modifier = Modifier.widthIn(max = 560.dp),
+                        shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.surface) {
                         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                             Text(stringResource(R.string.camera_state_permission), style = MaterialTheme.typography.titleLarge)
                             Text(stringResource(R.string.camera_state_permission_body))
-                            Button(onClick = onPermission) { Text(stringResource(permissionLabel)) }
+                            FlowRow(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+                                verticalArrangement = Arrangement.spacedBy(4.dp),
+                                itemVerticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Button(onClick = onPermission, modifier = Modifier.heightIn(min = 48.dp)) {
+                                    Text(stringResource(permissionLabel))
+                                }
+                                TextButton(onClick = onBack, modifier = Modifier.heightIn(min = 48.dp)) {
+                                    Text(stringResource(R.string.camera_not_now))
+                                }
+                            }
                         }
                     }
                 }
+                Spacer(Modifier.height(if (compact) 0.dp else TopAppBarDefaults.TopAppBarExpandedHeight))
             } else {
                 Spacer(Modifier.weight(1f))
                 Surface(shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f), contentColor = MaterialTheme.colorScheme.onSurface) {
@@ -125,23 +151,47 @@ internal fun CameraReaderContent(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun CameraReaderTopBar(
     onBack: () -> Unit,
     onPreferences: () -> Unit,
     modifier: Modifier = Modifier,
-    title: Int = R.string.camera_title
+    title: Int = R.string.camera_title,
+    appBar: Boolean = false
 ) {
-    Surface(modifier.fillMaxWidth().padding(vertical = 8.dp), shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f), contentColor = MaterialTheme.colorScheme.onSurface) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.navigate_back))
-            }
-            Text(stringResource(title), Modifier.weight(1f), style = MaterialTheme.typography.titleMedium,
-                maxLines = 1, overflow = TextOverflow.Ellipsis)
-            IconButton(onClick = onPreferences) {
-                Icon(Icons.Rounded.Settings, stringResource(R.string.camera_appearance))
+    if (appBar) {
+        TopAppBar(
+            title = { Text(stringResource(title), maxLines = 1, overflow = TextOverflow.Ellipsis) },
+            modifier = modifier.fillMaxWidth(),
+            navigationIcon = {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.navigate_back))
+                }
+            },
+            actions = {
+                IconButton(onClick = onPreferences) {
+                    Icon(Icons.Rounded.Settings, stringResource(R.string.camera_appearance))
+                }
+            },
+            windowInsets = WindowInsets(0, 0, 0, 0),
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.Transparent,
+                scrolledContainerColor = Color.Transparent
+            )
+        )
+    } else {
+        Surface(modifier.fillMaxWidth().padding(vertical = 8.dp), shape = RoundedCornerShape(20.dp),
+            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f), contentColor = MaterialTheme.colorScheme.onSurface) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.navigate_back))
+                }
+                Text(stringResource(title), Modifier.weight(1f), style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis)
+                IconButton(onClick = onPreferences) {
+                    Icon(Icons.Rounded.Settings, stringResource(R.string.camera_appearance))
+                }
             }
         }
     }
@@ -170,6 +220,8 @@ private fun CameraReaderPreview() {
 }
 
 @Preview(showBackground = true)
+@Preview(name = "Compact landscape", widthDp = 640, heightDp = 360)
+@Preview(name = "Large text", widthDp = 320, heightDp = 480, fontScale = 2f)
 @Composable
 private fun CameraPermissionPreview() {
     KanakoTheme { CameraReaderContent(CameraReaderUiState(), false, {}, {}, {}, {}, {}, {}) }

@@ -52,7 +52,8 @@ internal fun CameraReaderScreen(
     onCaptured: () -> Unit,
     onNavigateToPreferences: () -> Unit,
     modifier: Modifier = Modifier,
-    preferences: KanakoPreferences = KanakoPreferences()
+    preferences: KanakoPreferences = KanakoPreferences(),
+    onPermissionDenied: () -> Unit = onBack
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -66,10 +67,14 @@ internal fun CameraReaderScreen(
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         requested = true
         granted = hasCameraPermission(context)
+        if (!granted) {
+            viewModel.returnToLive()
+            onPermissionDenied()
+        }
     }
     val activity = context.cameraActivity()
     val liveDescription = stringResource(R.string.camera_live_description)
-    val permanentlyDenied = requested && !granted && activity != null &&
+    val permanentlyDenied = (requested || preferences.hasDeniedCameraPermission) && !granted && activity != null &&
         !ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.CAMERA)
 
     DisposableEffect(lifecycleOwner, context) {
@@ -129,7 +134,11 @@ internal fun CameraReaderScreen(
     }
     if (rationale) {
         AlertDialog(
-            onDismissRequest = { rationale = false },
+            onDismissRequest = {
+                rationale = false
+                viewModel.returnToLive()
+                onBack()
+            },
             title = { Text(stringResource(R.string.camera_state_permission)) },
             text = { Text(stringResource(R.string.camera_state_permission_body)) },
             confirmButton = {
@@ -139,7 +148,11 @@ internal fun CameraReaderScreen(
                 }) { Text(stringResource(R.string.camera_permission_continue)) }
             },
             dismissButton = {
-                TextButton(onClick = { rationale = false }) { Text(stringResource(R.string.camera_cancel)) }
+                TextButton(onClick = {
+                    rationale = false
+                    viewModel.returnToLive()
+                    onBack()
+                }) { Text(stringResource(R.string.camera_not_now)) }
             }
         )
     }

@@ -93,6 +93,19 @@ class UserPreferencesRepositoryTest {
     }
 
     @Test
+    fun cameraDenialSurvivesRepositoryRecreationWithoutGrantingOtherAccess() = runTest(testDispatcher) {
+        assertFalse(repository.userPreferencesFlow.first().hasDeniedCameraPermission)
+        repository.updateScriptType(ScriptType.ROMAJI)
+        repository.recordCameraPermissionDenial()
+        val restored = UserPreferencesRepository(testDataStore).userPreferencesFlow.first()
+        assertTrue(restored.hasDeniedCameraPermission)
+        assertEquals(ScriptType.ROMAJI, restored.scriptType)
+        assertFalse(restored.hasAcceptedSnapshotDisclosure)
+        assertFalse(restored.autoReadAfterScroll)
+        assertFalse(restored.isOverlayActive)
+    }
+
+    @Test
     fun testDefaultPreferences() = runTest(testDispatcher) {
         val prefs = repository.userPreferencesFlow.first()
         assertEquals(KanakoPreferences(), prefs)

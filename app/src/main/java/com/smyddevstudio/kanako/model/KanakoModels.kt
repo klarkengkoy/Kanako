@@ -64,5 +64,6 @@ data class KanakoPreferences(
     val hasAcceptedSnapshotDisclosure: Boolean = false,
     val isOverlayActive: Boolean = false,
     val isAutoTranslateEnabled: Boolean = false,
-    val isDarkMode: Boolean = false
+    val isDarkMode: Boolean = false,
+    val hasDeniedCameraPermission: Boolean = false
 )

@@ -60,6 +60,7 @@
     <string name="camera_state_permission">Camera access needed</string>
     <string name="camera_state_permission_body">Use the camera for live Japanese readings and photos. Images stay in memory unless you choose Save with furigana. Floating-reader access is not needed.</string>
     <string name="camera_allow">Allow camera</string>
+    <string name="camera_not_now">Not now</string>
     <string name="camera_settings">Open app settings</string>
     <string name="camera_permission_continue">Continue</string>
     <string name="camera_state_processing">Reading Japanese…</string>

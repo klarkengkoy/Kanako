@@ -1,7 +1,14 @@
 package com.smyddevstudio.kanako.camera
 
 import android.graphics.Bitmap
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -46,6 +53,65 @@ class CameraControlsTest {
         compose.runOnIdle {
             assertEquals(1, requests)
             assertEquals(0, captures)
+        }
+    }
+
+    @Test fun cameraPermissionCanBeDeclinedWithoutRequestingOrCapturing() {
+        var backs = 0
+        var requests = 0
+        var captures = 0
+        compose.setContent {
+            KanakoTheme {
+                CameraReaderContent(CameraReaderUiState(), false, { backs++ }, {},
+                    { captures++ }, { requests++ }, {}, {})
+            }
+        }
+        compose.onNodeWithText(string(R.string.camera_title)).assertIsDisplayed()
+        compose.onNodeWithText(string(R.string.camera_allow)).assertIsDisplayed()
+        compose.onNodeWithText(string(R.string.camera_not_now)).performClick()
+        compose.runOnIdle {
+            assertEquals(1, backs)
+            assertEquals(0, requests)
+            assertEquals(0, captures)
+        }
+    }
+
+    @Test fun cameraSettingsRetainsAnExitWithoutOpeningSettings() {
+        var backs = 0
+        var settings = 0
+        compose.setContent {
+            KanakoTheme {
+                CameraReaderContent(CameraReaderUiState(), false, { backs++ }, {}, {},
+                    { settings++ }, {}, {}, permissionLabel = R.string.camera_settings)
+            }
+        }
+        compose.onNodeWithText(string(R.string.camera_settings)).assertIsDisplayed()
+        compose.onNodeWithText(string(R.string.camera_not_now)).performClick()
+        compose.runOnIdle {
+            assertEquals(1, backs)
+            assertEquals(0, settings)
+        }
+    }
+
+    @Test fun cameraPermissionActionsRemainReachableWithLargeTextInASmallWindow() {
+        var backs = 0
+        var settings = 0
+        compose.setContent {
+            val density = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale = 2f)) {
+                KanakoTheme {
+                    Box(Modifier.requiredSize(320.dp, 480.dp)) {
+                        CameraReaderContent(CameraReaderUiState(), false, { backs++ }, {}, {},
+                            { settings++ }, {}, {}, permissionLabel = R.string.camera_settings)
+                    }
+                }
+            }
+        }
+        compose.onNodeWithText(string(R.string.camera_settings)).performScrollTo().assertIsDisplayed().performClick()
+        compose.onNodeWithText(string(R.string.camera_not_now)).performScrollTo().assertIsDisplayed().performClick()
+        compose.runOnIdle {
+            assertEquals(1, settings)
+            assertEquals(1, backs)
         }
     }
 

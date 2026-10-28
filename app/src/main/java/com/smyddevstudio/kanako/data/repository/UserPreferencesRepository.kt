@@ -43,6 +43,7 @@ class UserPreferencesRepository(
         private val AUTO_READ_OFFER_INITIALIZED = booleanPreferencesKey("auto_read_offer_initialized")
         private val AUTO_READ_OFFER_PENDING = booleanPreferencesKey("auto_read_offer_pending")
         private val SNAPSHOT_DISCLOSURE_ACCEPTED = booleanPreferencesKey("snapshot_disclosure_accepted")
+        private val CAMERA_PERMISSION_DENIED = booleanPreferencesKey("camera_permission_denied")
     }
 
     val userPreferencesFlow: Flow<KanakoPreferences> = dataStore.data
@@ -104,7 +105,8 @@ class UserPreferencesRepository(
             autoHideOnKeyboard = autoHideOnKeyboard,
             autoReadAfterScroll = preferences[AUTO_READ_AFTER_SCROLL] ?: false,
             offerAutoRead = preferences[AUTO_READ_OFFER_PENDING] ?: false,
-            hasAcceptedSnapshotDisclosure = preferences[SNAPSHOT_DISCLOSURE_ACCEPTED] ?: false
+            hasAcceptedSnapshotDisclosure = preferences[SNAPSHOT_DISCLOSURE_ACCEPTED] ?: false,
+            hasDeniedCameraPermission = preferences[CAMERA_PERMISSION_DENIED] ?: false
         )
     }
 
@@ -123,6 +125,10 @@ class UserPreferencesRepository(
             it[AUTO_READ_AFTER_SCROLL] = enabled
             it[AUTO_READ_OFFER_PENDING] = false
         }
+    }
+
+    suspend fun recordCameraPermissionDenial() {
+        dataStore.edit { it[CAMERA_PERMISSION_DENIED] = true }
     }
 
     suspend fun acceptSnapshotDisclosure() {
