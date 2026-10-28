@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
@@ -116,6 +117,7 @@ fun HomeScreen(
     onRequestAccessibility: () -> Unit = {}
 ) {
     var showAccess by rememberSaveable { mutableStateOf(false) }
+    val readingActionModifier = Modifier.widthIn(max = 320.dp).fillMaxWidth().heightIn(min = 48.dp)
     val ready = supported && overlayGranted && accessibilityEnabled && accessibilityConnected &&
         preferences.hasAcceptedSnapshotDisclosure
     Scaffold(
@@ -212,7 +214,7 @@ fun HomeScreen(
                         Button(
                             onClick = { onUpdateOverlayActive(!preferences.isOverlayActive) },
                             enabled = preferences.isOverlayActive || ready,
-                            modifier = Modifier.align(Alignment.CenterHorizontally).widthIn(max = 320.dp).fillMaxWidth(),
+                            modifier = Modifier.align(Alignment.CenterHorizontally).then(readingActionModifier),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = if (preferences.isOverlayActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
                                 contentColor = if (preferences.isOverlayActive) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondary
@@ -225,11 +227,15 @@ fun HomeScreen(
                         }
                     }
                 }
-                OutlinedButton(
+                Button(
                     onClick = onNavigateToCamera,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                    modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 16.dp).then(readingActionModifier),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        contentColor = MaterialTheme.colorScheme.onSecondary
+                    )
                 ) {
-                    Icon(Icons.Rounded.CameraAlt, contentDescription = null)
+                    Icon(Icons.Rounded.CameraAlt, contentDescription = null, modifier = Modifier.size(24.dp))
                     Text(
                         stringResource(R.string.camera_open),
                         modifier = Modifier.padding(start = 8.dp)
