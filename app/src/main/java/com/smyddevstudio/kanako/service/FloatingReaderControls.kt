@@ -186,7 +186,7 @@ fun FloatingOverlayContent(
                                     .fillMaxWidth()
                                     .heightIn(min = 48.dp)
                                     .clip(RoundedCornerShape(8.dp)),
-                                color = if (showFurigana) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+                                color = if (showFurigana) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant,
                                 onClick = onToggleFurigana
                             ) {
                                 Row(
@@ -196,7 +196,7 @@ fun FloatingOverlayContent(
                                     Icon(
                                         imageVector = Icons.Rounded.Translate,
                                         contentDescription = null,
-                                        tint = if (showFurigana) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        tint = if (showFurigana) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.size(18.dp)
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
@@ -204,7 +204,7 @@ fun FloatingOverlayContent(
                                         text = stringResource(R.string.clear_annotations),
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = if (showFurigana) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                        color = if (showFurigana) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             }

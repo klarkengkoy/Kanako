@@ -4,6 +4,10 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
@@ -14,8 +18,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.CameraAlt
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.HourglassTop
+import androidx.compose.material.icons.rounded.RadioButtonUnchecked
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,6 +52,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -160,21 +169,13 @@ fun HomeScreen(
                         )
                         if (ready && !showAccess) {
                             FlowRow(
+                                modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 itemVerticalAlignment = Alignment.CenterVertically
                             ) {
-                                Surface(
-                                    color = MaterialTheme.colorScheme.secondaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                    shape = RoundedCornerShape(50)
-                                ) {
-                                    Text(
-                                        stringResource(R.string.setup_ready),
-                                        style = MaterialTheme.typography.labelMedium,
-                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                                    )
-                                }
-                                TextButton(onClick = { showAccess = true }) {
+                                AccessStatusBadge(stringResource(R.string.setup_ready), granted = true)
+                                TextButton(onClick = { showAccess = true },
+                                    modifier = Modifier.weight(1f).wrapContentWidth(Alignment.End).width(IntrinsicSize.Max)) {
                                     Text(stringResource(R.string.home_manage_access))
                                 }
                             }
@@ -196,7 +197,8 @@ fun HomeScreen(
                                     if (accessibilityEnabled && preferences.hasAcceptedSnapshotDisclosure)
                                         R.string.setup_manage_accessibility else R.string.setup_open_accessibility
                                 ),
-                                onAction = onRequestAccessibility
+                                onAction = onRequestAccessibility,
+                                connecting = accessibilityEnabled && preferences.hasAcceptedSnapshotDisclosure && !accessibilityConnected
                             )
                             if (ready) {
                                 TextButton(onClick = { showAccess = false }) {
@@ -210,8 +212,15 @@ fun HomeScreen(
                         Button(
                             onClick = { onUpdateOverlayActive(!preferences.isOverlayActive) },
                             enabled = preferences.isOverlayActive || ready,
-                            modifier = Modifier.align(Alignment.CenterHorizontally).widthIn(max = 320.dp).fillMaxWidth()
+                            modifier = Modifier.align(Alignment.CenterHorizontally).widthIn(max = 320.dp).fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (preferences.isOverlayActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
+                                contentColor = if (preferences.isOverlayActive) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondary
+                            )
                         ) {
+                            // TODO: Animate the floating mascot icon for the Show and Stop reader actions.
+                            Image(painterResource(R.drawable.kanako_floating), contentDescription = null, modifier = Modifier.size(24.dp))
+                            Spacer(Modifier.width(8.dp))
                             Text(stringResource(if (preferences.isOverlayActive) R.string.setup_stop else R.string.setup_enable))
                         }
                     }
@@ -226,9 +235,9 @@ fun HomeScreen(
                         modifier = Modifier.padding(start = 8.dp)
                     )
                 }
-                Text(stringResource(R.string.setup_privacy), style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-                TextButton(onClick = onNavigateToHowItWorks) { Text(stringResource(R.string.how_it_works)) }
+                TextButton(onClick = onNavigateToHowItWorks, modifier = Modifier.align(Alignment.CenterHorizontally)) {
+                    Text(stringResource(R.string.how_it_works))
+                }
             }
         }
     }
@@ -241,14 +250,49 @@ private fun PermissionRequirement(
     granted: Boolean,
     action: String,
     onAction: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    connecting: Boolean = false
 ) {
-    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    val status = stringResource(when {
+        connecting -> R.string.setup_allowed_connecting
+        granted -> R.string.setup_granted
+        else -> R.string.setup_required
+    })
+    Column(modifier.fillMaxWidth().semantics(mergeDescendants = true) {},
+        verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(title, style = MaterialTheme.typography.titleSmall)
         Text(description, style = MaterialTheme.typography.bodySmall)
-        Text(stringResource(if (granted) R.string.setup_granted else R.string.setup_required),
-            style = MaterialTheme.typography.labelMedium)
+        AccessStatusBadge(status, granted = granted, connecting = connecting)
         OutlinedButton(onClick = onAction) { Text(action) }
+    }
+}
+
+@Composable
+private fun AccessStatusBadge(
+    text: String,
+    granted: Boolean,
+    modifier: Modifier = Modifier,
+    connecting: Boolean = false
+) {
+    Surface(
+        modifier = modifier,
+        color = if (granted) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+        contentColor = if (granted) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+        shape = RoundedCornerShape(50)
+    ) {
+        Row(Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                when {
+                    connecting -> Icons.Rounded.HourglassTop
+                    granted -> Icons.Rounded.CheckCircle
+                    else -> Icons.Rounded.RadioButtonUnchecked
+                },
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Text(text, style = MaterialTheme.typography.labelMedium)
+        }
     }
 }
 
@@ -260,6 +304,34 @@ fun HomeScreenPreview() {
 }
 
 @Preview(showBackground = true)
+@Preview(name = "Japanese", locale = "ja")
+@Composable
+private fun HomePartialAccessPreview() {
+    KanakoTheme { HomeScreen({}, {}, {}, overlayGranted = true) }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun HomeAccessConnectingPreview() {
+    KanakoTheme {
+        HomeScreen({}, {}, {}, preferences = KanakoPreferences(hasAcceptedSnapshotDisclosure = true),
+            overlayGranted = true, accessibilityEnabled = true)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun HomeActiveReaderPreview() {
+    KanakoTheme {
+        HomeScreen({}, {}, {},
+            preferences = KanakoPreferences(isOverlayActive = true, hasAcceptedSnapshotDisclosure = true),
+            overlayGranted = true, accessibilityEnabled = true, accessibilityConnected = true)
+    }
+}
+
+@Preview(showBackground = true)
+@Preview(name = "Japanese", locale = "ja")
+@Preview(name = "Compact large text", widthDp = 320, heightDp = 480, fontScale = 2f)
 @Composable
 private fun HomeScreenDarkPreview() {
     KanakoTheme(darkTheme = true) {

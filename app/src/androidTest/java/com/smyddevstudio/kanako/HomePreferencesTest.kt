@@ -2,6 +2,12 @@ package com.smyddevstudio.kanako
 
 import android.content.res.Configuration
 import android.os.LocaleList
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalContext
@@ -60,6 +66,45 @@ class HomePreferencesTest {
         compose.runOnIdle { assertEquals(1, starts); assertEquals(1, overlayRequests) }
     }
 
+    @Test fun homeReportsEachPermissionIndependentlyAndWaitsForConnection() {
+        val overlay = mutableStateOf(false)
+        val enabled = mutableStateOf(false)
+        val consent = mutableStateOf(false)
+        val connected = mutableStateOf(false)
+        compose.setContent {
+            KanakoTheme {
+                HomeScreen({}, {}, {},
+                    preferences = KanakoPreferences(hasAcceptedSnapshotDisclosure = consent.value),
+                    overlayGranted = overlay.value, accessibilityEnabled = enabled.value,
+                    accessibilityConnected = connected.value)
+            }
+        }
+        fun assertStatus(title: Int, status: Int) {
+            compose.onNode(hasText(context.getString(title)) and hasText(context.getString(status))).assertExists()
+        }
+        assertStatus(R.string.setup_overlay_title, R.string.setup_required)
+        assertStatus(R.string.setup_accessibility_title, R.string.setup_required)
+        compose.runOnIdle { overlay.value = true; enabled.value = true }
+        assertStatus(R.string.setup_overlay_title, R.string.setup_granted)
+        assertStatus(R.string.setup_accessibility_title, R.string.setup_required)
+        compose.runOnIdle { consent.value = true }
+        assertStatus(R.string.setup_accessibility_title, R.string.setup_allowed_connecting)
+        compose.onNodeWithText(context.getString(R.string.setup_ready)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.setup_enable)).performScrollTo().assertIsNotEnabled()
+        compose.runOnIdle { connected.value = true }
+        compose.onNodeWithText(context.getString(R.string.setup_ready)).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.setup_enable)).performScrollTo().assertIsEnabled()
+        compose.onNodeWithText(context.getString(R.string.home_manage_access)).performScrollTo().performClick()
+        assertStatus(R.string.setup_overlay_title, R.string.setup_granted)
+        assertStatus(R.string.setup_accessibility_title, R.string.setup_granted)
+        compose.runOnIdle { overlay.value = false }
+        assertStatus(R.string.setup_overlay_title, R.string.setup_required)
+        assertStatus(R.string.setup_accessibility_title, R.string.setup_granted)
+        compose.onNodeWithText(context.getString(R.string.setup_enable)).performScrollTo().assertIsNotEnabled()
+        compose.runOnIdle { enabled.value = false }
+        assertStatus(R.string.setup_accessibility_title, R.string.setup_required)
+    }
+
     @Test fun activeReaderCanAlwaysBeStoppedAfterAccessIsLost() {
         var stopped = false
         compose.setContent {
@@ -70,6 +115,31 @@ class HomePreferencesTest {
         }
         compose.onNodeWithText(context.getString(R.string.setup_stop)).performScrollTo().assertIsEnabled().performClick()
         compose.runOnIdle { assertTrue(stopped) }
+    }
+
+    @Test fun readyHomeActionsAndHelpRemainReachableWithLargeText() {
+        val active = mutableStateOf(false)
+        var helpOpens = 0
+        compose.setContent {
+            val density = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale = 2f)) {
+                KanakoTheme {
+                    Box(Modifier.requiredSize(320.dp, 480.dp)) {
+                        HomeScreen({ helpOpens++ }, {}, {},
+                            preferences = KanakoPreferences(isOverlayActive = active.value, hasAcceptedSnapshotDisclosure = true),
+                            overlayGranted = true, accessibilityEnabled = true, accessibilityConnected = true,
+                            onUpdateOverlayActive = { active.value = it })
+                    }
+                }
+            }
+        }
+        compose.onNodeWithText(context.getString(R.string.setup_ready)).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.home_manage_access)).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.setup_enable)).performScrollTo().performClick()
+        compose.onNodeWithText(context.getString(R.string.setup_stop)).performScrollTo().performClick()
+        compose.runOnIdle { assertFalse(active.value) }
+        compose.onNodeWithText(context.getString(R.string.how_it_works)).performScrollTo().performClick()
+        compose.runOnIdle { assertEquals(1, helpOpens) }
     }
 
     @Test fun recommendedAutoReadRequiresExplicitAgreementAndCanBeDeclined() {

@@ -32,15 +32,15 @@
     <string name="setup_accessibility_description">同意のうえ、画面画像を端末内で読み取ります。</string>
     <string name="setup_granted">許可済み</string>
     <string name="setup_required">許可が必要</string>
+    <string name="setup_allowed_connecting">許可済み・接続待ち…</string>
     <string name="setup_open_overlay">重ねて表示の設定を開く</string>
     <string name="setup_open_accessibility">画面読み取りを設定</string>
     <string name="setup_manage_accessibility">画面読み取りを管理</string>
-    <string name="setup_ready">読み取りの準備完了</string>
+    <string name="setup_ready">フローティングリーダーの準備完了</string>
     <string name="setup_incomplete">フローティングリーダーを使うには準備が必要です</string>
     <string name="setup_enable">フローティングリーダーを表示</string>
     <string name="setup_stop">フローティングリーダーを停止</string>
     <string name="setup_unsupported">画面読み取りにはAndroid 11以降が必要です。読みの見た目は設定で変更できます。</string>
-    <string name="setup_privacy">画面画像は端末内で処理し、保存しません。</string>
     <string name="setup_connecting">ユーザー補助は有効ですが、まだ接続されていません。少し待つか、ユーザー補助設定でかなこを一度オフにしてからオンにしてください。</string>
     <string name="setup_start_failed">フローティングリーダーを起動できませんでした。権限を確認して再度お試しください。</string>
     <string name="setup_stopped">フローティングリーダーを停止しました</string>

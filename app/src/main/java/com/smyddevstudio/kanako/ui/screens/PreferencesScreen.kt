@@ -422,9 +422,9 @@ private fun PreferenceChoiceChip(
         } else null,
         colors = FilterChipDefaults.filterChipColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            selectedContainerColor = MaterialTheme.colorScheme.primary,
-            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-            selectedTrailingIconColor = MaterialTheme.colorScheme.onPrimary
+            selectedContainerColor = MaterialTheme.colorScheme.secondary,
+            selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
+            selectedTrailingIconColor = MaterialTheme.colorScheme.onSecondary
         )
     )
 }
@@ -510,8 +510,8 @@ private fun PreferenceToggleCard(
                 checked = checked,
                 onCheckedChange = onCheckedChange,
                 colors = SwitchDefaults.colors(
-                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                    checkedTrackColor = MaterialTheme.colorScheme.primary
+                    checkedThumbColor = MaterialTheme.colorScheme.onSecondary,
+                    checkedTrackColor = MaterialTheme.colorScheme.secondary
                 )
             )
         }
