@@ -35,7 +35,13 @@ import android.os.Build
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalAccessibilityManager
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import kotlinx.coroutines.delay
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -88,6 +94,19 @@ fun FloatingOverlayContent(
     statusMessage: Int = R.string.reading_ready
 ) {
     var isExpanded by remember { mutableStateOf(false) }
+    var showStatus by remember { mutableStateOf(false) }
+    val accessibilityManager = LocalAccessibilityManager.current
+    LaunchedEffect(statusMessage, isReading) {
+        showStatus = !isReading && statusMessage !in listOf(
+            R.string.reading_ready, R.string.reading_shown, R.string.reading_working
+        )
+        if (showStatus) {
+            delay(accessibilityManager?.calculateRecommendedTimeoutMillis(
+                6_000L, containsText = true, containsControls = true
+            ) ?: 6_000L)
+            showStatus = false
+        }
+    }
     val (fabSize, _, _, _) = when (preferences.fabSize) {
         FabSize.COMPACT -> listOf(48.dp, 28.dp, 8.dp, 10.dp)
         FabSize.MEDIUM -> listOf(56.dp, 36.dp, 10.dp, 12.dp)
@@ -114,7 +133,7 @@ fun FloatingOverlayContent(
                     )
                     .pointerInput(Unit) {
                         detectDragGestures(
-                            onDragStart = { isExpanded = false },
+                            onDragStart = { isExpanded = false; showStatus = false },
                             onDragEnd = onDragEnd,
                             onDrag = { change, dragAmount ->
                                 change.consume()
@@ -151,7 +170,7 @@ fun FloatingOverlayContent(
             // Expanded Quick Palette Menu
             Box {
                 AnimatedVisibility(
-                    visible = isExpanded,
+                    visible = isExpanded || showStatus,
                     enter = fadeIn() + scaleIn(),
                     exit = fadeOut() + scaleOut()
                 ) {
@@ -168,129 +187,142 @@ fun FloatingOverlayContent(
                             modifier = Modifier.verticalScroll(rememberScrollState()).padding(12.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text(
-                                text = stringResource(R.string.controls_title),
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Text(
-                                text = statusDescription,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            if (isExpanded) {
+                                Text(
+                                    text = stringResource(R.string.controls_title),
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = statusDescription,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
 
-                            // Toggle Furigana Display ON/OFF
-                            Surface(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .heightIn(min = 48.dp)
-                                    .clip(RoundedCornerShape(8.dp)),
-                                color = if (showFurigana) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-                                onClick = onToggleFurigana
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.Translate,
-                                        contentDescription = null,
-                                        tint = if (showFurigana) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = stringResource(R.string.clear_annotations),
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = if (showFurigana) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
+                            } else {
+                                Text(statusDescription,
+                                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                                    style = MaterialTheme.typography.bodySmall)
+                                TextButton(onClick = { isExpanded = true; showStatus = false },
+                                    modifier = Modifier.fillMaxWidth()) {
+                                    Text(stringResource(R.string.controls_title))
                                 }
                             }
 
-                            // Cycle Script Type
-                            Surface(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .heightIn(min = 48.dp)
-                                    .clip(RoundedCornerShape(8.dp)),
-                                color = MaterialTheme.colorScheme.surfaceVariant,
-                                onClick = onToggleScriptType
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                            if (isExpanded) {
+                                // Toggle Furigana Display ON/OFF
+                                Surface(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(min = 48.dp)
+                                        .clip(RoundedCornerShape(8.dp)),
+                                    color = if (showFurigana) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+                                    onClick = onToggleFurigana
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.Language,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onSurface,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = stringResource(R.string.controls_script, stringResource(preferences.scriptType.labelRes)),
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Translate,
+                                            contentDescription = null,
+                                            tint = if (showFurigana) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = stringResource(R.string.clear_annotations),
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = if (showFurigana) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
                                 }
-                            }
 
-                            // Open App
-                            Surface(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .heightIn(min = 48.dp)
-                                    .clip(RoundedCornerShape(8.dp)),
-                                color = MaterialTheme.colorScheme.surfaceVariant,
-                                onClick = onOpenApp
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                                // Cycle Script Type
+                                Surface(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(min = 48.dp)
+                                        .clip(RoundedCornerShape(8.dp)),
+                                    color = MaterialTheme.colorScheme.surfaceVariant,
+                                    onClick = onToggleScriptType
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Rounded.OpenInNew,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onSurface,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = stringResource(R.string.controls_open),
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Language,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onSurface,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = stringResource(R.string.controls_script, stringResource(preferences.scriptType.labelRes)),
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    }
                                 }
-                            }
 
-                            // Stop Overlay Service
-                            Surface(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .heightIn(min = 48.dp)
-                                    .clip(RoundedCornerShape(8.dp)),
-                                color = MaterialTheme.colorScheme.primaryContainer,
-                                onClick = onStopService
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                                // Open App
+                                Surface(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(min = 48.dp)
+                                        .clip(RoundedCornerShape(8.dp)),
+                                    color = MaterialTheme.colorScheme.surfaceVariant,
+                                    onClick = onOpenApp
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.PowerSettingsNew,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = stringResource(R.string.controls_stop),
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Rounded.OpenInNew,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onSurface,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = stringResource(R.string.controls_open),
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    }
+                                }
+
+                                // Stop Overlay Service
+                                Surface(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(min = 48.dp)
+                                        .clip(RoundedCornerShape(8.dp)),
+                                    color = MaterialTheme.colorScheme.primaryContainer,
+                                    onClick = onStopService
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.PowerSettingsNew,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = stringResource(R.string.controls_stop),
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
                                 }
                             }
                         }

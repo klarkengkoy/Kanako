@@ -8,7 +8,11 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
 import org.junit.Assert.assertFalse
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.test.assertWidthIsEqualTo
+import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.doubleClick
 import androidx.compose.ui.test.click
@@ -140,4 +144,49 @@ class FloatingReaderControlsTest {
             assertEquals(0, reads)
         }
     }
+    @androidx.test.filters.SdkSuppress(minSdkVersion = 28)
+    @Test fun disablingMotionStopsTheNativeAnimationAndShowsTheStaticMascot() {
+        val motion = mutableStateOf(true)
+        compose.setContent { LoadingMascot(size = 56.dp, animationsEnabled = motion.value) }
+        var animation: AnimatedImageDrawable? = null
+        compose.waitUntil(timeoutMillis = 5_000) {
+            onView(isAssignableFrom(ImageView::class.java)).check { view, _ ->
+                animation = (view as ImageView).drawable as? AnimatedImageDrawable
+            }
+            animation?.isRunning == true
+        }
+        compose.runOnIdle { motion.value = false }
+        compose.runOnIdle { assertFalse(requireNotNull(animation).isRunning) }
+        onView(isAssignableFrom(ImageView::class.java)).check { view, _ ->
+            assertFalse((view as ImageView).drawable is AnimatedImageDrawable)
+        }
+    }
+
+    @Test fun failedReadingExplainsTheProblemWithoutOpeningControlsOrReadingAgain() {
+        val status = mutableStateOf(R.string.reading_ready)
+        var reads = 0
+        compose.setContent {
+            KanakoTheme {
+                FloatingOverlayContent(
+                    preferences = KanakoPreferences(), showFurigana = false,
+                    onToggleFurigana = {}, onDrag = { _, _ -> }, onDragEnd = {},
+                    onToggleScriptType = {}, onOpenApp = {}, onStopService = {},
+                    onReadOrClear = { reads++ }, statusMessage = status.value
+                )
+            }
+        }
+        compose.runOnIdle { status.value = R.string.reading_protected }
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        compose.onNodeWithText(context.getString(R.string.reading_protected)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.controls_title)).performClick()
+        compose.onNodeWithText(context.getString(R.string.controls_stop)).assertIsDisplayed()
+        compose.runOnIdle { assertEquals(0, reads) }
+    }
+
+    @Test fun defaultFloatingControlUsesTheMedium56DpTouchTarget() {
+        content()
+        compose.onNodeWithContentDescription(description)
+            .assertWidthIsEqualTo(56.dp).assertHeightIsEqualTo(56.dp)
+    }
+
 }

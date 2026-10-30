@@ -1,5 +1,10 @@
 package com.smyddevstudio.kanako.service
 
+import android.animation.ValueAnimator
+import android.database.ContentObserver
+import android.os.Handler
+import android.os.Looper
+import android.provider.Settings
 import android.graphics.ImageDecoder
 import android.graphics.drawable.AnimatedImageDrawable
 import android.os.Build
@@ -9,6 +14,10 @@ import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalResources
@@ -27,11 +36,14 @@ import kotlin.math.roundToInt
 @Composable
 internal fun LoadingMascot(
     size: Dp,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    animationsEnabled: Boolean = rememberAnimationsEnabled()
 ) {
     val resources = LocalResources.current
     val sizePx = with(LocalDensity.current) { size.roundToPx() }.coerceAtLeast(1)
-    val drawable by produceState<AnimatedImageDrawable?>(null, resources, sizePx) {
+    val drawable by produceState<AnimatedImageDrawable?>(null, resources, sizePx, animationsEnabled) {
+        value = null
+        if (!animationsEnabled) return@produceState
         value = withContext(Dispatchers.IO) {
             runCatching {
                 ImageDecoder.decodeDrawable(
@@ -49,10 +61,10 @@ internal fun LoadingMascot(
         }
     }
     val lifecycle = LocalLifecycleOwner.current.lifecycle
-    DisposableEffect(drawable, lifecycle) {
+    DisposableEffect(drawable, lifecycle, animationsEnabled) {
         val animation = drawable
         fun updatePlayback() {
-            if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) animation?.start()
+            if (animationsEnabled && lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) animation?.start()
             else animation?.stop()
         }
         val observer = LifecycleEventObserver { _, _ -> updatePlayback() }
@@ -77,9 +89,30 @@ internal fun LoadingMascot(
             view.setImageDrawable(null)
         },
         update = { view ->
-            drawable?.let { animation ->
+            if (!animationsEnabled) view.setImageResource(R.drawable.kanako_floating)
+            else drawable?.let { animation ->
                 if (view.drawable !== animation) view.setImageDrawable(animation)
             }
         }
     )
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+private fun rememberAnimationsEnabled(): Boolean {
+    val resolver = LocalContext.current.contentResolver
+    var enabled by remember { mutableStateOf(ValueAnimator.areAnimatorsEnabled()) }
+    DisposableEffect(resolver) {
+        val observer = object : ContentObserver(Handler(Looper.getMainLooper())) {
+            override fun onChange(selfChange: Boolean) {
+                enabled = ValueAnimator.areAnimatorsEnabled()
+            }
+        }
+        resolver.registerContentObserver(
+            Settings.Global.getUriFor(Settings.Global.ANIMATOR_DURATION_SCALE), false, observer
+        )
+        enabled = ValueAnimator.areAnimatorsEnabled()
+        onDispose { resolver.unregisterContentObserver(observer) }
+    }
+    return enabled
 }
