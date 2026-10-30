@@ -15,9 +15,6 @@ val TextMuted = Color(0xFF53634D)
 val GreenStatus = Color(0xFF2D7A4F)
 
 // Palette colors for Furigana
-val MushroomCrimson = Color(0xFFB82923)
-val InkBlack = Color(0xFF2B2625)
-val Indigo = Color(0xFF233E60)
 val PineGreen = Color(0xFF24583F)
 
 // Dark Theme Fallback / Mushroom Dark Palette

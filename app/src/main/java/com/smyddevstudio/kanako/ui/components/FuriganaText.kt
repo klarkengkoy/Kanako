@@ -3,7 +3,6 @@ package com.smyddevstudio.kanako.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -35,7 +34,6 @@ data class FuriganaSegment(
     val isHighlighted: Boolean = false
 )
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun FuriganaText(
     segments: List<FuriganaSegment>,
