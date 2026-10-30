@@ -11,6 +11,9 @@ sealed interface Screen : NavKey {
     data object HowItWorks : Screen
 
     @Serializable
+    data class Help(val topic: HelpTopic) : Screen
+
+    @Serializable
     data object Camera : Screen
 
     @Serializable
@@ -23,3 +26,6 @@ sealed interface Screen : NavKey {
     @Serializable
     data object Preferences : Screen
 }
+
+@Serializable
+enum class HelpTopic { FLOATING_READER, CAMERA, APPEARANCE, PRIVACY, TROUBLESHOOTING }

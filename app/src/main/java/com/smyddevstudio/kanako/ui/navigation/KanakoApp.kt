@@ -214,7 +214,6 @@ fun KanakoApp(
             }
             entry<Screen.HowItWorks> {
                 HowItWorksScreen(
-                    preferences = preferences,
                     onBack = {
                         if (backStack.size > 1) {
                             backStack.removeAt(backStack.lastIndex)
@@ -225,6 +224,13 @@ fun KanakoApp(
                     }
                 )
             }
+            entry<Screen.Help> { route ->
+                HowItWorksScreen(
+                    initialTopic = route.topic,
+                    onBack = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) },
+                    onNavigateToHome = { openHome() }
+                )
+            }
             entry<Screen.Camera> {
                 CameraReaderScreen(
                     viewModel = cameraReader,
@@ -232,7 +238,6 @@ fun KanakoApp(
                     onPermissionDenied = {
                         coroutineScope.launch {
                             repository.recordCameraPermissionDenial()
-                            if (backStack.lastOrNull() == Screen.Camera) openHome()
                         }
                     },
                     onBack = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) },
@@ -276,8 +281,8 @@ fun KanakoApp(
                     onUpdateAutoReadAfterScroll = { enabled ->
                         coroutineScope.launch { repository.updateAutoReadAfterScroll(enabled) }
                     },
-                    onUpdateOverlayActive = handleToggleOverlay,
                     onRequestAccessibility = { openHome() },
+                    onNavigateToPrivacy = { backStack.add(Screen.Help(HelpTopic.PRIVACY)) },
                     onBack = {
                         if (backStack.size > 1) {
                             backStack.removeAt(backStack.lastIndex)

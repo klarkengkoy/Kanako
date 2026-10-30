@@ -40,7 +40,7 @@
     <string name="setup_incomplete">Finish setup to enable the floating reader</string>
     <string name="setup_enable">Show floating reader</string>
     <string name="setup_stop">Stop floating reader</string>
-    <string name="setup_unsupported">Screen reading requires Android 11 or later. You can still customize reading appearance in Preferences.</string>
+    <string name="setup_unsupported">Screen reading needs Android 11 or later. You can still use Camera.</string>
     <string name="setup_connecting">Accessibility is enabled but not connected yet. Wait a moment, or turn Kanako off and on in Accessibility settings.</string>
     <string name="setup_start_failed">Could not start the floating reader. Check setup and try again.</string>
     <string name="setup_stopped">Floating reader stopped</string>
@@ -55,7 +55,7 @@
     <string name="camera_open">Read with camera</string>
     <string name="camera_capture">Capture photo</string>
     <string name="camera_result_title">Photo reading</string>
-    <string name="camera_result_retake">Return to live camera</string>
+    <string name="camera_result_retake">Return to camera</string>
     <string name="camera_appearance">Reading appearance</string>
     <string name="camera_state_permission">Camera access needed</string>
     <string name="camera_state_permission_body">Use the camera for live Japanese readings and photos. Images stay in memory unless you choose Save with furigana. Floating-reader access is not needed.</string>
@@ -77,7 +77,7 @@
     <string name="camera_saving">Saving…</string>
     <string name="camera_saved">Saved with furigana</string>
     <string name="camera_save_failed">Could not save. Choose a destination and try again.</string>
-    <string name="camera_photo_ready">Photo ready · Images remain temporary until you save</string>
+    <string name="camera_photo_ready">Photo ready · Not saved</string>
     <string name="camera_photo_missing">This temporary photo is no longer available. Return to the live camera to capture another.</string>
     <string name="camera_photo_description">Captured camera photo with Japanese readings</string>
     <string name="camera_photo_hint">Pinch to zoom · Drag to move · Double tap to reset</string>
@@ -85,14 +85,12 @@
     <string name="camera_zoom_out">Zoom out</string>
     <string name="camera_zoom_reset">Reset zoom</string>
     <string name="camera_zoom_state">Zoom %1$d percent</string>
-    <string name="camera_cancel">Cancel</string>
     <string name="navigate_back">Back</string>
     <string name="preferences_preview">Preview</string>
     <string name="preview_control">Floating control at selected size</string>
     <string name="preferences_reading_appearance">Appearance</string>
-    <string name="preferences_floating_control">Floating control</string>
-    <string name="preferences_reading_behavior">Reading</string>
-    <string name="preferences_system">Quick access</string>
+    <string name="preferences_floating_control">Floating reader</string>
+    <string name="preferences_system">Access and help</string>
     <string name="preferences_privacy">Privacy</string>
     <string name="preview_sample_text"><annotation reading="ニホンゴ">日本語</annotation>を<annotation reading="ヨム">読む</annotation></string>
     <string name="preferences_touch_check">Use the app beneath the furigana.</string>
@@ -102,7 +100,7 @@
     <string name="home_reader_off">Floating reader off</string>
     <string name="home_manage_access">Manage access</string>
     <string name="how_it_works">How it works</string>
-    <string name="home_return">Return to Home</string>
+    <string name="home_return">Back to Home</string>
     <string name="done">Done</string>
     <string name="preferences_size">Reading size</string>
     <string name="preferences_color">Reading color</string>
@@ -113,14 +111,8 @@
     <string name="preferences_keyboard">Hide beside keyboard</string>
     <string name="preferences_keyboard_hint">Sensitive-input capture blocking stays on.</string>
     <string name="tile_title">Quick Settings</string>
-    <string name="tile_available">Available</string>
     <string name="tile_summary">Show or stop Kanako.</string>
     <string name="guide">Guide</string>
-    <string name="privacy_title">Processed on your device</string>
-    <string name="privacy_recognition">Recognition runs on your device.</string>
-    <string name="privacy_images">Screen images are temporary and never saved.</string>
-    <string name="privacy_model">An initial model download may be needed.</string>
-    <string name="preferences_footer">More guidance in How Kanako works.</string>
     <string name="color_crimson">Mushroom Crimson</string>
     <string name="color_black">Ink Black</string>
     <string name="color_indigo">Indigo</string>
@@ -141,15 +133,11 @@
     <string name="notification_channel">Kanako reading assistant</string>
     <string name="notification_channel_description">Floating controls and Japanese furigana reading</string>
     <string name="how_title">How Kanako works</string>
-    <string name="how_intro">A reading companion, one view at a time.</string>
-    <string name="how_access_title">Allow screen reading</string>
-    <string name="how_access">On Home, allow display over other apps and enable Kanako in Accessibility settings after reviewing the disclosure. Screen reading needs Android 11 or later. Camera access is requested separately.</string>
-    <string name="how_open_title">Open something in Japanese</string>
-    <string name="how_open">Keep using your browser, book, or manga app. Kanako does not run a continuous screen-sharing session. Drag the floating character to move it.</string>
+    <string name="how_intro">Choose a topic for quick answers and guidance.</string>
     <string name="how_tap_title">Tap the floating character</string>
     <string name="how_tap">Kanako takes one screenshot, recognizes Japanese on your device, and places readings over the current view. Tap again to clear. Double tap or hold for controls.</string>
     <string name="how_move_title">Move on when you are ready</string>
-    <string name="how_move">Readings follow reported scrolling. Uncertain movement or app changes clear outdated readings. Optional Auto-read reads once after detected changes settle for about 0.7 seconds, including reader start and unlock. Tracking depends on the source app; tap to clear readings that no longer line up.</string>
+    <string name="how_move">Readings follow scrolling reported by the source app. Uncertain movement clears them. Optional Auto-read reads after detected changes settle for about 0.7 seconds, and after reader start or unlock. Tracking depends on the source app.</string>
     <string name="how_privacy_title">What stays private?</string>
     <string name="how_privacy">Screen images are processed in memory, then discarded without saving or uploading. Capture is blocked around detected sensitive input and on the lock screen. Camera photos also remain temporary unless you explicitly choose Save with furigana.</string>
     <string name="how_limits_title">What are the limits?</string>
@@ -159,7 +147,7 @@
     <string name="how_tile_title">Quick Settings</string>
     <string name="how_tile">Swipe down twice, tap Edit, then add Kanako to your active tiles. Tap it to show or stop the floating reader. Adding the tile does not capture a screenshot. Missing access opens Home. With Auto-read enabled, starting the reader also schedules a reading.</string>
     <string name="how_camera_title">Use the camera</string>
-    <string name="how_camera">Open the camera from Home for live Japanese readings. Capture a photo for stable reading, pinch to zoom, and return to live whenever you are ready. Only Save with furigana writes a captured camera image to your chosen destination.</string>
+    <string name="how_camera">Open Camera from Home; its permission is separate from screen reading access. Read live, or capture a photo for stable reading. Pinch to zoom; on a photo, drag to move and double tap to reset. Return to camera to take another photo. Save with furigana exports the whole photo to your chosen destination, regardless of your current zoom.</string>
     <string name="reading_size_small">10sp</string>
     <string name="reading_size_medium">12sp</string>
     <string name="reading_size_large">14sp</string>
@@ -168,4 +156,21 @@
     <string name="how_preferences_title">Adjust reading behavior</string>
     <string name="how_preferences">In Preferences, choose Kana or Romaji and change reading size, color, and background. Touch through readings lets you swipe and tap the app beneath the furigana; turn it off to let annotation areas receive touches. Hide beside keyboard hides the floating control while typing. Screenshot capture stays blocked around detected keyboard or password input even if the control remains visible. Check these behaviors in your reading app; the pinned preview shows appearance only.</string>
     <string name="preview_sample_short"><annotation reading="ニホンゴ">日本語</annotation></string>
+    <string name="preferences_appearance_summary">Applies to both readers. The preview shows appearance only.</string>
+    <string name="privacy_access">Privacy and screen access</string>
+    <string name="help_floating">Floating reader</string>
+    <string name="help_troubleshooting">Troubleshooting</string>
+    <string name="how_start_title">Start the floating reader</string>
+    <string name="how_start">On Home, set up display-over-apps and screen reading access after reviewing the disclosure. Choose Show floating reader, then open Japanese content in another app. Screen reading needs Android 11 or later.</string>
+    <string name="how_stop_title">Move or stop Kanako</string>
+    <string name="how_stop">Drag the character to move it. Hold it to open controls and choose Stop floating reader. You can also stop it from Home or the notification.</string>
+    <string name="how_capture_scope_title">Screen access and protection</string>
+    <string name="how_capture_scope">Each screen reading takes one screenshot: the current app on Android 14 or later, or the display on Android 11–13. Window, scroll, keyboard, and password metadata clears old readings and blocks capture around detected sensitive input and on the lock screen. Input-field text is not collected through accessibility. Auto-read requires separate agreement and can be turned off in Preferences.</string>
+    <string name="how_recovery_title">When readings do not appear</string>
+    <string name="how_recovery">Check screen access on Home. If the service is connecting, wait or turn Kanako off and on in Android Accessibility settings. For a missing recognition model, connect to the internet and retry. In Camera, try focusing, moving closer, or capturing a photo. Tap the floating character to clear readings that no longer line up.</string>
+    <string name="home_floating_summary">Read Japanese in other apps.</string>
+    <string name="home_camera_summary">Read printed Japanese with your camera. No screen reading access needed.</string>
+    <string name="home_setup_summary">Two access settings are needed for the floating reader.</string>
+    <string name="home_setup_action">Set up floating reader</string>
+    <string name="home_next_step">Open another app, then tap Kanako to read. With Auto-read enabled, reading starts after detected changes settle.</string>
 </resources>

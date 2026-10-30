@@ -7,6 +7,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertIsNotSelected
@@ -67,7 +72,7 @@ class PreferencesScreenTest {
         compose.onNodeWithText("nihongo").assertIsDisplayed()
         compose.onNodeWithText("にほんご").assertDoesNotExist()
         compose.onNode(hasScrollToNodeAction())
-            .performScrollToNode(hasText(context.getString(R.string.privacy_title)))
+            .performScrollToNode(hasText(context.getString(R.string.privacy_access)))
         compose.onNodeWithText(context.getString(R.string.preferences_preview)).assertIsDisplayed()
         compose.onNodeWithText("nihongo").assertIsDisplayed()
     }
@@ -125,5 +130,50 @@ class PreferencesScreenTest {
         compose.onNodeWithText(context.getString(R.string.preferences_preview)).assertIsDisplayed()
         compose.onNodeWithText("にほんご").assertIsDisplayed()
         compose.onNodeWithText("日本語").assertIsDisplayed()
+    }
+    @Test fun settingsUseLabelledSingleChoiceAndWholeRowToggles() {
+        val preferences = mutableStateOf(KanakoPreferences(touchPassthrough = false))
+        compose.setContent {
+            KanakoTheme {
+                PreferencesScreen(onBack = {}, preferences = preferences.value,
+                    onUpdateTouchPassthrough = { preferences.value = preferences.value.copy(touchPassthrough = it) })
+            }
+        }
+        compose.onNodeWithText(context.getString(R.string.script_kana))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
+            .assertIsSelected()
+        compose.onNode(hasScrollToNodeAction())
+            .performScrollToNode(hasText(context.getString(R.string.preferences_touch)))
+        compose.onNodeWithText(context.getString(R.string.preferences_touch)).performClick().assertIsOn()
+        compose.runOnIdle { assertEquals(true, preferences.value.touchPassthrough) }
+    }
+
+    @Test fun privacyLinkRemainsWithoutADuplicateGeneralHelpEntry() {
+        var privacy = 0
+        compose.setContent {
+            KanakoTheme {
+                PreferencesScreen(onBack = {}, onNavigateToPrivacy = { privacy++ })
+            }
+        }
+        compose.onNode(hasScrollToNodeAction())
+            .performScrollToNode(hasText(context.getString(R.string.privacy_access)))
+        compose.onNodeWithText(context.getString(R.string.privacy_access)).performClick()
+        compose.onNodeWithText(context.getString(R.string.how_title)).assertDoesNotExist()
+        compose.runOnIdle { assertEquals(1, privacy) }
+    }
+
+    @Test fun defaultAppearanceAndReadingControlsMatchTheRepositoryDefaults() {
+        compose.setContent { KanakoTheme { PreferencesScreen(onBack = {}) } }
+        for (label in listOf(R.string.script_kana, R.string.reading_size_medium,
+                R.string.color_crimson, R.string.plate_washi, R.string.size_medium, R.string.tap_to_read)) {
+            compose.onNode(hasScrollToNodeAction())
+                .performScrollToNode(hasText(context.getString(label)))
+            compose.onNodeWithText(context.getString(label)).assertIsSelected()
+        }
+        for (label in listOf(R.string.preferences_touch, R.string.preferences_keyboard)) {
+            compose.onNode(hasScrollToNodeAction())
+                .performScrollToNode(hasText(context.getString(label)))
+            compose.onNodeWithText(context.getString(label)).assertIsOn()
+        }
     }
 }

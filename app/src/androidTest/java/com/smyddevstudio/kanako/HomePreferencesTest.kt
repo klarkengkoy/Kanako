@@ -79,6 +79,7 @@ class HomePreferencesTest {
                     accessibilityConnected = connected.value)
             }
         }
+        compose.onNodeWithText(context.getString(R.string.home_setup_action)).performScrollTo().performClick()
         fun assertStatus(title: Int, status: Int) {
             compose.onNode(hasText(context.getString(title)) and hasText(context.getString(status))).assertExists()
         }

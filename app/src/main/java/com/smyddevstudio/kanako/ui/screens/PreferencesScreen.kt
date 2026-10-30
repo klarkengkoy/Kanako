@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,17 +15,26 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.text
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.FontDownload
 import androidx.compose.material.icons.rounded.Layers
 import androidx.compose.material.icons.rounded.Security
 import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.Card
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CardDefaults
@@ -58,10 +66,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.smyddevstudio.kanako.model.AnnotationPlateStyle
 import com.smyddevstudio.kanako.model.FabSize
 import com.smyddevstudio.kanako.model.FuriganaColor
@@ -72,7 +78,7 @@ import com.smyddevstudio.kanako.ui.components.ReadingPreviewCard
 import com.smyddevstudio.kanako.ui.components.labelRes
 import com.smyddevstudio.kanako.ui.theme.KanakoTheme
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PreferencesScreen(
     onBack: () -> Unit,
@@ -86,8 +92,8 @@ fun PreferencesScreen(
     onUpdateFabSize: (FabSize) -> Unit = {},
     onUpdateAutoHideOnKeyboard: (Boolean) -> Unit = {},
     onUpdateAutoReadAfterScroll: (Boolean) -> Unit = {},
-    onUpdateOverlayActive: (Boolean) -> Unit = {},
-    onRequestAccessibility: () -> Unit = {}
+    onRequestAccessibility: () -> Unit = {},
+    onNavigateToPrivacy: () -> Unit = {}
 ) {
     var showTileGuide by rememberSaveable { mutableStateOf(false) }
     var showAutoReadDisclosure by rememberSaveable { mutableStateOf(false) }
@@ -154,11 +160,29 @@ fun PreferencesScreen(
                 ) {
                     item(key = "appearance_header") {
                         PreferenceSectionHeader(title = stringResource(R.string.preferences_reading_appearance), icon = Icons.Rounded.FontDownload)
+                        Text(stringResource(R.string.preferences_appearance_summary),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 8.dp))
+                    }
+
+                    item(key = "script_type") {
+                        PreferenceControlCard(title = stringResource(R.string.preferences_script)) {
+                            FlowRow(modifier = Modifier.selectableGroup(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                ScriptType.entries.forEach { script ->
+                                    PreferenceChoiceChip(
+                                        selected = preferences.scriptType == script,
+                                        onClick = { onUpdateScriptType(script) },
+                                        label = stringResource(script.labelRes)
+                                    )
+                                }
+                            }
+                        }
                     }
 
                     item(key = "furigana_size") {
                         PreferenceControlCard(title = stringResource(R.string.preferences_size)) {
-                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            FlowRow(modifier = Modifier.selectableGroup(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 FuriganaSize.entries.forEach { size ->
                                     PreferenceChoiceChip(
                                         selected = preferences.furiganaSize == size,
@@ -173,6 +197,7 @@ fun PreferencesScreen(
                     item(key = "furigana_color") {
                         PreferenceControlCard(title = stringResource(R.string.preferences_color)) {
                             FlowRow(
+                                modifier = Modifier.selectableGroup(),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
@@ -188,23 +213,9 @@ fun PreferencesScreen(
                         }
                     }
 
-                    item(key = "script_type") {
-                        PreferenceControlCard(title = stringResource(R.string.preferences_script)) {
-                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                ScriptType.entries.forEach { script ->
-                                    PreferenceChoiceChip(
-                                        selected = preferences.scriptType == script,
-                                        onClick = { onUpdateScriptType(script) },
-                                        label = stringResource(script.labelRes)
-                                    )
-                                }
-                            }
-                        }
-                    }
-
                     item(key = "plate_style") {
                         PreferenceControlCard(title = stringResource(R.string.preferences_plate)) {
-                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            FlowRow(modifier = Modifier.selectableGroup(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 AnnotationPlateStyle.entries.forEach { style ->
                                     PreferenceChoiceChip(
                                         selected = preferences.annotationPlateStyle == style,
@@ -231,7 +242,7 @@ fun PreferencesScreen(
 
                     item(key = "fab_size") {
                         PreferenceControlCard(title = stringResource(R.string.preferences_control_size)) {
-                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            FlowRow(modifier = Modifier.selectableGroup(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 FabSize.entries.forEach { size ->
                                     PreferenceChoiceChip(
                                         selected = preferences.fabSize == size,
@@ -241,10 +252,6 @@ fun PreferencesScreen(
                                 }
                             }
                         }
-                    }
-
-                    item(key = "behavior_header") {
-                        PreferenceSectionHeader(title = stringResource(R.string.preferences_reading_behavior), icon = Icons.Rounded.Tune)
                     }
 
                     item(key = "auto_read") {
@@ -290,10 +297,6 @@ fun PreferencesScreen(
                         )
                     }
 
-                    item(key = "system_header") {
-                        PreferenceSectionHeader(title = stringResource(R.string.preferences_system), icon = Icons.Rounded.Settings)
-                    }
-
                     item(key = "tile_guide") {
                         Card(
                             modifier = Modifier.fillMaxWidth(),
@@ -312,19 +315,7 @@ fun PreferencesScreen(
                                             style = MaterialTheme.typography.bodyLarge,
                                             fontWeight = FontWeight.Bold
                                         )
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Surface(
-                                            shape = RoundedCornerShape(6.dp),
-                                            color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)
-                                        ) {
-                                            Text(
-                                                text = stringResource(R.string.tile_available),
-                                                fontSize = 10.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = MaterialTheme.colorScheme.secondary,
-                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                            )
-                                        }
+
                                     }
                                     Text(
                                         text = stringResource(R.string.tile_summary),
@@ -342,53 +333,24 @@ fun PreferencesScreen(
                         }
                     }
 
+                    item(key = "system_header") {
+                        PreferenceSectionHeader(title = stringResource(R.string.preferences_system), icon = Icons.Rounded.Settings)
+                    }
+
                     item(key = "accessibility") {
                         OutlinedButton(
                             onClick = onRequestAccessibility,
                             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
-                        ) { Text(stringResource(R.string.setup_manage_accessibility)) }
-                    }
-
-                    item(key = "privacy_header") {
-                        PreferenceSectionHeader(title = stringResource(R.string.preferences_privacy), icon = Icons.Rounded.Security)
+                        ) { Text(stringResource(R.string.home_manage_access)) }
                     }
 
                     item(key = "privacy") {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.08f)
-                            ),
-                            shape = RoundedCornerShape(18.dp)
-                        ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                Text(
-                                    text = stringResource(R.string.privacy_title),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.secondary
-                                )
-                                Spacer(modifier = Modifier.height(10.dp))
-                                PrivacyBulletPoint(text = stringResource(R.string.privacy_recognition))
-                                PrivacyBulletPoint(text = stringResource(R.string.privacy_images))
-                                PrivacyBulletPoint(text = stringResource(R.string.privacy_model))
-                            }
+                        TextButton(onClick = onNavigateToPrivacy,
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                            Icon(Icons.Rounded.Security, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.privacy_access))
                         }
-                    }
-
-                    item(key = "footer_space") {
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
-
-                    item(key = "footer") {
-                        Text(
-                            text = stringResource(R.string.preferences_footer),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        )
                     }
 
                     item(key = "bottom_space") {
@@ -412,7 +374,12 @@ private fun PreferenceChoiceChip(
         selected = selected,
         onClick = onClick,
         label = { Text(label) },
-        modifier = modifier.heightIn(min = 48.dp),
+        modifier = modifier.heightIn(min = 48.dp).clearAndSetSemantics {
+            role = Role.RadioButton
+            this.selected = selected
+            text = AnnotatedString(label)
+            onClick { onClick(); true }
+        },
         border = null,
         leadingIcon = if (swatch != null) {
             { Surface(Modifier.size(16.dp), shape = CircleShape, color = swatch) {} }
@@ -436,7 +403,7 @@ private fun PreferenceSectionHeader(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(top = 8.dp)
+        modifier = Modifier.padding(top = 8.dp).semantics { heading() }
     ) {
         Icon(
             imageVector = icon,
@@ -484,7 +451,9 @@ private fun PreferenceToggleCard(
     onCheckedChange: (Boolean) -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().toggleable(
+            value = checked, role = Role.Switch, onValueChange = onCheckedChange
+        ),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp)
     ) {
@@ -508,35 +477,13 @@ private fun PreferenceToggleCard(
             Spacer(modifier = Modifier.width(12.dp))
             Switch(
                 checked = checked,
-                onCheckedChange = onCheckedChange,
+                onCheckedChange = null,
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = MaterialTheme.colorScheme.onSecondary,
                     checkedTrackColor = MaterialTheme.colorScheme.secondary
                 )
             )
         }
-    }
-}
-
-@Composable
-private fun PrivacyBulletPoint(text: String) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(vertical = 3.dp)
-    ) {
-        Icon(
-            imageVector = Icons.Rounded.CheckCircle,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.secondary,
-            modifier = Modifier.size(16.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
     }
 }
 

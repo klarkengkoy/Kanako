@@ -40,7 +40,7 @@
     <string name="setup_incomplete">フローティングリーダーを使うには準備が必要です</string>
     <string name="setup_enable">フローティングリーダーを表示</string>
     <string name="setup_stop">フローティングリーダーを停止</string>
-    <string name="setup_unsupported">画面読み取りにはAndroid 11以降が必要です。読みの見た目は設定で変更できます。</string>
+    <string name="setup_unsupported">画面読み取りにはAndroid 11以降が必要です。カメラは引き続き使えます。</string>
     <string name="setup_connecting">ユーザー補助は有効ですが、まだ接続されていません。少し待つか、ユーザー補助設定でかなこを一度オフにしてからオンにしてください。</string>
     <string name="setup_start_failed">フローティングリーダーを起動できませんでした。権限を確認して再度お試しください。</string>
     <string name="setup_stopped">フローティングリーダーを停止しました</string>
@@ -54,7 +54,7 @@
     <string name="camera_open">カメラで読む</string>
     <string name="camera_capture">写真を撮影</string>
     <string name="camera_result_title">写真の読み取り</string>
-    <string name="camera_result_retake">ライブカメラに戻る</string>
+    <string name="camera_result_retake">カメラに戻る</string>
     <string name="camera_appearance">読みの見た目</string>
     <string name="camera_state_permission">カメラへのアクセスが必要です</string>
     <string name="camera_state_permission_body">カメラで日本語の読みをライブ表示したり、写真を撮影したりします。「ふりがな付きで保存」を選ぶまでは、画像はメモリ内だけに保持します。フローティングリーダーの権限は不要です。</string>
@@ -76,7 +76,7 @@
     <string name="camera_saving">保存中…</string>
     <string name="camera_saved">ふりがな付きで保存しました</string>
     <string name="camera_save_failed">保存できませんでした。保存先を選んで再度お試しください。</string>
-    <string name="camera_photo_ready">写真の準備完了・保存するまでは一時的な画像です</string>
+    <string name="camera_photo_ready">写真の準備完了・未保存</string>
     <string name="camera_photo_missing">一時保存した写真がなくなりました。ライブカメラに戻り、もう一度撮影してください。</string>
     <string name="camera_photo_description">日本語の読みを重ねたカメラ写真</string>
     <string name="camera_photo_hint">ピンチでズーム・ドラッグで移動・ダブルタップでリセット</string>
@@ -84,14 +84,12 @@
     <string name="camera_zoom_out">縮小</string>
     <string name="camera_zoom_reset">ズームをリセット</string>
     <string name="camera_zoom_state">ズーム %1$d パーセント</string>
-    <string name="camera_cancel">キャンセル</string>
     <string name="navigate_back">戻る</string>
     <string name="preferences_preview">プレビュー</string>
     <string name="preview_control">選択した大きさのフローティングボタン</string>
     <string name="preferences_reading_appearance">見た目</string>
-    <string name="preferences_floating_control">フローティングボタン</string>
-    <string name="preferences_reading_behavior">読み取り</string>
-    <string name="preferences_system">すぐに使う</string>
+    <string name="preferences_floating_control">フローティングリーダー</string>
+    <string name="preferences_system">アクセスとヘルプ</string>
     <string name="preferences_privacy">プライバシー</string>
     <string name="preferences_touch_check">ふりがなの下のアプリを操作できます。</string>
     <string name="preferences_keyboard_check">キーボード表示中にボタンを隠します。</string>
@@ -111,14 +109,8 @@
     <string name="preferences_keyboard">入力中はボタンを隠す</string>
     <string name="preferences_keyboard_hint">機密性の高い入力中は常に撮影を停止します。</string>
     <string name="tile_title">クイック設定</string>
-    <string name="tile_available">追加できます</string>
     <string name="tile_summary">かなこを表示・停止します。</string>
     <string name="guide">追加方法</string>
-    <string name="privacy_title">端末内で処理</string>
-    <string name="privacy_recognition">文字認識は端末内で行います。</string>
-    <string name="privacy_images">画面画像は一時的に保持し、保存しません。</string>
-    <string name="privacy_model">初回はモデルのダウンロードが必要な場合があります。</string>
-    <string name="preferences_footer">詳しくは「使い方」へ。</string>
     <string name="color_crimson">きのこの紅色</string>
     <string name="color_black">墨色</string>
     <string name="color_indigo">藍色</string>
@@ -139,15 +131,11 @@
     <string name="notification_channel">かなこの読み取り支援</string>
     <string name="notification_channel_description">フローティング操作と日本語のふりがな表示</string>
     <string name="how_title">かなこの使い方</string>
-    <string name="how_intro">今見ている日本語に、読みの手助けを。</string>
-    <string name="how_access_title">画面読み取りを許可する</string>
-    <string name="how_access">ホームで説明を確認し、他のアプリの上への表示とユーザー補助の権限を許可してください。画面読み取りにはAndroid 11以降が必要です。カメラの権限は別に確認します。</string>
-    <string name="how_open_title">日本語のコンテンツを開く</string>
-    <string name="how_open">ブラウザや電子書籍、漫画アプリをそのまま使えます。かなこは継続的な画面共有を行いません。キャラクターはドラッグで移動できます。</string>
+    <string name="how_intro">知りたい項目を選んで確認できます。</string>
     <string name="how_tap_title">キャラクターをタップする</string>
     <string name="how_tap">スクリーンショットを1枚撮影し、端末内で日本語を認識して読みを重ねます。もう一度タップすると消えます。ダブルタップまたは長押しでメニューが開きます。</string>
     <string name="how_move_title">自分のペースで読み進める</string>
-    <string name="how_move">アプリから通知されたスクロールに読みが追従します。移動が不明な場合やアプリが変わった場合は古い読みを消します。任意の自動読み取りを有効にすると、検出した変化が約0.7秒間落ち着いた後に1回読み取ります。リーダー開始時やロック解除時も対象です。追従は読み取り元のアプリに依存します。位置がずれたときはタップで消してください。</string>
+    <string name="how_move">読み取り元のアプリが通知するスクロールに読みが追従します。移動が不明な場合は消えます。任意の自動読み取りは、検出した変化が約0.7秒間落ち着いた後と、リーダー開始時・ロック解除時に読み取ります。追従はアプリに依存します。</string>
     <string name="how_privacy_title">画像はどう扱われますか？</string>
     <string name="how_privacy">画面画像はメモリ内で処理し、保存・アップロードせずに破棄します。機密性の高い入力やロック画面を検出した場合は撮影を停止します。カメラ写真も「ふりがな付きで保存」を選ぶまでは一時的に保持するだけです。</string>
     <string name="how_limits_title">読み取りの制限は？</string>
@@ -157,7 +145,7 @@
     <string name="how_tile_title">クイック設定</string>
     <string name="how_tile">画面上部から2回スワイプし、編集からかなこを追加してください。タップでリーダーを表示・停止できます。追加だけでは撮影しません。権限が足りない場合はホームを開きます。自動読み取りが有効な場合、リーダー開始後に読み取りも行います。</string>
     <string name="how_camera_title">カメラを使う</string>
-    <string name="how_camera">ホームからカメラを開くと、日本語の読みをリアルタイムで表示します。撮影して静止画像を読み、ピンチ操作で拡大できます。いつでもライブ表示に戻れます。「ふりがな付きで保存」を選んだときだけ、撮影したカメラ画像を指定先に書き込みます。</string>
+    <string name="how_camera">ホームからカメラを開きます。カメラの権限は画面読み取りとは別です。ライブ表示で読むほか、撮影すると静止画像で読めます。ピンチで拡大し、写真はドラッグで移動、ダブルタップでリセットできます。カメラに戻ると再撮影できます。「ふりがな付きで保存」は表示中の拡大率に関係なく、写真全体を指定先に保存します。</string>
     <string name="reading_size_small">10sp</string>
     <string name="reading_size_medium">12sp</string>
     <string name="reading_size_large">14sp</string>
@@ -167,4 +155,21 @@
     <string name="how_preferences_title">読み取りを調整する</string>
     <string name="how_preferences">設定でかな・ローマ字、読みの大きさ・色・背景を選べます。「読みの上から操作」をオンにすると、ふりがなの下のアプリを操作できます。オフでは読みの領域がタッチを受け取ります。「入力中はボタンを隠す」はキーボード表示中にボタンを隠します。ボタンを表示していても、キーボードやパスワード欄の検出中は撮影を停止します。実際の動作は読み取り元のアプリで確認してください。固定プレビューは見た目のみを示します。</string>
     <string name="preview_sample_short"><annotation reading="ニホンゴ">日本語</annotation></string>
+    <string name="preferences_appearance_summary">両方のリーダーに適用されます。プレビューは見た目のみを示します。</string>
+    <string name="privacy_access">プライバシーと画面へのアクセス</string>
+    <string name="help_floating">フローティングリーダー</string>
+    <string name="help_troubleshooting">困ったときは</string>
+    <string name="how_start_title">リーダーを表示する</string>
+    <string name="how_start">ホームで説明を確認し、重ねて表示と画面読み取りを設定します。「フローティングリーダーを表示」を選び、別のアプリで日本語のコンテンツを開いてください。画面読み取りにはAndroid 11以降が必要です。</string>
+    <string name="how_stop_title">移動・停止する</string>
+    <string name="how_stop">キャラクターをドラッグすると移動できます。長押しでメニューを開き、「フローティングリーダーを停止」を選びます。ホームや通知からも停止できます。</string>
+    <string name="how_capture_scope_title">画面へのアクセスと保護</string>
+    <string name="how_capture_scope">画面読み取りごとに、Android 14以降では現在のアプリ、Android 11〜13では画面全体を1枚撮影します。ウィンドウ、スクロール、キーボード、パスワード欄の情報で古い読みを消し、機密性の高い入力やロック画面を検出した場合は撮影を止めます。ユーザー補助から入力欄のテキストは取得しません。自動読み取りには別途同意が必要で、設定からオフにできます。</string>
+    <string name="how_recovery_title">読みが表示されないとき</string>
+    <string name="how_recovery">ホームで画面へのアクセスを確認してください。接続待ちの場合は少し待つか、Androidのユーザー補助設定でかなこを一度オフにしてからオンにします。認識モデルがない場合はインターネットに接続して再試行してください。カメラではピントを合わせる、近づく、写真を撮る方法をお試しください。読みの位置がずれた場合はキャラクターをタップして消せます。</string>
+    <string name="home_floating_summary">他のアプリの日本語を読み取ります。</string>
+    <string name="home_camera_summary">印刷された日本語をカメラで読み取ります。画面読み取りの権限は不要です。</string>
+    <string name="home_setup_summary">フローティングリーダーには2つのアクセス設定が必要です。</string>
+    <string name="home_setup_action">フローティングリーダーを設定</string>
+    <string name="home_next_step">別のアプリを開き、かなこをタップして読み取ります。自動読み取りが有効な場合は検出した変化が落ち着くと読み取ります。</string>
 </resources>

@@ -1,6 +1,8 @@
 package com.smyddevstudio.kanako.ui.screens
 
-import androidx.compose.foundation.Canvas
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.ui.semantics.heading
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,9 +39,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Surface
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -47,60 +49,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.smyddevstudio.kanako.R
 import com.smyddevstudio.kanako.model.KanakoPreferences
-import com.smyddevstudio.kanako.ui.theme.CreamBackgroundDark
 import com.smyddevstudio.kanako.ui.theme.KanakoTheme
-import com.smyddevstudio.kanako.ui.theme.PrimaryCrimson
 
-@Composable
-fun MushroomLogo(
-    modifier: Modifier = Modifier,
-    size: Dp = 32.dp,
-    capColor: Color = PrimaryCrimson,
-    stemColor: Color = CreamBackgroundDark
-) {
-    Canvas(modifier = modifier.size(size)) {
-        val width = size.toPx()
-        val height = size.toPx()
-
-        // Draw Stem
-        val stemPath = Path().apply {
-            moveTo(width * 0.38f, height * 0.5f)
-            lineTo(width * 0.38f, height * 0.88f)
-            cubicTo(width * 0.38f, height * 0.96f, width * 0.62f, height * 0.96f, width * 0.62f, height * 0.88f)
-            lineTo(width * 0.62f, height * 0.5f)
-            close()
-        }
-        drawPath(stemPath, color = stemColor)
-
-        // Draw Cap
-        val capPath = Path().apply {
-            moveTo(width * 0.1f, height * 0.55f)
-            cubicTo(width * 0.1f, height * 0.12f, width * 0.9f, height * 0.12f, width * 0.9f, height * 0.55f)
-            cubicTo(width * 0.9f, height * 0.60f, width * 0.1f, height * 0.60f, width * 0.1f, height * 0.55f)
-            close()
-        }
-        drawPath(capPath, color = capColor)
-
-        // Draw Spots
-        drawCircle(Color.White.copy(alpha = 0.9f), radius = width * 0.08f, center = Offset(width * 0.5f, height * 0.32f))
-        drawCircle(Color.White.copy(alpha = 0.9f), radius = width * 0.06f, center = Offset(width * 0.3f, height * 0.42f))
-        drawCircle(Color.White.copy(alpha = 0.9f), radius = width * 0.06f, center = Offset(width * 0.7f, height * 0.42f))
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onNavigateToHowItWorks: () -> Unit,
@@ -120,6 +79,7 @@ fun HomeScreen(
     val readingActionModifier = Modifier.widthIn(max = 320.dp).fillMaxWidth().heightIn(min = 48.dp)
     val ready = supported && overlayGranted && accessibilityEnabled && accessibilityConnected &&
         preferences.hasAcceptedSnapshotDisclosure
+    LaunchedEffect(ready) { if (ready) showAccess = false }
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -155,7 +115,7 @@ fun HomeScreen(
                     Text(
                         stringResource(R.string.screen_reader_title),
                         style = MaterialTheme.typography.headlineSmall,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f).semantics { heading() }
                     )
                 }
                 Text(
@@ -164,11 +124,15 @@ fun HomeScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
-                    Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Column(Modifier.fillMaxWidth().animateContentSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(
                             stringResource(if (preferences.isOverlayActive) R.string.home_reader_active else R.string.home_reader_off),
-                            style = MaterialTheme.typography.titleMedium
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.semantics { heading() }
                         )
+                        Text(stringResource(R.string.home_floating_summary),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
                         if (ready && !showAccess) {
                             FlowRow(
                                 modifier = Modifier.fillMaxWidth(),
@@ -183,6 +147,11 @@ fun HomeScreen(
                             }
                         } else if (!supported) {
                             Text(stringResource(R.string.setup_unsupported))
+                        } else if (!showAccess) {
+                            Text(stringResource(R.string.home_setup_summary), style = MaterialTheme.typography.bodySmall)
+                            OutlinedButton(onClick = { showAccess = true }) {
+                                Text(stringResource(R.string.home_setup_action))
+                            }
                         } else {
                             PermissionRequirement(
                                 title = stringResource(R.string.setup_overlay_title),
@@ -223,23 +192,38 @@ fun HomeScreen(
                             // TODO: Animate the floating mascot icon for the Show and Stop reader actions.
                             Image(painterResource(R.drawable.kanako_floating), contentDescription = null, modifier = Modifier.size(24.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text(stringResource(if (preferences.isOverlayActive) R.string.setup_stop else R.string.setup_enable))
+                            AnimatedContent(targetState = preferences.isOverlayActive, label = "Reader action") { active ->
+                                Text(stringResource(if (active) R.string.setup_stop else R.string.setup_enable))
+                            }
+                        }
+                        if (preferences.isOverlayActive) {
+                            Text(stringResource(R.string.home_next_step),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }
-                Button(
-                    onClick = onNavigateToCamera,
-                    modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 16.dp).then(readingActionModifier),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary,
-                        contentColor = MaterialTheme.colorScheme.onSecondary
-                    )
-                ) {
-                    Icon(Icons.Rounded.CameraAlt, contentDescription = null, modifier = Modifier.size(24.dp))
-                    Text(
-                        stringResource(R.string.camera_open),
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
+                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                    Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(stringResource(R.string.camera_title), style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.semantics { heading() })
+                        Text(stringResource(R.string.home_camera_summary), style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Button(
+                            onClick = onNavigateToCamera,
+                            modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 16.dp).then(readingActionModifier),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondary,
+                                contentColor = MaterialTheme.colorScheme.onSecondary
+                            )
+                        ) {
+                            Icon(Icons.Rounded.CameraAlt, contentDescription = null, modifier = Modifier.size(24.dp))
+                            Text(
+                                stringResource(R.string.camera_open),
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
+                    }
                 }
                 TextButton(onClick = onNavigateToHowItWorks, modifier = Modifier.align(Alignment.CenterHorizontally)) {
                     Text(stringResource(R.string.how_it_works))

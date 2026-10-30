@@ -55,7 +55,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.layout.Layout
@@ -72,7 +71,6 @@ import com.smyddevstudio.kanako.camera.CameraReaderUiState
 import com.smyddevstudio.kanako.camera.CameraReadingStatus
 import com.smyddevstudio.kanako.ui.theme.KanakoTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun CameraReaderContent(
     state: CameraReaderUiState,
@@ -269,8 +267,8 @@ internal fun CameraReaderTopBar(
             },
             windowInsets = WindowInsets(0, 0, 0, 0),
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color.Transparent,
-                scrolledContainerColor = Color.Transparent
+                containerColor = MaterialTheme.colorScheme.surface,
+                scrolledContainerColor = MaterialTheme.colorScheme.surface
             )
         )
     } else {
