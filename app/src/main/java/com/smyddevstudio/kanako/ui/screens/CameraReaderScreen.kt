@@ -6,12 +6,15 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.hardware.display.DisplayManager
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.view.Surface
+import android.view.WindowManager
+import androidx.compose.ui.platform.LocalView
 import androidx.core.net.toUri
 import android.provider.Settings
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.view.PreviewView
@@ -57,6 +60,25 @@ internal fun CameraReaderScreen(
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val hostView = LocalView.current
+    var displayRotation by remember(hostView) { mutableIntStateOf(hostView.display?.rotation ?: Surface.ROTATION_0) }
+    DisposableEffect(context, hostView) {
+        val manager = context.getSystemService(DisplayManager::class.java)
+        val listener = object : DisplayManager.DisplayListener {
+            override fun onDisplayAdded(displayId: Int) = Unit
+            override fun onDisplayRemoved(displayId: Int) = Unit
+            override fun onDisplayChanged(displayId: Int) {
+                if (displayId == hostView.display?.displayId) {
+                    val rotation = hostView.display?.rotation ?: Surface.ROTATION_0
+                    if (rotation != displayRotation) viewModel.invalidateGeometry()
+                    displayRotation = rotation
+                }
+            }
+        }
+        manager.registerDisplayListener(listener, Handler(Looper.getMainLooper()))
+        displayRotation = hostView.display?.rotation ?: Surface.ROTATION_0
+        onDispose { manager.unregisterDisplayListener(listener) }
+    }
     val state by viewModel.state.collectAsStateWithLifecycle()
     var granted by remember { mutableStateOf(hasCameraPermission(context)) }
     var requested by rememberSaveable { mutableStateOf(false) }
@@ -73,6 +95,20 @@ internal fun CameraReaderScreen(
         }
     }
     val activity = context.cameraActivity()
+    DisposableEffect(activity, granted) {
+        val window = activity?.window
+        val previousAnimation = window?.attributes?.rotationAnimation
+        if (granted && window != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            window.attributes = window.attributes.apply {
+                rotationAnimation = WindowManager.LayoutParams.ROTATION_ANIMATION_SEAMLESS
+            }
+        }
+        onDispose {
+            if (granted && window != null && previousAnimation != null) {
+                window.attributes = window.attributes.apply { rotationAnimation = previousAnimation }
+            }
+        }
+    }
     val liveDescription = stringResource(R.string.camera_live_description)
     val permanentlyDenied = (requested || preferences.hasDeniedCameraPermission) && !granted && activity != null &&
         !ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.CAMERA)
@@ -91,7 +127,6 @@ internal fun CameraReaderScreen(
         fun stop() {
             streamObserver?.let { view?.previewStreamState?.removeObserver(it) }
             streamObserver = null
-            view?.controller = null
             active?.close()
             active = null
             session = null
@@ -109,10 +144,9 @@ internal fun CameraReaderScreen(
                 )
                 active = created
                 session = created
-                view.controller = created.controller
                 streamObserver = Observer { viewModel.previewReady(it == PreviewView.StreamState.STREAMING) }
                 view.previewStreamState.observe(lifecycleOwner, streamObserver!!)
-                if (!created.bind(lifecycleOwner)) viewModel.cameraError()
+                if (!created.bind(lifecycleOwner, view)) viewModel.cameraError()
             } catch (_: RuntimeException) {
                 stop()
                 viewModel.cameraError()
@@ -174,34 +208,34 @@ internal fun CameraReaderScreen(
         onRetry = { retry++ },
         onZoom = { factor ->
             viewModel.invalidateGeometry()
-            val controller = session?.controller
-            val zoom = controller?.cameraInfo?.zoomState?.value
-            if (zoom != null) controller.setZoomRatio((zoom.zoomRatio * factor).coerceIn(zoom.minZoomRatio, zoom.maxZoomRatio))
+            session?.zoomBy(factor)
         },
         modifier = modifier,
         permissionLabel = if (permanentlyDenied) R.string.camera_settings else R.string.camera_allow,
+        displayRotation = displayRotation,
         viewfinder = { cameraModifier ->
             Box(cameraModifier) {
                 AndroidView(
                     factory = {
                         PreviewView(it).apply {
-                            implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+                            implementationMode = PreviewView.ImplementationMode.PERFORMANCE
                             scaleType = PreviewView.ScaleType.FILL_CENTER
                             contentDescription = liveDescription
                             preview = this
                         }
                     },
-                    modifier = Modifier.fillMaxSize().pointerInput(viewModel) {
-                        awaitEachGesture {
-                            awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
-                            do {
-                                viewModel.invalidateGeometry()
-                                val event = awaitPointerEvent(PointerEventPass.Initial)
-                            } while (event.changes.any { it.pressed })
-                        }
-                    },
+                    modifier = Modifier.fillMaxSize().cameraReaderGestures(
+                        onZoom = { session?.zoomBy(it) },
+                        onFocus = { session?.focusAt(it) },
+                        onInteraction = viewModel::invalidateGeometry
+                    ),
                     update = { it.contentDescription = liveDescription },
-                    onRelease = { it.controller = null }
+                    onRelease = { released ->
+                        if (preview === released) {
+                            session?.close()
+                            preview = null
+                        }
+                    }
                 )
                 CameraReadingOverlay(state.lines, preferences, Modifier.fillMaxSize())
             }

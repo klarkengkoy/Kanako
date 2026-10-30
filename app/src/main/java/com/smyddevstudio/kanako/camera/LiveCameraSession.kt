@@ -6,7 +6,6 @@ import android.content.pm.PackageManager
 import android.graphics.Matrix
 import android.os.SystemClock
 import android.util.Size
-import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -14,8 +13,8 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.mlkit.vision.MlKitAnalyzer
-import androidx.camera.view.CameraController
-import androidx.camera.view.LifecycleCameraController
+import androidx.camera.view.PreviewView
+import androidx.compose.ui.geometry.Offset
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import com.google.mlkit.vision.text.TextRecognition
@@ -46,23 +45,22 @@ internal class LiveCameraSession(
     private var lastStarted = 0L
     private var cachedReadings = emptyMap<String, List<FuriganaSegment>>()
 
-    val controller = LifecycleCameraController(context).apply {
-        cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-        setEnabledUseCases(CameraController.IMAGE_CAPTURE or CameraController.IMAGE_ANALYSIS)
-        imageCaptureMode = ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY
-        imageAnalysisBackpressureStrategy = ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST
-        imageAnalysisResolutionSelector = ResolutionSelector.Builder()
-            .setResolutionStrategy(ResolutionStrategy(Size(1280, 960), ResolutionStrategy.FALLBACK_RULE_CLOSEST_LOWER_THEN_HIGHER))
-            .build()
-        imageCaptureResolutionSelector = ResolutionSelector.Builder()
+    private val imageCapture = ImageCapture.Builder()
+        .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+        .setResolutionSelector(ResolutionSelector.Builder()
             .setResolutionStrategy(ResolutionStrategy(Size(1600, 1200), ResolutionStrategy.FALLBACK_RULE_CLOSEST_LOWER_THEN_HIGHER))
-            .build()
-        isPinchToZoomEnabled = true
-        isTapToFocusEnabled = true
-    }
+            .build())
+        .build()
+    private val imageAnalysis = ImageAnalysis.Builder()
+        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+        .setResolutionSelector(ResolutionSelector.Builder()
+            .setResolutionStrategy(ResolutionStrategy(Size(1280, 960), ResolutionStrategy.FALLBACK_RULE_CLOSEST_LOWER_THEN_HIGHER))
+            .build())
+        .build()
+    private var binding: CameraPreviewBinding? = null
 
     init {
-        controller.setImageAnalysisAnalyzer(executor, object : ImageAnalysis.Analyzer {
+        imageAnalysis.setAnalyzer(executor, object : ImageAnalysis.Analyzer {
             override fun getTargetCoordinateSystem() = ImageAnalysis.COORDINATE_SYSTEM_VIEW_REFERENCED
 
             override fun updateTransform(matrix: Matrix?) {
@@ -131,26 +129,23 @@ internal class LiveCameraSession(
         })
     }
 
-    fun bind(owner: LifecycleOwner): Boolean {
-        if (closed.get() || ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) return false
-        return try {
-            controller.bindToLifecycle(owner)
-            controller.initializationFuture.addListener({
-                if (!closed.get()) {
-                    try {
-                        controller.initializationFuture.get()
-                        if (!controller.hasCamera(CameraSelector.DEFAULT_BACK_CAMERA)) onCameraError()
-                    } catch (_: Exception) {
-                        onCameraError()
-                    }
-                }
-            }, main)
-            true
-        } catch (_: RuntimeException) {
-            onCameraError()
-            false
-        }
+    fun bind(owner: LifecycleOwner, view: PreviewView): Boolean {
+        if (closed.get() || binding != null ||
+            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) return false
+        val created = CameraPreviewBinding(context, imageAnalysis, imageCapture, { matrix ->
+            synchronized(geometryLock) {
+                transform = matrix?.let { Matrix(it) }
+                geometry.incrementAndGet()
+            }
+            if (!closed.get()) onGeometryChanged()
+        }, onCameraError)
+        binding = created
+        return created.bind(owner, view)
     }
+
+    fun zoomBy(factor: Float) { binding?.zoomBy(factor) }
+
+    fun focusAt(point: Offset?) { binding?.focusAt(point?.x, point?.y) }
 
     fun capture(onResult: (Result<CameraPhoto>) -> Unit) {
         if (closed.get() || ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
@@ -158,7 +153,7 @@ internal class LiveCameraSession(
             return
         }
         try {
-            controller.takePicture(executor, object : ImageCapture.OnImageCapturedCallback() {
+            imageCapture.takePicture(executor, object : ImageCapture.OnImageCapturedCallback() {
                 override fun onCaptureSuccess(image: ImageProxy) {
                     if (closed.get()) {
                         image.close()
@@ -185,10 +180,11 @@ internal class LiveCameraSession(
         }
         geometry.incrementAndGet()
         try {
-            controller.clearImageAnalysisAnalyzer()
+            imageAnalysis.clearAnalyzer()
         } finally {
             try {
-                controller.unbind()
+                binding?.close()
+                binding = null
             } finally {
                 finishClose()
             }

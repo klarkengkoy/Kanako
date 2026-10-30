@@ -27,6 +27,7 @@
 
         <activity
             android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout"
             android:exported="true"
             android:theme="@style/Theme.Kanako"
             android:windowSoftInputMode="adjustResize">

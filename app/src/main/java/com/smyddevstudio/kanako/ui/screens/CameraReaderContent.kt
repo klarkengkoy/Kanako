@@ -1,6 +1,11 @@
 package com.smyddevstudio.kanako.ui.screens
 
+import android.view.Surface as DisplaySurface
+import androidx.compose.animation.animateBounds
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.absolutePadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -42,9 +47,21 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.LookaheadScope
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.platform.LocalLayoutDirection
+import kotlin.math.roundToInt
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.res.stringResource
@@ -68,87 +85,163 @@ internal fun CameraReaderContent(
     onZoom: (Float) -> Unit,
     modifier: Modifier = Modifier,
     permissionLabel: Int = R.string.camera_allow,
+    displayRotation: Int = DisplaySurface.ROTATION_0,
     viewfinder: @Composable (Modifier) -> Unit = { Box(it.background(MaterialTheme.colorScheme.surfaceVariant)) }
 ) {
     BoxWithConstraints(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         val density = LocalDensity.current
-        val compact = maxHeight < 400.dp || density.fontScale > 1.3f
+        val landscape = maxWidth > maxHeight
+        val compact = landscape || maxHeight < 400.dp || density.fontScale > 1.3f
+        val controlsOnRight = displayRotation != DisplaySurface.ROTATION_270 &&
+            displayRotation != DisplaySurface.ROTATION_180
+        val insets = WindowInsets.safeDrawing
+        val direction = LocalLayoutDirection.current
+        val edgePadding = maxOf(48.dp, with(density) {
+            maxOf(insets.getLeft(this, direction), insets.getTop(this),
+                insets.getRight(this, direction), insets.getBottom(this)).toDp()
+        } + 16.dp)
+        val controlsGutter = if (granted && landscape) 72.dp + edgePadding else 0.dp
+        val controlRotation = rememberCameraControlRotation(displayRotation)
         if (granted) viewfinder(Modifier.fillMaxSize())
         Spacer(Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.safeDrawing)
             .background(MaterialTheme.colorScheme.background).align(Alignment.TopCenter))
         Spacer(Modifier.fillMaxWidth().windowInsetsBottomHeight(WindowInsets.safeDrawing)
             .background(MaterialTheme.colorScheme.background).align(Alignment.BottomCenter))
-        Column(Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally) {
-            CameraReaderTopBar(onBack, onPreferences, appBar = true)
-            if (!granted) {
-                Box(Modifier.weight(1f).fillMaxWidth().padding(horizontal = 16.dp)
-                    .verticalScroll(rememberScrollState()), contentAlignment = Alignment.Center) {
-                    Surface(modifier = Modifier.widthIn(max = 560.dp),
-                        shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.surface) {
-                        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                            Text(stringResource(R.string.camera_state_permission), style = MaterialTheme.typography.titleLarge)
-                            Text(stringResource(R.string.camera_state_permission_body))
-                            FlowRow(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
-                                verticalArrangement = Arrangement.spacedBy(4.dp),
-                                itemVerticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Button(onClick = onPermission, modifier = Modifier.heightIn(min = 48.dp)) {
-                                    Text(stringResource(permissionLabel))
-                                }
-                                TextButton(onClick = onBack, modifier = Modifier.heightIn(min = 48.dp)) {
-                                    Text(stringResource(R.string.camera_not_now))
+        LookaheadScope {
+            val motion = Modifier.animateBounds(this, boundsTransform = { _, _ -> tween(250) })
+            Column(Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = 16.dp)
+                .absolutePadding(left = if (controlsOnRight) 0.dp else controlsGutter,
+                    right = if (controlsOnRight) controlsGutter else 0.dp),
+                horizontalAlignment = Alignment.CenterHorizontally) {
+                CameraReaderTopBar(onBack, onPreferences, modifier = if (granted) motion else Modifier, appBar = true)
+                if (!granted) {
+                    Box(Modifier.weight(1f).fillMaxWidth().padding(horizontal = 16.dp)
+                        .verticalScroll(rememberScrollState()), contentAlignment = Alignment.Center) {
+                        Surface(modifier = Modifier.widthIn(max = 560.dp),
+                            shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.surface) {
+                            Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                Text(stringResource(R.string.camera_state_permission), style = MaterialTheme.typography.titleLarge)
+                                Text(stringResource(R.string.camera_state_permission_body))
+                                FlowRow(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                                    itemVerticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Button(onClick = onPermission, modifier = Modifier.heightIn(min = 48.dp)) {
+                                        Text(stringResource(permissionLabel))
+                                    }
+                                    TextButton(onClick = onBack, modifier = Modifier.heightIn(min = 48.dp)) {
+                                        Text(stringResource(R.string.camera_not_now))
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                Spacer(Modifier.height(if (compact) 0.dp else TopAppBarDefaults.TopAppBarExpandedHeight))
-            } else {
-                Spacer(Modifier.weight(1f))
-                Surface(shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f), contentColor = MaterialTheme.colorScheme.onSurface) {
-                    Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        if (state.status == CameraReadingStatus.STARTING || state.status == CameraReadingStatus.CAPTURING) {
-                            CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
-                        }
-                        Text(stringResource(cameraStatusString(state.status)), style = MaterialTheme.typography.bodyMedium,
-                            maxLines = if (compact) 2 else 3, overflow = TextOverflow.Ellipsis)
-                    }
-                }
-                if (state.status == CameraReadingStatus.CAMERA_ERROR || state.status == CameraReadingStatus.READ_ERROR) {
-                    Button(onClick = onRetry, modifier = Modifier.padding(top = 8.dp)) { Text(stringResource(R.string.camera_retry)) }
-                }
-                Row(Modifier.padding(vertical = if (compact) 8.dp else 12.dp), verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                    Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f), contentColor = MaterialTheme.colorScheme.onSurface) {
-                        IconButton(onClick = { onZoom(1 / 1.5f) }, enabled = state.ready) {
-                            Icon(Icons.Rounded.ZoomOut, stringResource(R.string.camera_zoom_out))
+                    Spacer(Modifier.height(if (compact) 0.dp else TopAppBarDefaults.TopAppBarExpandedHeight))
+                } else {
+                    Spacer(Modifier.weight(1f))
+                    Surface(modifier = motion, shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f), contentColor = MaterialTheme.colorScheme.onSurface) {
+                        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            if (state.status == CameraReadingStatus.STARTING || state.status == CameraReadingStatus.CAPTURING) {
+                                CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
+                            }
+                            Text(stringResource(cameraStatusString(state.status)), style = MaterialTheme.typography.bodyMedium,
+                                maxLines = if (compact) 2 else 3, overflow = TextOverflow.Ellipsis)
                         }
                     }
-                    Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary) {
-                        IconButton(onClick = onCapture, enabled = state.ready && state.status != CameraReadingStatus.CAPTURING,
-                            modifier = Modifier.size(if (compact) 64.dp else 72.dp)) {
-                            Icon(Icons.Rounded.CameraAlt, stringResource(R.string.camera_capture), Modifier.size(32.dp),
-                                tint = MaterialTheme.colorScheme.onPrimary)
-                        }
+                    if (state.status == CameraReadingStatus.CAMERA_ERROR || state.status == CameraReadingStatus.READ_ERROR) {
+                        Button(onClick = onRetry, modifier = Modifier.padding(top = 8.dp)) { Text(stringResource(R.string.camera_retry)) }
                     }
-                    Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f), contentColor = MaterialTheme.colorScheme.onSurface) {
-                        IconButton(onClick = { onZoom(1.5f) }, enabled = state.ready) {
-                            Icon(Icons.Rounded.ZoomIn, stringResource(R.string.camera_zoom_in))
-                        }
-                    }
+                    Spacer(Modifier.height(if (landscape) 8.dp else 84.dp + edgePadding))
                 }
-                if (!compact) Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f), contentColor = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(bottom = 8.dp)) {
+            }
+        }
+        if (granted) {
+            CameraCaptureControls(state, onCapture, onZoom, controlRotation,
+                modifier = Modifier.fillMaxSize(), displayRotation = displayRotation,
+                edgePadding = edgePadding)
+            if (!compact) Box(Modifier.fillMaxSize().safeDrawingPadding(),
+                contentAlignment = Alignment.BottomCenter) {
+                Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
+                    contentColor = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(bottom = 8.dp)) {
                     Text(stringResource(R.string.camera_live_hint), Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                         style = MaterialTheme.typography.bodySmall)
                 }
             }
         }
     }
+}
+
+@Composable
+private fun CameraCaptureControls(
+    state: CameraReaderUiState,
+    onCapture: () -> Unit,
+    onZoom: (Float) -> Unit,
+    iconRotation: State<Float>,
+    modifier: Modifier = Modifier,
+    displayRotation: Int = DisplaySurface.ROTATION_0,
+    edgePadding: androidx.compose.ui.unit.Dp = 16.dp
+) {
+    Layout(modifier = modifier, content = {
+        for (control in listOf(-1, 0, 1)) {
+            if (control == 0) {
+                Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary) {
+                    IconButton(onClick = onCapture,
+                        enabled = state.ready && state.status != CameraReadingStatus.CAPTURING,
+                        modifier = Modifier.size(72.dp)) {
+                        Icon(Icons.Rounded.CameraAlt, stringResource(R.string.camera_capture),
+                            Modifier.size(32.dp).graphicsLayer { rotationZ = iconRotation.value },
+                            tint = MaterialTheme.colorScheme.onPrimary)
+                    }
+                }
+            } else {
+                Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
+                    contentColor = MaterialTheme.colorScheme.onSurface) {
+                    IconButton(onClick = { onZoom(if (control > 0) 1.5f else 1 / 1.5f) },
+                        enabled = state.ready, modifier = Modifier.size(48.dp)) {
+                        Icon(if (control > 0) Icons.Rounded.ZoomIn else Icons.Rounded.ZoomOut,
+                            stringResource(if (control > 0) R.string.camera_zoom_in else R.string.camera_zoom_out),
+                            Modifier.graphicsLayer { rotationZ = iconRotation.value })
+                    }
+                }
+            }
+        }
+    }) { measurables, constraints ->
+        val buttons = measurables.map { it.measure(Constraints()) }
+        val width = constraints.maxWidth
+        val height = constraints.maxHeight
+        val naturalLandscape = (width > height) == (displayRotation % 2 == 0)
+        val rotation = (displayRotation + if (naturalLandscape) 1 else 0) % 4
+        val edge = edgePadding.toPx() + 36.dp.toPx()
+        val spacing = 84.dp.toPx()
+        layout(width, height) {
+            buttons.forEachIndexed { index, button ->
+                val offset = (index - 1) * spacing
+                val (x, y) = when (rotation) {
+                    1 -> width - edge to height / 2f - offset
+                    2 -> width / 2f - offset to edge
+                    3 -> edge to height / 2f + offset
+                    else -> width / 2f + offset to height - edge
+                }
+                button.place((x - button.width / 2f).roundToInt(), (y - button.height / 2f).roundToInt())
+            }
+        }
+    }
+}
+
+@Composable
+internal fun rememberCameraControlRotation(displayRotation: Int): State<Float> {
+    val angle = remember { Animatable(0f) }
+    var previousRotation by remember { mutableIntStateOf(displayRotation) }
+    LaunchedEffect(displayRotation) {
+        val delta = ((displayRotation - previousRotation) * 90 + 540) % 360 - 180
+        previousRotation = displayRotation
+        angle.snapTo(angle.value - delta)
+        angle.animateTo(0f, tween(250))
+    }
+    return angle.asState()
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -216,6 +309,15 @@ internal fun cameraStatusString(status: CameraReadingStatus): Int = when (status
 private fun CameraReaderPreview() {
     KanakoTheme {
         CameraReaderContent(CameraReaderUiState(status = CameraReadingStatus.LIVE, ready = true), true, {}, {}, {}, {}, {}, {})
+    }
+}
+
+@Preview(name = "Reverse landscape", widthDp = 720, heightDp = 360)
+@Composable
+private fun CameraReaderReverseLandscapePreview() {
+    KanakoTheme {
+        CameraReaderContent(CameraReaderUiState(status = CameraReadingStatus.LIVE, ready = true),
+            true, {}, {}, {}, {}, {}, {}, displayRotation = DisplaySurface.ROTATION_270)
     }
 }
 
