@@ -97,7 +97,6 @@ internal fun LoadingMascot(
     )
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 private fun rememberAnimationsEnabled(): Boolean {
     val resolver = LocalContext.current.contentResolver

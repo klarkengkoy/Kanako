@@ -7,7 +7,6 @@ import android.content.ContextWrapper
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.hardware.display.DisplayManager
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.view.Surface
@@ -102,7 +101,7 @@ internal fun CameraReaderScreen(
     DisposableEffect(activity, granted) {
         val window = activity?.window
         val previousAnimation = window?.attributes?.rotationAnimation
-        if (granted && window != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (granted && window != null) {
             window.attributes = window.attributes.apply {
                 rotationAnimation = WindowManager.LayoutParams.ROTATION_ANIMATION_SEAMLESS
             }

@@ -406,11 +406,7 @@ class KanakoAccessibilityService : AccessibilityService() {
     private fun isSensitiveField(node: AccessibilityNodeInfo): Boolean =
         isSensitiveInputType(
             isPassword = node.isPassword,
-            inputType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                node.inputType
-            } else {
-                0
-            }
+            inputType = node.inputType
         )
 
     @Suppress("DEPRECATION")

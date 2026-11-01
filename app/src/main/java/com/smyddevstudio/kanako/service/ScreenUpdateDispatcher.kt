@@ -5,7 +5,7 @@ internal class ScreenUpdateDispatcher {
 
     fun subscribe(listener: (ScreenUpdate) -> Unit): () -> Unit {
         listeners.add(listener)
-        return { listeners.remove(listener); Unit }
+        return { listeners.remove(listener) }
     }
 
     fun publish(update: ScreenUpdate) {
