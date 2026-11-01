@@ -129,7 +129,7 @@
     <string name="controls_title">Kanako controls</string>
     <string name="controls_script">Script: %1$s</string>
     <string name="controls_open">Open Kanako</string>
-    <string name="controls_stop">Stop floating reader</string>
+    <string name="controls_stop">Stop reader</string>
     <string name="notification_channel">Kanako reading assistant</string>
     <string name="notification_channel_description">Floating controls and Japanese furigana reading</string>
     <string name="how_title">How Kanako works</string>

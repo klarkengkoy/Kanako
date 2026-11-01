@@ -127,7 +127,7 @@
     <string name="controls_title">かなこの操作</string>
     <string name="controls_script">表記：%1$s</string>
     <string name="controls_open">かなこを開く</string>
-    <string name="controls_stop">フローティングリーダーを停止</string>
+    <string name="controls_stop">リーダーを停止</string>
     <string name="notification_channel">かなこの読み取り支援</string>
     <string name="notification_channel_description">フローティング操作と日本語のふりがな表示</string>
     <string name="how_title">かなこの使い方</string>

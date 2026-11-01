@@ -1,6 +1,18 @@
 package com.smyddevstudio.kanako.service
 
 import android.graphics.Rect
+import android.os.SystemClock
+import android.view.MotionEvent
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.test.espresso.Espresso.pressBack
+import android.view.View
+import androidx.compose.ui.platform.LocalView
 import android.graphics.drawable.AnimatedImageDrawable
 import android.widget.ImageView
 import androidx.compose.runtime.mutableStateOf
@@ -20,6 +32,7 @@ import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.swipe
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTouchInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -45,7 +58,7 @@ class FloatingReaderControlsTest {
             KanakoTheme {
                 FloatingOverlayContent(
                     preferences = KanakoPreferences(), showFurigana = false,
-                    onToggleFurigana = {}, onDrag = onDrag, onDragEnd = {},
+                    onDrag = onDrag, onDragEnd = {},
                     onToggleScriptType = {}, onOpenApp = {}, onStopService = {},
                     onReadOrClear = onRead
                 )
@@ -62,7 +75,7 @@ class FloatingReaderControlsTest {
             KanakoTheme {
                 if (visible.value) FloatingOverlayContent(
                     preferences = KanakoPreferences(), showFurigana = false,
-                    onToggleFurigana = {}, onDrag = { _, _ -> }, onDragEnd = {},
+                    onDrag = { _, _ -> }, onDragEnd = {},
                     onToggleScriptType = {}, onOpenApp = {}, onStopService = {},
                     onReadOrClear = { reads++ }, isReading = reading.value,
                     statusMessage = if (reading.value) R.string.reading_working else R.string.reading_ready
@@ -103,6 +116,9 @@ class FloatingReaderControlsTest {
                     KanakoPreferences(), IntOffset.Zero
                 )
             }
+        }
+        compose.waitUntil(timeoutMillis = 10_000) {
+            compose.onAllNodesWithText("かんじ", substring = true).fetchSemanticsNodes().isNotEmpty()
         }
         compose.onNodeWithText("かんじ", substring = true).assertExists()
     }
@@ -169,7 +185,7 @@ class FloatingReaderControlsTest {
             KanakoTheme {
                 FloatingOverlayContent(
                     preferences = KanakoPreferences(), showFurigana = false,
-                    onToggleFurigana = {}, onDrag = { _, _ -> }, onDragEnd = {},
+                    onDrag = { _, _ -> }, onDragEnd = {},
                     onToggleScriptType = {}, onOpenApp = {}, onStopService = {},
                     onReadOrClear = { reads++ }, statusMessage = status.value
                 )
@@ -183,10 +199,125 @@ class FloatingReaderControlsTest {
         compose.runOnIdle { assertEquals(0, reads) }
     }
 
+    @androidx.test.filters.SdkSuppress(minSdkVersion = 29)
+    @Test fun gestureExclusionTracksOnlyTheMascotAndIsRemovedWithIt() {
+        var host: View? = null
+        val visible = mutableStateOf(true)
+        compose.setContent {
+            host = LocalView.current
+            KanakoTheme {
+                if (visible.value) FloatingOverlayContent(
+                    preferences = KanakoPreferences(), showFurigana = true,
+                    onDrag = { _, _ -> }, onDragEnd = {},
+                    onToggleScriptType = {}, onOpenApp = {}, onStopService = {}
+                )
+            }
+        }
+        fun assertMascotExclusion() {
+            val mascot = compose.onNodeWithContentDescription(description).fetchSemanticsNode().boundsInRoot
+            compose.runOnIdle {
+                val rect = requireNotNull(host).systemGestureExclusionRects.single()
+                assertTrue(kotlin.math.abs(rect.left - mascot.left) <= 1)
+                assertTrue(kotlin.math.abs(rect.top - mascot.top) <= 1)
+                assertTrue(kotlin.math.abs(rect.right - mascot.right) <= 1)
+                assertTrue(kotlin.math.abs(rect.bottom - mascot.bottom) <= 1)
+            }
+        }
+        assertMascotExclusion()
+        compose.onNodeWithContentDescription(description).performTouchInput { doubleClick() }
+        compose.onNodeWithText(InstrumentationRegistry.getInstrumentation().targetContext
+            .getString(R.string.controls_title)).assertIsDisplayed()
+        assertMascotExclusion()
+        compose.runOnIdle { visible.value = false }
+        compose.runOnIdle { assertTrue(requireNotNull(host).systemGestureExclusionRects.isEmpty()) }
+    }
+
     @Test fun defaultFloatingControlUsesTheMedium56DpTouchTarget() {
         content()
         compose.onNodeWithContentDescription(description)
             .assertWidthIsEqualTo(56.dp).assertHeightIsEqualTo(56.dp)
     }
 
+
+    @Test fun outsideTapAndBackDismissTheMenuWithoutMovingTheMascot() {
+        var host: View? = null
+        val sizes = mutableListOf<androidx.compose.ui.unit.IntSize>()
+        var reads = 0
+        compose.setContent {
+            host = LocalView.current
+            KanakoTheme {
+                Box(Modifier.fillMaxSize()) {
+                    FloatingOverlayContent(KanakoPreferences(), true, { _, _ -> }, {}, {}, {}, {},
+                        Modifier.align(Alignment.Center), onReadOrClear = { reads++ },
+                        onLayoutSizeChanged = { sizes.add(it) })
+                }
+            }
+        }
+        val mascot = compose.onNodeWithContentDescription(description)
+        val before = mascot.fetchSemanticsNode().boundsInRoot
+        val title = InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.controls_title)
+        mascot.performTouchInput { longClick() }
+        compose.onNodeWithText(title).assertIsDisplayed()
+        val location = IntArray(2)
+        compose.runOnIdle { requireNotNull(host).getLocationOnScreen(location) }
+        val x = location[0] + requireNotNull(host).width - 12f
+        val y = location[1] + requireNotNull(host).height - 12f
+        val now = SystemClock.uptimeMillis()
+        val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
+        for (action in listOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP)) {
+            val event = MotionEvent.obtain(now, now + if (action == MotionEvent.ACTION_UP) 60 else 0,
+                action, x, y, 0).apply { source = android.view.InputDevice.SOURCE_TOUCHSCREEN }
+            try { assertTrue(automation.injectInputEvent(event, true)) } finally { event.recycle() }
+        }
+        compose.onNodeWithText(title).assertDoesNotExist()
+        repeat(12) {
+            compose.mainClock.advanceTimeByFrame()
+            assertEquals(before, mascot.fetchSemanticsNode().boundsInRoot)
+        }
+        mascot.performTouchInput { doubleClick() }
+        compose.onNodeWithText(title).assertIsDisplayed()
+        pressBack()
+        compose.onNodeWithText(title).assertDoesNotExist()
+        compose.runOnIdle {
+            assertEquals(0, reads)
+            assertTrue(sizes.isNotEmpty())
+            assertTrue(sizes.all { it == sizes.first() })
+        }
+    }
+
+    @Test fun menuOmitsClearAndStopStaysOneLineAndClosesBeforeStopping() {
+        var stops = 0
+        compose.setContent {
+            KanakoTheme {
+                FloatingOverlayContent(KanakoPreferences(), true, { _, _ -> }, {}, {}, {}, { stops++ })
+            }
+        }
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        compose.onNodeWithContentDescription(description).performTouchInput { doubleClick() }
+        compose.onNodeWithText(context.getString(R.string.clear_annotations)).assertDoesNotExist()
+        val stop = compose.onNodeWithText(context.getString(R.string.controls_stop))
+        val layouts = mutableListOf<TextLayoutResult>()
+        stop.performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
+        assertEquals(1, layouts.single().lineCount)
+        stop.performClick()
+        compose.onNodeWithText(context.getString(R.string.controls_title)).assertDoesNotExist()
+        compose.runOnIdle { assertEquals(1, stops) }
+    }
+
+    @Test fun hidingReaderDismissesPopupAndDoesNotRestoreItOnReturn() {
+        val visible = mutableStateOf(true)
+        compose.setContent {
+            KanakoTheme {
+                FloatingOverlayContent(KanakoPreferences(), true, { _, _ -> }, {}, {}, {}, {},
+                    controlsVisible = visible.value)
+            }
+        }
+        val title = InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.controls_title)
+        compose.onNodeWithContentDescription(description).performTouchInput { doubleClick() }
+        compose.onNodeWithText(title).assertIsDisplayed()
+        compose.runOnIdle { visible.value = false }
+        compose.onNodeWithText(title).assertDoesNotExist()
+        compose.runOnIdle { visible.value = true }
+        compose.onNodeWithText(title).assertDoesNotExist()
+    }
 }

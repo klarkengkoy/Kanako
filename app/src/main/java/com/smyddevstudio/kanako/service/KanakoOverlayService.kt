@@ -86,8 +86,7 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
     private val annotationOrigin = mutableStateOf(IntOffset.Zero)
     private var floatingAnchor: FloatingPoint? = null
     private var floatingContentSize = androidx.compose.ui.unit.IntSize.Zero
-    private val floatingControlOffset = mutableStateOf(IntOffset.Zero)
-    private val floatingMenuAbove = mutableStateOf(false)
+    private val floatingControlsVisible = mutableStateOf(true)
     private val readingStatus = mutableIntStateOf(R.string.reading_ready)
     private val isReading = mutableStateOf(false)
     private val requestGate = SnapshotRequestGate()
@@ -155,6 +154,7 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
     }
 
     private fun setOverlayHidden(hidden: Boolean) {
+        floatingControlsVisible.value = !hidden
         val visibility = if (hidden) View.INVISIBLE else View.VISIBLE
         overlayView?.visibility = visibility
         annotationOverlayView?.visibility = visibility
@@ -576,8 +576,7 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
                     FloatingOverlayContent(
                         preferences = preferences,
                         mirrorMascot = floatingOnLeft.value,
-                        controlOffset = { floatingControlOffset.value },
-                        menuAbove = { floatingMenuAbove.value },
+                        controlsVisible = floatingControlsVisible.value,
                         isReading = isReading.value,
                         statusMessage = readingStatus.intValue,
                         onControlSizeChanged = { width ->
@@ -586,7 +585,6 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
                         },
                         showFurigana = recognizedTextLines.value.isNotEmpty(),
                         onReadOrClear = ::readOrClear,
-                        onToggleFurigana = { clearReading() },
                         onLayoutSizeChanged = { size ->
                             floatingContentSize = size
                             positionFloatingOverlay()
@@ -663,8 +661,6 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
             floatingContentSize.width, floatingContentSize.height
         )
         floatingAnchor = frame.anchor
-        floatingControlOffset.value = IntOffset(frame.control.x, frame.control.y)
-        floatingMenuAbove.value = frame.menuAbove
         floatingOnLeft.value = frame.onLeft
         params.x = frame.origin.x
         params.y = frame.origin.y
