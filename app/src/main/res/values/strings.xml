@@ -141,20 +141,20 @@
     <string name="how_privacy_title">What stays private?</string>
     <string name="how_privacy">Screen images are processed in memory, then discarded without saving or uploading. Capture is blocked around detected sensitive input and on the lock screen. Camera photos also remain temporary unless you explicitly choose Save with furigana.</string>
     <string name="how_limits_title">What are the limits?</string>
-    <string name="how_limits">Protected screens cannot be captured. Stylized lettering, small text, names, and mixed layouts may produce missing or incorrect readings. Furigana positions are estimated from recognized text.</string>
+    <string name="how_limits">Kanji recognition and readings are not always correct. Similar-looking kanji and katakana can be confused; names and words with several readings can also be misread. Small, stylized, blurry text and mixed layouts make recognition harder. Furigana positions are estimated from the recognized text. Protected screens cannot be captured.</string>
     <string name="how_offline_title">Does it work offline?</string>
     <string name="how_offline">Japanese recognition may need an initial model download through Google Play services. Once available, recognition runs on your device. Each reading request uses processing power.</string>
     <string name="how_tile_title">Quick Settings</string>
     <string name="how_tile">Swipe down twice, tap Edit, then add Kanako to your active tiles. Tap it to show or stop the floating reader. Adding the tile does not capture a screenshot. Missing access opens Home. With Auto-read enabled, starting the reader also schedules a reading.</string>
     <string name="how_camera_title">Use the camera</string>
-    <string name="how_camera">Open Camera from Home; its permission is separate from screen reading access. Read live, or capture a photo for stable reading. Pinch to zoom; on a photo, drag to move and double tap to reset. Return to camera to take another photo. Save with furigana exports the whole photo to your chosen destination, regardless of your current zoom.</string>
+    <string name="how_camera">Open Camera from Home; its permission is separate from screen reading access. Read live, or capture a photo for stable reading. Tap a reading or its kanji to bring that reading in front; tap overlapping readings again to cycle through them. Tap elsewhere in the live view to focus. Pinch to zoom; on a photo, drag to move and double tap to reset. Save with furigana exports the whole photo with the selected reading in front, regardless of your current zoom.</string>
     <string name="reading_size_small">10sp</string>
     <string name="reading_size_medium">12sp</string>
     <string name="reading_size_large">14sp</string>
     <string name="reading_mode">Reading mode</string>
     <string name="tap_to_read">Tap to read</string>
     <string name="how_preferences_title">Adjust reading behavior</string>
-    <string name="how_preferences">In Preferences, choose Kana or Romaji and change reading size, color, and background. Touch through readings lets you swipe and tap the app beneath the furigana; turn it off to let annotation areas receive touches. Hide beside keyboard hides the floating control while typing. Screenshot capture stays blocked around detected keyboard or password input even if the control remains visible. Check these behaviors in your reading app; the pinned preview shows appearance only.</string>
+    <string name="how_preferences">Choose Kana or Romaji, reading size, color, and plates in Preferences. With Touch through readings on, you can use the app underneath the furigana. Turn it off to tap a reading or its kanji and bring that reading in front; tap overlapping readings again to cycle through them. Hide button while typing hides the mascot when the keyboard is visible. Capture pauses while a keyboard or password field is detected, even when the mascot stays visible. The fixed preview shows appearance only.</string>
     <string name="preview_sample_short"><annotation reading="ニホンゴ">日本語</annotation></string>
     <string name="preferences_appearance_summary">Applies to both readers. The preview shows appearance only.</string>
     <string name="privacy_access">Privacy and screen access</string>
@@ -173,4 +173,5 @@
     <string name="home_setup_summary">Two access settings are needed for the floating reader.</string>
     <string name="home_setup_action">Set up floating reader</string>
     <string name="home_next_step">Open another app, then tap Kanako to read. With Auto-read enabled, reading starts after detected changes settle.</string>
+    <string name="reading_bring_front">Bring reading to front</string>
 </resources>

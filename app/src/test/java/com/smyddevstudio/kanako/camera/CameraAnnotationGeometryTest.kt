@@ -35,22 +35,25 @@ class CameraAnnotationGeometryTest {
     @Test fun noCollisionKeepsReadingDirectlyAboveItsKanji() {
         val request = RubyRequest(ReadingBounds(400, 500, 450, 530), clip, 100, 24)
         assertEquals(ReadingBounds(375, 474, 475, 498),
-            placeCameraRubyReadings(listOf(request), listOf(request.anchor), 2).single())
+            placeCameraRubyReadings(listOf(request), 2).single())
     }
 
-    @Test fun adjacentLabelsStaggerOnlyWhenTheyActuallyCollide() {
+    @Test fun adjacentLabelsKeepTheirKanjiCentersEvenWhenTheyOverlap() {
         val anchors = listOf(ReadingBounds(400, 500, 420, 530), ReadingBounds(425, 500, 445, 530))
-        val results = placeCameraRubyReadings(anchors.map { RubyRequest(it, clip, 100, 24) }, anchors, 2).map { it!! }
-        assertNull(results[0].intersection(results[1]))
+        val results = placeCameraRubyReadings(anchors.map { RubyRequest(it, clip, 100, 24) }, 2).map { it!! }
+        assertNotNull(results[0].intersection(results[1]))
         assertEquals(498, results[0].bottom)
-        assertEquals(472, results[1].bottom)
+        assertEquals(498, results[1].bottom)
+        results.zip(anchors).forEach { (rect, anchor) ->
+            assertEquals(anchor.left + anchor.right, rect.left + rect.right)
+        }
         assertTrue(results.all { it.right - it.left == 100 })
     }
 
     @Test fun denseDocumentCannotSendReadingsToDistantEmptyMargins() {
         val sources = (0..30).map { ReadingBounds(300, 400 + it * 20, 700, 416 + it * 20) }
         val requests = sources.map { RubyRequest(it, clip, 120, 30) }
-        val results = placeCameraRubyReadings(requests, sources, 1)
+        val results = placeCameraRubyReadings(requests, 1)
         results.zip(requests).forEach { (rect, request) ->
             assertNotNull(rect)
             assertTrue(clip.contains(rect!!))
@@ -59,15 +62,15 @@ class CameraAnnotationGeometryTest {
         }
     }
 
-    @Test fun verticalStaggeringAndViewportEdgesStayLocalAndBounded() {
+    @Test fun verticalCentersAndViewportEdgesStayLocalAndBounded() {
         val anchors = listOf(ReadingBounds(400, 500, 430, 520), ReadingBounds(400, 525, 430, 545))
-        val results = placeCameraRubyReadings(anchors.map { RubyRequest(it, clip, 24, 100, true) }, anchors, 2).map { it!! }
-        assertNull(results[0].intersection(results[1]))
+        val results = placeCameraRubyReadings(anchors.map { RubyRequest(it, clip, 24, 100, true) }, 2).map { it!! }
+        assertNotNull(results[0].intersection(results[1]))
         assertTrue(results.all { it.left in 374..458 && clip.contains(it) })
         val edge = RubyRequest(ReadingBounds(0, 0, 16, 16), clip, 100, 24)
-        val edgeResult = placeCameraRubyReadings(listOf(edge), listOf(edge.anchor), 1).single()!!
+        val edgeResult = placeCameraRubyReadings(listOf(edge), 1).single()!!
         assertTrue(clip.contains(edgeResult))
         assertNull(edgeResult.intersection(edge.anchor))
-        assertNull(placeCameraRubyReadings(listOf(edge.copy(width = 1001)), emptyList(), 1).single())
+        assertNull(placeCameraRubyReadings(listOf(edge.copy(width = 1001)), 1).single())
     }
 }

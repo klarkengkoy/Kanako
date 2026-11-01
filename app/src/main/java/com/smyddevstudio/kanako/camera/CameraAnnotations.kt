@@ -13,6 +13,9 @@ import com.smyddevstudio.kanako.data.tokenizer.JapaneseTextTokenizer
 import com.smyddevstudio.kanako.model.ScriptType
 import com.smyddevstudio.kanako.service.ReadingBounds
 import com.smyddevstudio.kanako.service.RubyRequest
+import com.smyddevstudio.kanako.service.ReadingTarget
+import com.smyddevstudio.kanako.service.kanjiAnnotation
+import com.smyddevstudio.kanako.service.readingDrawOrder
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 
@@ -25,7 +28,8 @@ internal data class CameraRuby(
     val padding: Int,
     val gap: Int,
     val vertical: Boolean,
-    val reading: String
+    val reading: String,
+    val target: ReadingTarget
 )
 
 internal data class CameraAnnotationLayout(val labels: List<CameraRuby>)
@@ -42,9 +46,9 @@ internal fun layoutCameraAnnotations(
         typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
     }
     val formatter = JapaneseTextTokenizer()
-    data class Pending(val request: RubyRequest, val layouts: List<StaticLayout>, val reading: String)
+    data class Pending(val request: RubyRequest, val layouts: List<StaticLayout>, val reading: String, val key: String)
     val pending = buildList {
-        lines.forEach { line ->
+        lines.forEachIndexed { lineIndex, line ->
             val vertical = line.bounds.height > line.bounds.width
             var offset = 0
             line.segments.forEach { segment ->
@@ -52,8 +56,9 @@ internal fun layoutCameraAnnotations(
                 offset = start + segment.text.length
                 val raw = segment.reading
                 if (raw.isNullOrEmpty()) return@forEach
-                val reading = formatter.formatReading(raw, script)
-                val token = cameraTokenBounds(line, start, offset)
+                val annotation = kanjiAnnotation(segment.text, formatter.formatReading(raw, ScriptType.KANA))
+                val reading = formatter.formatReading(annotation.reading, script)
+                val token = cameraTokenBounds(line, start + annotation.start, start + annotation.end)
                 val anchor = ReadingBounds(token.left.roundToInt(), token.top.roundToInt(), token.right.roundToInt(), token.bottom.roundToInt())
                 if (clip.intersection(anchor) == null) return@forEach
                 val maxWidth = width - padding * 2
@@ -71,23 +76,22 @@ internal fun layoutCameraAnnotations(
                 }
                 add(Pending(
                     RubyRequest(anchor, clip, layouts.sumOf { it.width } + (layouts.size - 1) * gap + padding * 2,
-                        layouts.maxOf { it.height } + padding * 2, vertical), layouts, reading
+                        layouts.maxOf { it.height } + padding * 2, vertical), layouts, reading, "$lineIndex:$start:${segment.text}"
                 ))
             }
         }
     }
-    val source = lines.map {
-        ReadingBounds(it.bounds.left.roundToInt(), it.bounds.top.roundToInt(), it.bounds.right.roundToInt(), it.bounds.bottom.roundToInt())
-    }
-    val positions = placeCameraRubyReadings(pending.map { it.request }, source, gap)
+    val positions = placeCameraRubyReadings(pending.map { it.request }, gap)
     return CameraAnnotationLayout(pending.mapIndexedNotNull { index, item ->
-        positions[index]?.let { CameraRuby(it, clip, item.layouts, padding, gap, item.request.vertical, item.reading) }
+        positions[index]?.let { CameraRuby(it, clip, item.layouts, padding, gap, item.request.vertical, item.reading,
+            ReadingTarget(item.key, item.request.anchor, it)) }
     })
 }
 
-internal fun drawCameraAnnotations(canvas: Canvas, layout: CameraAnnotationLayout, colors: CameraAnnotationColors) {
+internal fun drawCameraAnnotations(canvas: Canvas, layout: CameraAnnotationLayout, colors: CameraAnnotationColors, selected: String? = null) {
     val platePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = colors.plate }
-    layout.labels.forEach { ruby ->
+    readingDrawOrder(layout.labels.map { it.target }, selected).forEach { index ->
+        val ruby = layout.labels[index]
         canvas.withClip(ruby.clip.left, ruby.clip.top, ruby.clip.right, ruby.clip.bottom) {
         canvas.drawRoundRect(
             ruby.bounds.left.toFloat(), ruby.bounds.top.toFloat(), ruby.bounds.right.toFloat(), ruby.bounds.bottom.toFloat(),

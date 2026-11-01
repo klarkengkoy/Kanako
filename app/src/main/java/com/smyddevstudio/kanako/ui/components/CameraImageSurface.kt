@@ -9,6 +9,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,6 +32,8 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.MaterialTheme
 import com.smyddevstudio.kanako.R
+import com.smyddevstudio.kanako.service.ReadingTarget
+import com.smyddevstudio.kanako.service.selectReading
 import com.smyddevstudio.kanako.camera.CameraAnnotationColors
 import com.smyddevstudio.kanako.camera.CameraExportStyle
 import com.smyddevstudio.kanako.camera.CameraPhoto
@@ -61,7 +64,10 @@ private fun annotationColors(preferences: KanakoPreferences): CameraAnnotationCo
 internal fun CameraReadingOverlay(
     lines: List<CameraReadingLine>,
     preferences: KanakoPreferences,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    selected: String? = null,
+    onTargets: (List<ReadingTarget>) -> Unit = {},
+    onSelectReading: (String) -> Unit = {}
 ) {
     var size by remember { mutableStateOf(IntSize.Zero) }
     val pixels = with(LocalDensity.current) { preferences.furiganaSize.sizeSp.sp.toPx() }
@@ -69,10 +75,15 @@ internal fun CameraReadingOverlay(
         layoutCameraAnnotations(lines, size.width, size.height, pixels, preferences.scriptType)
     }
     val colors = annotationColors(preferences)
+    SideEffect { onTargets(layout.labels.map { it.target }) }
+    val selectLabel = stringResource(R.string.reading_bring_front)
     Canvas(modifier.onSizeChanged { size = it }.semantics {
         text = AnnotatedString(layout.labels.joinToString(", ") { it.reading })
+        customActions = layout.labels.map { ruby ->
+            CustomAccessibilityAction("$selectLabel: ${ruby.reading}") { onSelectReading(ruby.target.key); true }
+        }
     }) {
-        drawIntoCanvas { drawCameraAnnotations(it.nativeCanvas, layout, colors) }
+        drawIntoCanvas { drawCameraAnnotations(it.nativeCanvas, layout, colors, selected) }
     }
 }
 
@@ -96,12 +107,15 @@ internal fun CameraPhotoSurface(
         layoutCameraAnnotations(lines, photo.width, photo.height, fontPixels, preferences.scriptType)
     }
     val colors = annotationColors(preferences)
+    var selected by remember(photo, lines.map { it.text }) { mutableStateOf<String?>(null) }
+    val currentLayout by rememberUpdatedState(layout)
+    val selectLabel = stringResource(R.string.reading_bring_front)
     val zoomState = stringResource(R.string.camera_zoom_state, (gesture.zoom * 100).roundToInt())
     val zoomIn = stringResource(R.string.camera_zoom_in)
     val zoomOut = stringResource(R.string.camera_zoom_out)
     val zoomReset = stringResource(R.string.camera_zoom_reset)
     val description = stringResource(R.string.camera_photo_description)
-    val exportStyle = fit?.let { CameraExportStyle(fontPixels, preferences.scriptType, colors) }
+    val exportStyle = fit?.let { CameraExportStyle(fontPixels, preferences.scriptType, colors, selected) }
     SideEffect { onExportStyle(exportStyle) }
     fun zoom(factor: Float): Boolean {
         gesture = gesture.update(factor, 0f, 0f, size.width / 2f, size.height / 2f,
@@ -117,7 +131,16 @@ internal fun CameraPhotoSurface(
                 }
             }
             .pointerInput(photo, size) {
-                detectTapGestures(onDoubleTap = { gesture = CameraPhotoGesture() })
+                detectTapGestures(
+                    onTap = { point ->
+                        val scale = (fit?.scale ?: 1f) * gesture.zoom
+                        val left = (size.width - photo.width * scale) / 2f + gesture.x
+                        val top = (size.height - photo.height * scale) / 2f + gesture.y
+                        selected = selectReading(currentLayout.labels.map { it.target },
+                            (point.x - left) / scale, (point.y - top) / scale, selected)
+                    },
+                    onDoubleTap = { gesture = CameraPhotoGesture() }
+                )
             }
             .semantics {
                 contentDescription = description
@@ -127,7 +150,9 @@ internal fun CameraPhotoSurface(
                     CustomAccessibilityAction(zoomIn) { zoom(1.5f) },
                     CustomAccessibilityAction(zoomOut) { zoom(1 / 1.5f) },
                     CustomAccessibilityAction(zoomReset) { gesture = CameraPhotoGesture(); true }
-                )
+                ) + layout.labels.map { ruby ->
+                    CustomAccessibilityAction("$selectLabel: ${ruby.reading}") { selected = ruby.target.key; true }
+                }
             }
     ) {
         val transform = fit ?: return@Canvas
@@ -140,7 +165,7 @@ internal fun CameraPhotoSurface(
                 translate(left, top)
                 scale(scale, scale)
                 drawBitmap(bitmap, 0f, 0f, null)
-                drawCameraAnnotations(this, layout, colors)
+                drawCameraAnnotations(this, layout, colors, selected)
             }
         }
     }

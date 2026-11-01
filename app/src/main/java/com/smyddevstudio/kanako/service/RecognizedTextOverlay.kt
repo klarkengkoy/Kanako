@@ -2,8 +2,16 @@ package com.smyddevstudio.kanako.service
 
 import android.graphics.Rect
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -12,6 +20,11 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.res.stringResource
+import com.smyddevstudio.kanako.R
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.text
 import androidx.compose.ui.text.AnnotatedString
@@ -31,9 +44,11 @@ import com.smyddevstudio.kanako.model.AnnotationPlateStyle
 import com.smyddevstudio.kanako.model.KanakoPreferences
 import com.smyddevstudio.kanako.ui.theme.CreamBackgroundDark
 import com.smyddevstudio.kanako.ui.theme.KanakoTheme
-import kotlin.math.roundToInt
+import com.smyddevstudio.kanako.ui.components.FuriganaSegment
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-private data class MeasuredRuby(val request: RubyRequest, val layouts: List<TextLayoutResult>)
+private data class MeasuredRuby(val request: RubyRequest, val layouts: List<TextLayoutResult>, val key: String)
 
 @Composable
 internal fun RecognizedTextOverlayContent(
@@ -45,33 +60,40 @@ internal fun RecognizedTextOverlayContent(
     val density = LocalDensity.current
     val measurer = rememberTextMeasurer()
     val tokenizer = remember { JapaneseTextTokenizer() }
-    val tokenized = remember(lines.map { it.text }, preferences.scriptType) {
-        lines.map { it.text }.distinct().associateWith { tokenizer.tokenize(it, preferences.scriptType) }
+    var tokenized by remember(lines) {
+        mutableStateOf(lines.map { it.segments ?: emptyList<FuriganaSegment>() })
+    }
+    LaunchedEffect(lines) {
+        if (lines.any { it.segments == null }) {
+            tokenized = withContext(Dispatchers.Default) {
+                lines.map { it.segments ?: tokenizer.tokenize(it.text) }
+            }
+        }
     }
     val padding = with(density) { 2.dp.roundToPx() }
     val gap = with(density) { 2.dp.roundToPx() }.coerceAtLeast(1)
     val style = TextStyle(
         fontSize = preferences.furiganaSize.sizeSp.sp,
         lineHeight = (preferences.furiganaSize.sizeSp * 1.2f).sp,
+        textAlign = TextAlign.Center,
         fontWeight = FontWeight.Medium
     )
-    val measured = remember(lines, tokenized, measurer, density, style, padding, gap) {
+    val measured = remember(lines, tokenized, preferences.scriptType, measurer, density, style, padding, gap) {
         buildList {
-            lines.forEach { line ->
+            lines.forEachIndexed { index, line ->
                 val vertical = line.bounds.height() > line.bounds.width()
-                val advance = (if (vertical) line.bounds.height() else line.bounds.width()).toFloat() /
-                    line.text.length.coerceAtLeast(1)
                 var cursor = 0
-                tokenized.getValue(line.text).forEach { segment ->
-                    val start = cursor
-                    cursor += segment.text.length
-                    val reading = segment.reading
-                    val token = if (vertical) ReadingBounds(
-                        line.bounds.left, (line.bounds.top + start * advance).roundToInt(),
-                        line.bounds.right, (line.bounds.top + cursor * advance).roundToInt()
-                    ) else ReadingBounds(
-                        (line.bounds.left + start * advance).roundToInt(), line.bounds.top,
-                        (line.bounds.left + cursor * advance).roundToInt(), line.bounds.bottom
+                tokenized[index].forEach { segment ->
+                    val start = line.text.indexOf(segment.text, cursor).takeIf { it >= 0 } ?: cursor
+                    cursor = start + segment.text.length
+                    val annotation = segment.reading?.let {
+                        kanjiAnnotation(segment.text, tokenizer.formatReading(it, com.smyddevstudio.kanako.model.ScriptType.KANA))
+                    }
+                    val reading = annotation?.let { tokenizer.formatReading(it.reading, preferences.scriptType) }
+                    val token = readingTokenBounds(
+                        line.text,
+                        ReadingBounds(line.bounds.left, line.bounds.top, line.bounds.right, line.bounds.bottom),
+                        line.spans, start + (annotation?.start ?: 0), start + (annotation?.end ?: segment.text.length)
                     )
                     val widthAvailable = line.clip.right - line.clip.left - padding * 2
                     val heightAvailable = line.clip.bottom - line.clip.top - padding * 2
@@ -88,7 +110,7 @@ internal fun RecognizedTextOverlayContent(
                         }
                         val width = layouts.sumOf { it.size.width } + (layouts.size - 1) * gap + padding * 2
                         val height = layouts.maxOf { it.size.height } + padding * 2
-                        add(MeasuredRuby(RubyRequest(token, line.clip, width, height, vertical), layouts))
+                        add(MeasuredRuby(RubyRequest(token, line.clip, width, height, vertical), layouts, "$index:$start:${segment.text}"))
                     }
                 }
             }
@@ -96,10 +118,19 @@ internal fun RecognizedTextOverlayContent(
     }
     val placement = remember(measured, lines, gap) {
         placeRubyReadings(
-            measured.map { it.request },
-            lines.map { ReadingBounds(it.bounds.left, it.bounds.top, it.bounds.right, it.bounds.bottom) },
-            gap
+            measured.map { it.request }, gap
         )
+    }
+    var selected by remember(lines.map { it.text }) { mutableStateOf<String?>(null) }
+    val targets = measured.mapIndexedNotNull { index, ruby ->
+        placement[index]?.let { ReadingTarget(ruby.key, ruby.request.anchor, it) }
+    }
+    val currentTargets by rememberUpdatedState(targets)
+    val currentOrigin by rememberUpdatedState(origin)
+    val interaction = if (preferences.touchPassthrough) Modifier else Modifier.pointerInput(Unit) {
+        detectTapGestures { point ->
+            selected = selectReading(currentTargets, point.x + currentOrigin.x, point.y + currentOrigin.y, selected)
+        }
     }
     val plateColor = when (preferences.annotationPlateStyle) {
         AnnotationPlateStyle.CLEAR -> Color.Transparent
@@ -114,11 +145,23 @@ internal fun RecognizedTextOverlayContent(
             ruby.layouts.joinToString("") { it.layoutInput.text.text.replace("\n", "") }
         )
     }
-    Canvas(modifier.fillMaxSize().semantics {
+    val selectLabel = stringResource(R.string.reading_bring_front)
+    Canvas(modifier.fillMaxSize().then(interaction).semantics {
         text = AnnotatedString(accessibleReadings.joinToString(", ") { it.text })
+        stateDescription = measured.firstOrNull { it.key == selected }?.layouts
+            ?.joinToString("") { it.layoutInput.text.text.replace("\n", "") }.orEmpty()
+        if (!preferences.touchPassthrough) customActions = targets.map { target ->
+            val reading = measured.first { it.key == target.key }.layouts.joinToString("") {
+                it.layoutInput.text.text.replace("\n", "")
+            }
+            CustomAccessibilityAction("$selectLabel: $reading") { selected = target.key; true }
+        }
     }) {
-        measured.forEachIndexed { index, ruby ->
-            val rect = placement[index] ?: return@forEachIndexed
+        val order = measured.indices.filter { measured[it].key != selected } +
+            measured.indices.filter { measured[it].key == selected }
+        order.forEach { index ->
+            val ruby = measured[index]
+            val rect = placement[index] ?: return@forEach
             val viewport = ruby.request.clip
             clipRect(
                 (viewport.left - origin.x).toFloat(), (viewport.top - origin.y).toFloat(),
@@ -155,7 +198,8 @@ internal fun RecognizedTextOverlayContent(
 private fun CrowdedReadingPreview() {
     KanakoTheme {
         RecognizedTextOverlayContent(
-            listOf(RecognizedTextLine("情報処理技術", Rect(80, 220, 380, 280), 1, ReadingBounds(0, 0, 1080, 720))),
+            listOf(RecognizedTextLine("情報処理技術", Rect(80, 220, 380, 280), 1, ReadingBounds(0, 0, 1080, 720),
+                segments = listOf(FuriganaSegment("情報処理技術", "じょうほうしょりぎじゅつ")))),
             KanakoPreferences(), IntOffset.Zero
         )
     }

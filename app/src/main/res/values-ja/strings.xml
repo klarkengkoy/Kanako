@@ -139,13 +139,13 @@
     <string name="how_privacy_title">画像はどう扱われますか？</string>
     <string name="how_privacy">画面画像はメモリ内で処理し、保存・アップロードせずに破棄します。機密性の高い入力やロック画面を検出した場合は撮影を停止します。カメラ写真も「ふりがな付きで保存」を選ぶまでは一時的に保持するだけです。</string>
     <string name="how_limits_title">読み取りの制限は？</string>
-    <string name="how_limits">保護された画面は撮影できません。装飾文字、小さな文字、固有名詞、複雑なレイアウトでは読みが抜けたり誤ったりする場合があります。ふりがなの位置は認識結果から推定しています。</string>
+    <string name="how_limits">漢字の認識や読みは完全ではありません。似ている漢字とカタカナを取り違えたり、固有名詞や複数の読みがある言葉を読み違えたりする場合があります。小さい文字、装飾文字、ぼやけた文字、複雑なレイアウトでは認識が難しくなります。ふりがなの位置は認識結果から推定しています。保護された画面は撮影できません。</string>
     <string name="how_offline_title">オフラインでも使えますか？</string>
     <string name="how_offline">初回はGoogle Play開発者サービスから日本語認識モデルのダウンロードが必要になる場合があります。モデルが利用可能になると、認識は端末内で行われます。読み取りごとに処理負荷がかかります。</string>
     <string name="how_tile_title">クイック設定</string>
     <string name="how_tile">画面上部から2回スワイプし、編集からかなこを追加してください。タップでリーダーを表示・停止できます。追加だけでは撮影しません。権限が足りない場合はホームを開きます。自動読み取りが有効な場合、リーダー開始後に読み取りも行います。</string>
     <string name="how_camera_title">カメラを使う</string>
-    <string name="how_camera">ホームからカメラを開きます。カメラの権限は画面読み取りとは別です。ライブ表示で読むほか、撮影すると静止画像で読めます。ピンチで拡大し、写真はドラッグで移動、ダブルタップでリセットできます。カメラに戻ると再撮影できます。「ふりがな付きで保存」は表示中の拡大率に関係なく、写真全体を指定先に保存します。</string>
+    <string name="how_camera">ホームからカメラを開きます。カメラの権限は画面読み取りとは別です。ライブ表示や撮影した写真で読めます。読みまたは対応する漢字をタップすると、その読みを手前に表示します。重なった読みを繰り返しタップすると順番に切り替わります。ライブ表示のほかの場所をタップするとピントを合わせます。ピンチで拡大し、写真はドラッグで移動、ダブルタップでリセットできます。「ふりがな付きで保存」は拡大率に関係なく、選んだ読みを手前にして写真全体を保存します。</string>
     <string name="reading_size_small">10sp</string>
     <string name="reading_size_medium">12sp</string>
     <string name="reading_size_large">14sp</string>
@@ -153,7 +153,7 @@
     <string name="reading_mode">読み取りモード</string>
     <string name="tap_to_read">タップで読む</string>
     <string name="how_preferences_title">読み取りを調整する</string>
-    <string name="how_preferences">設定でかな・ローマ字、読みの大きさ・色・背景を選べます。「読みの上から操作」をオンにすると、ふりがなの下のアプリを操作できます。オフでは読みの領域がタッチを受け取ります。「入力中はボタンを隠す」はキーボード表示中にボタンを隠します。ボタンを表示していても、キーボードやパスワード欄の検出中は撮影を停止します。実際の動作は読み取り元のアプリで確認してください。固定プレビューは見た目のみを示します。</string>
+    <string name="how_preferences">設定でかな・ローマ字、読みの大きさ・色・背景を選べます。「読みの上から操作」がオンなら、ふりがなの下のアプリを操作できます。オフにすると、読みや対応する漢字をタップして、その読みを手前に表示できます。重なった読みを繰り返しタップすると順番に切り替わります。「入力中はボタンを隠す」はキーボード表示中にボタンを隠します。ボタンを表示していても、キーボードやパスワード欄の検出中は撮影を停止します。固定プレビューは見た目のみを示します。</string>
     <string name="preview_sample_short"><annotation reading="ニホンゴ">日本語</annotation></string>
     <string name="preferences_appearance_summary">両方のリーダーに適用されます。プレビューは見た目のみを示します。</string>
     <string name="privacy_access">プライバシーと画面へのアクセス</string>
@@ -172,4 +172,5 @@
     <string name="home_setup_summary">フローティングリーダーには2つのアクセス設定が必要です。</string>
     <string name="home_setup_action">フローティングリーダーを設定</string>
     <string name="home_next_step">別のアプリを開き、かなこをタップして読み取ります。自動読み取りが有効な場合は検出した変化が落ち着くと読み取ります。</string>
+    <string name="reading_bring_front">読みを手前に表示</string>
 </resources>

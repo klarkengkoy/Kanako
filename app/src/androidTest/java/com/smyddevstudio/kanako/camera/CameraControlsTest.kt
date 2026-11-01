@@ -284,8 +284,8 @@ class CameraControlsTest {
             val image = compose.onNodeWithContentDescription(string(R.string.camera_photo_description))
             image.assertIsDisplayed()
             image.performTouchInput {
-                pinch(center - Offset(40f, 0f), center + Offset(40f, 0f),
-                    center - Offset(120f, 0f), center + Offset(120f, 0f), 400)
+                pinch(start0 = center - Offset(40f, 0f), end0 = center - Offset(120f, 0f),
+                    start1 = center + Offset(40f, 0f), end1 = center + Offset(120f, 0f), durationMillis = 400)
             }
             image.assert(SemanticsMatcher("Photo is zoomed") {
                 it.config[SemanticsProperties.StateDescription] != context.getString(R.string.camera_zoom_state, 100)

@@ -203,8 +203,8 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
         screenCaptureEngine = ScreenCaptureEngine()
         serviceScope.launch {
             val initialPreferences = preferencesRepository.userPreferencesFlow.first()
-            showOverlayView(initialPreferences)
             showRecognizedTextOverlay()
+            showOverlayView(initialPreferences)
         }
 
         serviceScope.launch {

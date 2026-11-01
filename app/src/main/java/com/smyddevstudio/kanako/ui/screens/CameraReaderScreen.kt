@@ -43,6 +43,8 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.smyddevstudio.kanako.R
+import com.smyddevstudio.kanako.service.ReadingTarget
+import com.smyddevstudio.kanako.service.selectReading
 import com.smyddevstudio.kanako.camera.CameraReaderViewModel
 import com.smyddevstudio.kanako.camera.LiveCameraSession
 import com.smyddevstudio.kanako.model.KanakoPreferences
@@ -80,6 +82,8 @@ internal fun CameraReaderScreen(
         onDispose { manager.unregisterDisplayListener(listener) }
     }
     val state by viewModel.state.collectAsStateWithLifecycle()
+    var readingTargets by remember { mutableStateOf(emptyList<ReadingTarget>()) }
+    var selectedReading by remember(state.lines.map { it.text }) { mutableStateOf<String?>(null) }
     var granted by remember { mutableStateOf(hasCameraPermission(context)) }
     var requested by rememberSaveable { mutableStateOf(false) }
     var rationale by remember { mutableStateOf(false) }
@@ -227,7 +231,11 @@ internal fun CameraReaderScreen(
                     modifier = Modifier.fillMaxSize().cameraReaderGestures(
                         onZoom = { session?.zoomBy(it) },
                         onFocus = { session?.focusAt(it) },
-                        onInteraction = viewModel::invalidateGeometry
+                        onInteraction = viewModel::invalidateGeometry,
+                        onSelect = { point ->
+                            selectedReading = selectReading(readingTargets, point.x, point.y, selectedReading)
+                            selectedReading != null
+                        }
                     ),
                     update = { it.contentDescription = liveDescription },
                     onRelease = { released ->
@@ -237,7 +245,9 @@ internal fun CameraReaderScreen(
                         }
                     }
                 )
-                CameraReadingOverlay(state.lines, preferences, Modifier.fillMaxSize())
+                CameraReadingOverlay(state.lines, preferences, Modifier.fillMaxSize(),
+                    selected = selectedReading, onTargets = { readingTargets = it },
+                    onSelectReading = { selectedReading = it })
             }
         }
     )

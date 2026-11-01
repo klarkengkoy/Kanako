@@ -8,7 +8,8 @@ import java.io.OutputStream
 internal data class CameraExportStyle(
     val fontPixels: Float,
     val script: ScriptType,
-    val colors: CameraAnnotationColors
+    val colors: CameraAnnotationColors,
+    val selected: String? = null
 )
 
 internal class CameraPhotoExport(
@@ -26,7 +27,7 @@ internal fun writeCameraPhotoExport(request: CameraPhotoExport, output: OutputSt
         val layout = layoutCameraAnnotations(
             request.lines, rendered.width, rendered.height, request.style.fontPixels, request.style.script
         )
-        drawCameraAnnotations(Canvas(rendered), layout, request.style.colors)
+        drawCameraAnnotations(Canvas(rendered), layout, request.style.colors, request.style.selected)
         check(rendered.compress(Bitmap.CompressFormat.PNG, 100, output)) { "Image export failed" }
     } finally {
         rendered.recycle()
