@@ -1,0 +1,13 @@
+# Sudachi 0.8.2 loads these exact classes from its bundled sudachi.json.
+# Retain names and public constructors; ordinary reachable methods can still be optimized.
+-keep,allowoptimization class com.worksap.nlp.sudachi.DefaultInputTextPlugin { public <init>(); }
+-keep,allowoptimization class com.worksap.nlp.sudachi.ProlongedSoundMarkInputTextPlugin { public <init>(); }
+-keep,allowoptimization class com.worksap.nlp.sudachi.IgnoreYomiganaPlugin { public <init>(); }
+-keep,allowoptimization class com.worksap.nlp.sudachi.MeCabOovProviderPlugin { public <init>(); }
+-keep,allowoptimization class com.worksap.nlp.sudachi.SimpleOovProviderPlugin { public <init>(); }
+-keep,allowoptimization class com.worksap.nlp.sudachi.JoinNumericPlugin { public <init>(); }
+-keep,allowoptimization class com.worksap.nlp.sudachi.JoinKatakanaOovPlugin { public <init>(); }
+-keep,allowoptimization class com.worksap.nlp.sudachi.SimpleMorphemeFormatter { public <init>(); }
+-keep,allowoptimization class com.worksap.nlp.sudachi.WordSegmentationFormatter { public <init>(); }
+# JSON-P's provider is constructed reflectively by the bundled javax.json implementation.
+-keep,allowoptimization class org.glassfish.json.JsonProviderImpl { public <init>(); }

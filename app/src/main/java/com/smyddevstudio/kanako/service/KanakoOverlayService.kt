@@ -328,7 +328,11 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
                 followScroll(bounds, line.clip, movement)?.let { tracked ->
                     line.copy(
                         bounds = Rect(tracked.bounds.left, tracked.bounds.top, tracked.bounds.right, tracked.bounds.bottom),
-                        clip = tracked.clip
+                        clip = tracked.clip,
+                        spans = line.spans.map { span ->
+                            span.copy(bounds = span.bounds.moved(
+                                tracked.bounds.left - bounds.left, tracked.bounds.top - bounds.top))
+                        }
                     )
                 }
             }

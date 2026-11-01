@@ -1,16 +1,19 @@
 package com.smyddevstudio.kanako.data.tokenizer
 
-import com.atilika.kuromoji.ipadic.Tokenizer
 import com.smyddevstudio.kanako.model.ScriptType
 import com.smyddevstudio.kanako.ui.components.FuriganaSegment
 
-class JapaneseTextTokenizer(
-    private val tokenizerSupplier: () -> Tokenizer = { defaultTokenizer }
+class JapaneseTextTokenizer internal constructor(
+    private val tokenizerSupplier: () -> JapaneseReadingEngine
 ) {
-    private val tokenizer: Tokenizer get() = tokenizerSupplier()
+    constructor() : this({ ActiveJapaneseReadingEngine.engine })
+
+    private val tokenizer: JapaneseReadingEngine get() = tokenizerSupplier()
 
     companion object {
-        private val defaultTokenizer by lazy { Tokenizer() }
+        // Evidence-backed spatial nouns only; abstract "指導の下" must retain モト.
+        private val SPATIAL_MODIFIERS = setOf("木", "机")
+        private val LOCATIVE_PARTICLES = setOf("で", "に", "へ", "から", "まで")
 
         private val DIGRAPHS = mapOf(
             "きゃ" to "kya", "きゅ" to "kyu", "きょ" to "kyo",
@@ -58,20 +61,108 @@ class JapaneseTextTokenizer(
         if (text.isEmpty()) return emptyList()
 
         val tokens = tokenizer.tokenize(text)
-        return tokens.map { token ->
-            val surface = token.surface ?: ""
-            val rawReading = token.reading
-
-            val reading = if (surface.containsKanji() && !rawReading.isNullOrEmpty() && rawReading != "*") {
-                formatReading(rawReading, scriptType)
-            } else {
-                null
+        return buildList {
+            var index = 0
+            var cursor = 0
+            while (index < tokens.size) {
+                val token = tokens[index]
+                val surface = token.surface
+                if (cursor < token.position) add(FuriganaSegment(text.substring(cursor, token.position)))
+                check(token.position >= cursor && token.position + surface.length <= text.length &&
+                    text.substring(token.position, token.position + surface.length) == surface
+                ) { "Tokenizer must preserve original source spans" }
+                val next = tokens.getOrNull(index + 1)
+                if (token.isNumber) {
+                    var numberEnd = index
+                    while (tokens.getOrNull(numberEnd + 1)?.let {
+                        it.isNumber && it.position == tokens[numberEnd].position + tokens[numberEnd].surface.length
+                    } == true) numberEnd++
+                    val counter = tokens.getOrNull(numberEnd + 1)
+                    val number = tokens.subList(index, numberEnd + 1).joinToString("") { it.reading.orEmpty() }
+                    val contracted = when {
+                        number.endsWith("イチ") || number.endsWith("ハチ") -> number.dropLast(1) + "ッ"
+                        number.endsWith("ジュウ") -> number.dropLast(1) + "ッ"
+                        else -> null
+                    }
+                    if (counter?.surface == "冊" && counter.reading == "サツ" &&
+                        (counter.partOfSpeechLevel1 == "接尾辞" || "接尾" in counter.partOfSpeech) &&
+                        counter.position == tokens[numberEnd].position + tokens[numberEnd].surface.length &&
+                        contracted != null
+                    ) {
+                        cursor = counter.position + counter.surface.length
+                        add(FuriganaSegment(text.substring(token.position, cursor),
+                            formatReading(contracted + "サツ", scriptType)))
+                        index = numberEnd + 2
+                        continue
+                    }
+                }
+                val afterCounter = tokens.getOrNull(index + 2)
+                val ordinaryCounter = afterCounter == null || afterCounter.partOfSpeechLevel1 in
+                    listOf("助詞", "記号", "補助記号") || afterCounter.surface in listOf("組", "連れ")
+                val precedingNumber = text.getOrNull(token.position - 1)?.let {
+                    it in "0123456789０１２３４５６７８９一二三四五六七八九十百千万億第"
+                } == true
+                if (surface in listOf("一", "二") && next?.surface == "人" &&
+                    next.position == token.position + surface.length && ordinaryCounter && !precedingNumber
+                ) {
+                    add(FuriganaSegment(surface + "人",
+                        formatReading(if (surface == "一") "ヒトリ" else "フタリ", scriptType)))
+                    cursor = next.position + 1
+                    index += 2
+                    continue
+                }
+                val possessive = tokens.getOrNull(index - 1)
+                val modifier = tokens.getOrNull(index - 2)
+                val spatialBelow = surface == "下" && token.reading == "モト" &&
+                    !token.isPersonName && modifier?.surface in SPATIAL_MODIFIERS &&
+                    modifier?.isPersonName == false && possessive?.surface == "の" &&
+                    modifier.position + modifier.surface.length == possessive.position &&
+                    possessive.position + possessive.surface.length == token.position &&
+                    next?.surface in LOCATIVE_PARTICLES &&
+                    next?.position == token.position + surface.length
+                if (surface == "木の下" && next?.surface in LOCATIVE_PARTICLES) {
+                    add(FuriganaSegment("木", formatReading("キ", scriptType)))
+                    add(FuriganaSegment("の"))
+                    add(FuriganaSegment("下", formatReading("シタ", scriptType)))
+                } else {
+                    val raw = if (spatialBelow) "シタ" else token.reading
+                    add(FuriganaSegment(surface,
+                        if (surface.containsKanji() && !raw.isNullOrEmpty() && raw != "*" && !raw.containsKanji())
+                            formatReading(raw, scriptType) else null))
+                }
+                cursor = token.position + surface.length
+                index++
             }
+            if (cursor < text.length) add(FuriganaSegment(text.substring(cursor)))
+        }
+    }
 
-            FuriganaSegment(
-                text = surface,
-                reading = reading
-            )
+    internal fun tokenizeLines(lines: List<String>): List<List<FuriganaSegment>> {
+        val joined = lines.joinToString("")
+        val segments = tokenize(joined)
+        var lineStart = 0
+        return lines.map { line ->
+            val lineEnd = lineStart + line.length
+            var offset = 0
+            val result = segments.mapNotNull { segment ->
+                val start = offset
+                offset += segment.text.length
+                val from = maxOf(lineStart, start) - start
+                val to = minOf(lineEnd, offset) - start
+                if (from >= to) return@mapNotNull null
+                val surface = segment.text.substring(from, to)
+                val reading = if (from == 0 && to == segment.text.length) segment.reading else {
+                    val before = segment.text.take(from)
+                    val after = segment.text.drop(to)
+                    val raw = segment.reading
+                    if (!surface.containsKanji() || before.containsKanji() || after.containsKanji() ||
+                        raw == null || !raw.startsWith(before) || !raw.endsWith(after)
+                    ) null else raw.substring(before.length, raw.length - after.length)
+                }
+                FuriganaSegment(surface, reading)
+            }
+            lineStart = lineEnd
+            result
         }
     }
 

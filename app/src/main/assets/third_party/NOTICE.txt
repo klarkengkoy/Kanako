@@ -1,0 +1,25 @@
+Reading engine dependencies
+
+Sudachi 0.8.2
+Copyright Works Applications Co., Ltd.
+License: Apache License, Version 2.0 (Apache-2.0.txt).
+Unmodified upstream source: https://github.com/WorksApplications/Sudachi/tree/v0.8.2
+
+jdartsclone 1.2.0
+Copyright (c) 2017 Works Applications Co., Ltd.
+License: Apache License, Version 2.0 (Apache-2.0.txt).
+Unmodified upstream source: https://github.com/WorksApplications/jdartsclone/tree/v1.2.0
+
+GlassFish javax.json 1.1.4 (JSON-P reference implementation)
+Copyright (c) 2012-2017 Oracle and/or its affiliates. All rights reserved.
+Dual license: Common Development and Distribution License (CDDL) 1.1
+or GNU General Public License version 2 with the Classpath Exception.
+The complete upstream license and exception are in javax-json-LICENSE.txt.
+The unmodified covered source is available at:
+https://github.com/javaee/jsonp/tree/1.1.4
+Source archive: https://github.com/javaee/jsonp/archive/refs/tags/1.1.4.tar.gz
+
+SudachiDict full 20261015
+Dictionary-specific attributions and licenses are packaged beside the
+dictionary as sudachi/LEGAL and sudachi/LICENSE-2.0.txt in Sudachi builds.
+https://github.com/WorksApplications/SudachiDict/releases/tag/v20261015
