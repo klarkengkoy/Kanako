@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kanako mascot GIFs</title>
+<style>
+:root{font:16px system-ui;color:#302923;background:#f8f4ea;color-scheme:light}
+body{max-width:1000px;margin:40px auto;padding:0 24px}h1{font-size:1.8rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+article{background:#fffdf6;border:1px solid #ddd4c5;border-radius:20px;padding:20px;text-align:center}
+img,.still{width:200px;height:200px;object-fit:contain;margin:auto}.still{display:none;background-image:url(kanako_animation_frames.png);background-size:800px 800px}
+button{font:inherit;border:0;border-radius:24px;padding:12px 24px;background:#3e5c42;color:white;cursor:pointer}
+button:focus-visible{outline:3px solid #963b32;outline-offset:4px}p{line-height:1.6}
+@media(prefers-reduced-motion:reduce){img{display:none}.still{display:block}.playing img{display:block}.playing .still{display:none}}
+</style>
+<h1>Kanako mascot animations</h1>
+<p>Four transparent, one-shot GIF drafts based on the existing mascot. Each plays for about 1.8 seconds. These assets have not replaced the artwork in the app.</p>
+<div class="grid">
+<article><h2>Greeting</h2><img src="kanako_greeting_wave.gif" alt="Kanako raises a hand in greeting"><div class="still" style="background-position:0 0" aria-hidden="true"></div><p>A short wave for Home.</p><button type="button">Replay greeting</button></article>
+<article><h2>Curiosity</h2><img src="kanako_curious_tilt.gif" alt="Kanako tilts gently to each side"><div class="still" style="background-position:0 -200px" aria-hidden="true"></div><p>A curious tilt for Preferences.</p><button type="button">Replay curiosity</button></article>
+<article><h2>Success</h2><img src="kanako_success.gif" alt="Kanako makes a small happy nod and blink"><div class="still" style="background-position:0 -400px" aria-hidden="true"></div><p>A brief response after a successful action.</p><button type="button">Replay success</button></article>
+<article><h2>Error reaction</h2><img src="kanako_error_reaction.gif" alt="Kanako makes a concerned head tilt"><div class="still" style="background-position:0 -600px" aria-hidden="true"></div><p>A gentle reaction when an action fails.</p><button type="button">Replay error reaction</button></article>
+</div>
+<p>Reduced-motion preferences show a still image until you choose Replay. No external images, scripts, or network services are used by this page.</p>
+<script>
+for(const button of document.querySelectorAll('button'))button.addEventListener('click',()=>{
+ const card=button.closest('article'),img=card.querySelector('img');
+ clearTimeout(card.timer);card.classList.add('playing');
+ img.src=img.src.split('?')[0]+'?replay='+Date.now();
+ card.timer=setTimeout(()=>card.classList.remove('playing'),2000);
+});
+</script></html>
