@@ -111,7 +111,22 @@ internal fun CameraReaderContent(
                 .absolutePadding(left = if (controlsOnRight) 0.dp else controlsGutter,
                     right = if (controlsOnRight) controlsGutter else 0.dp),
                 horizontalAlignment = Alignment.CenterHorizontally) {
-                CameraReaderTopBar(onBack, onPreferences, modifier = if (granted) motion else Modifier, appBar = true)
+                if (granted) {
+                    Row(modifier = motion.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)) {
+                            IconButton(onClick = onBack, modifier = Modifier.size(48.dp)) {
+                                Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.navigate_back))
+                            }
+                        }
+                        Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)) {
+                            IconButton(onClick = onPreferences, modifier = Modifier.size(48.dp)) {
+                                Icon(Icons.Rounded.Settings, stringResource(R.string.camera_appearance))
+                            }
+                        }
+                    }
+                } else {
+                    CameraReaderTopBar(onBack, onPreferences, appBar = true)
+                }
                 if (!granted) {
                     Box(Modifier.weight(1f).fillMaxWidth().padding(horizontal = 16.dp)
                         .verticalScroll(rememberScrollState()), contentAlignment = Alignment.Center) {
