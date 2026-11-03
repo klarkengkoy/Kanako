@@ -39,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -99,6 +100,7 @@ fun FloatingOverlayContent(
     controlsVisible: Boolean = true
 ) {
     var isExpanded by remember { mutableStateOf(false) }
+    var readAttempt by remember { mutableIntStateOf(0) }
     var statusPopupMessage by remember { mutableStateOf<Int?>(null) }
     val accessibilityManager = LocalAccessibilityManager.current
     fun dismiss() {
@@ -108,7 +110,7 @@ fun FloatingOverlayContent(
     LaunchedEffect(controlsVisible) {
         if (!controlsVisible) dismiss()
     }
-    LaunchedEffect(statusMessage, isReading) {
+    LaunchedEffect(statusMessage, isReading, readAttempt) {
         if (!controlsVisible || isReading || statusMessage == R.string.reading_shown ||
             statusMessage == R.string.reading_working
         ) {
@@ -117,7 +119,7 @@ fun FloatingOverlayContent(
             statusPopupMessage = statusMessage
         }
     }
-    LaunchedEffect(statusPopupMessage, accessibilityManager) {
+    LaunchedEffect(statusPopupMessage, readAttempt, accessibilityManager) {
         if (statusPopupMessage != null) {
             delay(accessibilityManager?.calculateRecommendedTimeoutMillis(
                 6_000L, containsText = true, containsControls = true
@@ -149,7 +151,7 @@ fun FloatingOverlayContent(
                     stateDescription = statusDescription
                 }
                 .combinedClickable(
-                    onClick = { dismiss(); onReadOrClear() },
+                    onClick = { dismiss(); readAttempt++; onReadOrClear() },
                     onLongClick = { statusPopupMessage = null; isExpanded = !isExpanded },
                     onDoubleClick = { statusPopupMessage = null; isExpanded = !isExpanded }
                 )

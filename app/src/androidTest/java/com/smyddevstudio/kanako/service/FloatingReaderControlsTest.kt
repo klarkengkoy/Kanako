@@ -247,6 +247,51 @@ class FloatingReaderControlsTest {
         compose.runOnIdle { assertEquals(1, reads) }
     }
 
+    @Test fun repeatedImmediateNoSourceFailuresShowFeedbackOnEveryTap() {
+        assertRepeatedImmediateFailureFeedback(R.string.reading_no_source)
+    }
+
+    @Test fun repeatedImmediateNoReadingResultsShowFeedbackOnEveryTap() {
+        assertRepeatedImmediateFailureFeedback(R.string.reading_no_text)
+    }
+
+    private fun assertRepeatedImmediateFailureFeedback(messageRes: Int) {
+        val reading = mutableStateOf(false)
+        val status = mutableStateOf(R.string.reading_ready)
+        var reads = 0
+        compose.setContent {
+            CompositionLocalProvider(LocalAccessibilityManager provides null) {
+                KanakoTheme {
+                    FloatingOverlayContent(KanakoPreferences(), false, { _, _ -> }, {}, {}, {}, {},
+                        onReadOrClear = {
+                            reads++
+                            reading.value = true
+                            status.value = R.string.reading_working
+                            status.value = messageRes
+                            reading.value = false
+                        },
+                        isReading = reading.value, statusMessage = status.value)
+                }
+            }
+        }
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val message = context.getString(messageRes)
+        val mascot = compose.onNodeWithContentDescription(description)
+        mascot.assertIsDisplayed()
+        compose.mainClock.autoAdvance = false
+        repeat(3) { attempt ->
+            mascot.performTouchInput { click() }
+            compose.mainClock.advanceTimeBy(600)
+            compose.onNodeWithText(message).assertIsDisplayed()
+            compose.onNodeWithText(context.getString(R.string.controls_stop)).assertDoesNotExist()
+            compose.runOnIdle { assertEquals(attempt + 1, reads) }
+            if (attempt == 1) {
+                compose.mainClock.advanceTimeBy(6_100)
+                compose.onNodeWithText(message).assertDoesNotExist()
+            }
+        }
+    }
+
     @Test fun hidingReaderDismissesAnErrorWithoutRestoringItOnReturn() {
         val visible = mutableStateOf(true)
         compose.setContent {
