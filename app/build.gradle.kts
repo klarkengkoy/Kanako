@@ -16,6 +16,9 @@ plugins {
 val readerEngine = providers.gradleProperty("readerEngine").orElse("sudachi").get()
 require(readerEngine in setOf("sudachi", "kuromoji")) { "readerEngine must be sudachi or kuromoji" }
 val sudachiTrial = providers.gradleProperty("sudachiTrial").orNull == "true"
+val readingPerformance = providers.gradleProperty("readingPerformance").orNull == "true"
+val performanceLabel = providers.gradleProperty("performanceLabel").orElse("current").get()
+require(performanceLabel.matches(Regex("[A-Za-z0-9_-]+"))) { "Invalid performanceLabel" }
 val dictionarySpec = Properties().apply {
     rootProject.file("gradle/sudachi-dictionary.properties").inputStream().use { load(it) }
 }
@@ -124,6 +127,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    if (readingPerformance) sourceSets["test"].kotlin.directories += "src/readingPerformance/kotlin"
+
     if (sudachiTrial) {
         sourceSets["test"].kotlin.directories += listOf("src/sudachiTrial/shared", "src/sudachiTrial/unit")
         sourceSets["androidTest"].kotlin.directories += listOf("src/sudachiTrial/shared", "src/sudachiTrial/device")
@@ -159,6 +164,11 @@ tasks.withType<Test>().configureEach {
     val dictionaryFile = prepareSudachiDictionary.flatMap { it.assetsDirectory.file("sudachi/system_full.dic") }
     inputs.file(dictionaryFile).withPropertyName("sudachiDictionary")
     systemProperty("sudachi.dictionary", dictionaryFile.get().asFile.absolutePath)
+    if (readingPerformance) {
+        val reportFile = layout.buildDirectory.file("reports/readingPerformance/$performanceLabel.txt")
+        outputs.file(reportFile)
+        systemProperty("reading.performance.report", reportFile.get().asFile.absolutePath)
+    }
     if (sudachiTrial) {
         val reportFile = layout.buildDirectory.file("reports/sudachiTrial/jvm.txt")
         outputs.file(reportFile)

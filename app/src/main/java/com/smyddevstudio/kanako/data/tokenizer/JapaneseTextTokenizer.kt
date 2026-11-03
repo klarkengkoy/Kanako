@@ -141,25 +141,32 @@ class JapaneseTextTokenizer internal constructor(
         val joined = lines.joinToString("")
         val segments = tokenize(joined)
         var lineStart = 0
+        var segmentIndex = 0
+        var segmentStart = 0
         return lines.map { line ->
             val lineEnd = lineStart + line.length
-            var offset = 0
-            val result = segments.mapNotNull { segment ->
-                val start = offset
-                offset += segment.text.length
-                val from = maxOf(lineStart, start) - start
-                val to = minOf(lineEnd, offset) - start
-                if (from >= to) return@mapNotNull null
-                val surface = segment.text.substring(from, to)
-                val reading = if (from == 0 && to == segment.text.length) segment.reading else {
-                    val before = segment.text.take(from)
-                    val after = segment.text.drop(to)
-                    val raw = segment.reading
-                    if (!surface.containsKanji() || before.containsKanji() || after.containsKanji() ||
-                        raw == null || !raw.startsWith(before) || !raw.endsWith(after)
-                    ) null else raw.substring(before.length, raw.length - after.length)
+            val result = buildList {
+                while (segmentIndex < segments.size && segmentStart < lineEnd) {
+                    val segment = segments[segmentIndex]
+                    val segmentEnd = segmentStart + segment.text.length
+                    val from = maxOf(lineStart, segmentStart) - segmentStart
+                    val to = minOf(lineEnd, segmentEnd) - segmentStart
+                    if (from < to) {
+                        val surface = segment.text.substring(from, to)
+                        val reading = if (from == 0 && to == segment.text.length) segment.reading else {
+                            val before = segment.text.take(from)
+                            val after = segment.text.drop(to)
+                            val raw = segment.reading
+                            if (!surface.containsKanji() || before.containsKanji() || after.containsKanji() ||
+                                raw == null || !raw.startsWith(before) || !raw.endsWith(after)
+                            ) null else raw.substring(before.length, raw.length - after.length)
+                        }
+                        add(FuriganaSegment(surface, reading))
+                    }
+                    if (segmentEnd > lineEnd) break
+                    segmentStart = segmentEnd
+                    segmentIndex++
                 }
-                FuriganaSegment(surface, reading)
             }
             lineStart = lineEnd
             result
