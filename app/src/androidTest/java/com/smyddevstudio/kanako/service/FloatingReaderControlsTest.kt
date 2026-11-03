@@ -15,7 +15,9 @@ import android.view.View
 import androidx.compose.ui.platform.LocalView
 import android.graphics.drawable.AnimatedImageDrawable
 import android.widget.ImageView
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.LocalAccessibilityManager
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
 import org.junit.Assert.assertFalse
@@ -197,6 +199,69 @@ class FloatingReaderControlsTest {
         compose.onNodeWithText(context.getString(R.string.controls_title)).performClick()
         compose.onNodeWithText(context.getString(R.string.controls_stop)).assertIsDisplayed()
         compose.runOnIdle { assertEquals(0, reads) }
+    }
+
+    @Test fun errorPopupKeepsFocusOnTheSourceAndSurvivesReadyUntilItsTimeout() {
+        val status = mutableStateOf(R.string.reading_ready)
+        var host: View? = null
+        compose.setContent {
+            host = LocalView.current
+            CompositionLocalProvider(LocalAccessibilityManager provides null) {
+                KanakoTheme {
+                    FloatingOverlayContent(KanakoPreferences(), false, { _, _ -> }, {}, {}, {}, {},
+                        statusMessage = status.value)
+                }
+            }
+        }
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val message = context.getString(R.string.reading_protected)
+        compose.runOnIdle { status.value = R.string.reading_protected }
+        compose.onNodeWithText(message).assertIsDisplayed()
+        compose.runOnIdle { assertTrue(requireNotNull(host).hasWindowFocus()) }
+        compose.mainClock.autoAdvance = false
+        compose.runOnIdle { status.value = R.string.reading_ready }
+        compose.mainClock.advanceTimeBy(100)
+        compose.onNodeWithText(message).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.controls_stop)).assertDoesNotExist()
+        compose.mainClock.advanceTimeBy(6_100)
+        compose.onNodeWithText(message).assertDoesNotExist()
+    }
+
+    @Test fun tappingAfterAnErrorStartsOneReadAndDismissesTheStatusPopup() {
+        val reading = mutableStateOf(false)
+        var reads = 0
+        compose.setContent {
+            KanakoTheme {
+                FloatingOverlayContent(KanakoPreferences(), false, { _, _ -> }, {}, {}, {}, {},
+                    onReadOrClear = { reads++; reading.value = true },
+                    isReading = reading.value,
+                    statusMessage = if (reading.value) R.string.reading_working else R.string.reading_protected)
+            }
+        }
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        compose.onNodeWithText(context.getString(R.string.reading_protected)).assertIsDisplayed()
+        compose.onNodeWithContentDescription(description).performTouchInput { click() }
+        compose.mainClock.advanceTimeBy(600)
+        compose.onNodeWithText(context.getString(R.string.reading_protected)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.controls_title)).assertDoesNotExist()
+        compose.runOnIdle { assertEquals(1, reads) }
+    }
+
+    @Test fun hidingReaderDismissesAnErrorWithoutRestoringItOnReturn() {
+        val visible = mutableStateOf(true)
+        compose.setContent {
+            KanakoTheme {
+                FloatingOverlayContent(KanakoPreferences(), false, { _, _ -> }, {}, {}, {}, {},
+                    statusMessage = R.string.reading_protected, controlsVisible = visible.value)
+            }
+        }
+        val message = InstrumentationRegistry.getInstrumentation().targetContext
+            .getString(R.string.reading_protected)
+        compose.onNodeWithText(message).assertIsDisplayed()
+        compose.runOnIdle { visible.value = false }
+        compose.onNodeWithText(message).assertDoesNotExist()
+        compose.runOnIdle { visible.value = true }
+        compose.onNodeWithText(message).assertDoesNotExist()
     }
 
     @androidx.test.filters.SdkSuppress(minSdkVersion = 29)

@@ -99,24 +99,30 @@ fun FloatingOverlayContent(
     controlsVisible: Boolean = true
 ) {
     var isExpanded by remember { mutableStateOf(false) }
-    var showStatus by remember { mutableStateOf(false) }
+    var statusPopupMessage by remember { mutableStateOf<Int?>(null) }
     val accessibilityManager = LocalAccessibilityManager.current
     fun dismiss() {
         isExpanded = false
-        showStatus = false
+        statusPopupMessage = null
     }
     LaunchedEffect(controlsVisible) {
         if (!controlsVisible) dismiss()
     }
     LaunchedEffect(statusMessage, isReading) {
-        showStatus = !isReading && statusMessage !in listOf(
-            R.string.reading_ready, R.string.reading_shown, R.string.reading_working
-        )
-        if (showStatus) {
+        if (!controlsVisible || isReading || statusMessage == R.string.reading_shown ||
+            statusMessage == R.string.reading_working
+        ) {
+            statusPopupMessage = null
+        } else if (statusMessage != R.string.reading_ready) {
+            statusPopupMessage = statusMessage
+        }
+    }
+    LaunchedEffect(statusPopupMessage, accessibilityManager) {
+        if (statusPopupMessage != null) {
             delay(accessibilityManager?.calculateRecommendedTimeoutMillis(
                 6_000L, containsText = true, containsControls = true
             ) ?: 6_000L)
-            showStatus = false
+            statusPopupMessage = null
         }
     }
     val fabSize = when (preferences.fabSize) {
@@ -144,8 +150,8 @@ fun FloatingOverlayContent(
                 }
                 .combinedClickable(
                     onClick = { dismiss(); onReadOrClear() },
-                    onLongClick = { showStatus = false; isExpanded = !isExpanded },
-                    onDoubleClick = { showStatus = false; isExpanded = !isExpanded }
+                    onLongClick = { statusPopupMessage = null; isExpanded = !isExpanded },
+                    onDoubleClick = { statusPopupMessage = null; isExpanded = !isExpanded }
                 )
                 .pointerInput(Unit) {
                     detectDragGestures(
@@ -188,12 +194,12 @@ fun FloatingOverlayContent(
                 .graphicsLayer { alpha = dotAlpha }
                 .background(dotColor, CircleShape))
         }
-        if (controlsVisible && (isExpanded || showStatus)) {
+        if (controlsVisible && (isExpanded || statusPopupMessage != null)) {
             Popup(
                 popupPositionProvider = popupPosition,
                 onDismissRequest = ::dismiss,
                 properties = PopupProperties(
-                    focusable = true,
+                    focusable = isExpanded,
                     dismissOnBackPress = true,
                     dismissOnClickOutside = true,
                     excludeFromSystemGesture = false
@@ -225,10 +231,10 @@ fun FloatingOverlayContent(
                                 Icons.Rounded.PowerSettingsNew, { dismiss(); onStopService() },
                                 emphasized = true)
                         } else {
-                            Text(statusDescription,
+                            Text(stringResource(statusPopupMessage ?: statusMessage),
                                 modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                                 style = MaterialTheme.typography.bodySmall)
-                            TextButton(onClick = { isExpanded = true; showStatus = false },
+                            TextButton(onClick = { isExpanded = true; statusPopupMessage = null },
                                 modifier = Modifier.fillMaxWidth()) {
                                 Text(stringResource(R.string.controls_title))
                             }
