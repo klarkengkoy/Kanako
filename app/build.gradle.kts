@@ -17,6 +17,9 @@ val readerEngine = providers.gradleProperty("readerEngine").orElse("sudachi").ge
 require(readerEngine in setOf("sudachi", "kuromoji")) { "readerEngine must be sudachi or kuromoji" }
 val sudachiTrial = providers.gradleProperty("sudachiTrial").orNull == "true"
 val readingPerformance = providers.gradleProperty("readingPerformance").orNull == "true"
+val readingEvaluation = providers.gradleProperty("readingEvaluation").orNull == "true"
+val evaluationLabel = providers.gradleProperty("evaluationLabel").orElse("current").get()
+require(evaluationLabel.matches(Regex("[A-Za-z0-9_-]+"))) { "Invalid evaluationLabel" }
 val performanceLabel = providers.gradleProperty("performanceLabel").orElse("current").get()
 require(performanceLabel.matches(Regex("[A-Za-z0-9_-]+"))) { "Invalid performanceLabel" }
 val dictionarySpec = Properties().apply {
@@ -128,6 +131,10 @@ android {
     }
 
     if (readingPerformance) sourceSets["test"].kotlin.directories += "src/readingPerformance/kotlin"
+    if (readingEvaluation) {
+        sourceSets["test"].kotlin.directories += "src/readingEvaluation/kotlin"
+        sourceSets["test"].resources.directories += "src/readingEvaluation/resources"
+    }
 
     if (sudachiTrial) {
         sourceSets["test"].kotlin.directories += listOf("src/sudachiTrial/shared", "src/sudachiTrial/unit")
@@ -164,6 +171,11 @@ tasks.withType<Test>().configureEach {
     val dictionaryFile = prepareSudachiDictionary.flatMap { it.assetsDirectory.file("sudachi/system_full.dic") }
     inputs.file(dictionaryFile).withPropertyName("sudachiDictionary")
     systemProperty("sudachi.dictionary", dictionaryFile.get().asFile.absolutePath)
+    if (readingEvaluation) {
+        val reportDirectory = layout.buildDirectory.dir("reports/readingEvaluation/$evaluationLabel")
+        outputs.dir(reportDirectory)
+        systemProperty("reading.evaluation.report", reportDirectory.get().asFile.absolutePath)
+    }
     if (readingPerformance) {
         val reportFile = layout.buildDirectory.file("reports/readingPerformance/$performanceLabel.txt")
         outputs.file(reportFile)

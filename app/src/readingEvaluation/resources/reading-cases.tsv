@@ -1,0 +1,74 @@
+# Developer-authored lexical examples, not an independently annotated real-world corpus.
+# Person-name spellings without a supplied pronunciation are diagnostic and unscored.
+# OCR_INJECTED is a controlled code-point substitution, not an image OCR result.
+# Counter examples use quantity sentences; standalone 三本 and 八本 can also be names.
+# Counter pronunciation references: https://www.marugoto-online.jp/a1/support/all/appendix_01/
+# https://laits.utexas.edu/japanese/joshu/counters/counters_english.php
+id	partition	family	category	input	accepted_readings	reference_text
+d-station	development	station	COMMON	駅で電車を待つ。	えきででんしゃをまつ。	-
+d-photo	development	photo	COMMON	写真を撮る。	しゃしんをとる。	-
+d-music	development	music	COMMON	音楽を聞く。	おんがくをきく。	-
+d-shoes	development	shoes	COMMON	新しい靴を買う。	あたらしいくつをかう。	-
+d-flower	development	flower	COMMON	赤い花が咲く。	あかいはながさく。	-
+d-letter	development	letter	COMMON	友達に手紙を書く。	ともだちにてがみをかく。	-
+d-money	development	money	COMMON	お金を払う。	おかねをはらう。	-
+d-dog	development	dog	COMMON	大きな犬が走る。	おおきないぬがはしる。	-
+d-books1	development	counter-books	COUNTER	本を一冊買う。	ほんをいっさつかう。	-
+d-books8	development	counter-books	COUNTER	本を八冊買う。	ほんをはっさつかう。	-
+d-books10	development	counter-books	COUNTER	本を十冊買う。	ほんをじゅっさつかう。|ほんをじっさつかう。	-
+d-wrap-say	development	wrapped-say	WRAPPED	そう言\nいました。	そういいました。	-
+d-wrap-run	development	wrapped-run	WRAPPED	走\nりました。	はしりました。	-
+d-katakana-ni	development	katakana-smile	KATAKANA	ニコニコ笑う。	ニコニコわらう。	-
+d-katakana-ro	development	katakana-robot	KATAKANA	ロボットを動かす。	ロボットをうごかす。	-
+d-katakana-e	development	katakana-aircon	KATAKANA	エアコンを使う。	エアコンをつかう。	-
+d-place	development	place-hokkaido	PLACE	北海道	ほっかいどう	-
+e-library	evaluation	library	COMMON	図書室で辞書を探す。	としょしつでじしょをさがす。	-
+e-news	evaluation	news	COMMON	毎朝新聞を読む。	まいあさしんぶんをよむ。	-
+e-sky	evaluation	sky	COMMON	青い空を見る。	あおいそらをみる。	-
+e-window	evaluation	window	COMMON	窓を開ける。	まどをあける。	-
+e-cooking	evaluation	cooking	COMMON	料理を作る。	りょうりをつくる。	-
+e-spring	evaluation	spring	COMMON	春に桜が咲く。	はるにさくらがさく。	-
+e-work	evaluation	work	COMMON	仕事を始める。	しごとをはじめる。	-
+e-water	evaluation	water	COMMON	冷たい水を飲む。	つめたいみずをのむ。	-
+e-place-osaka	evaluation	place-osaka	PLACE	大阪	おおさか	-
+e-place-kyoto	evaluation	place-kyoto	PLACE	京都	きょうと	-
+e-variant-tomorrow	evaluation	variant-tomorrow	VARIANT	明日	あした|あす|みょうにち	-
+e-variant-yesterday	evaluation	variant-earlier	VARIANT	一昨日	おととい|いっさくじつ	-
+e-variant-life	evaluation	variant-life	VARIANT	生物	せいぶつ|なまもの	-
+n-east	diagnostic	name-east	NAME_AMBIGUOUS	東さんが来た。	-	-
+n-ikuta	diagnostic	name-ikuta	NAME_AMBIGUOUS	生田さんに会う。	-	-
+n-one	diagnostic	name-one	NAME_AMBIGUOUS	一さんが来た。	-	-
+n-corner	diagnostic	name-corner	NAME_AMBIGUOUS	角田さんと話す。	-	-
+o-ni	diagnostic	ocr-ni	OCR_INJECTED	ニ人で歩く。	-	二人で歩く。
+o-ro	diagnostic	ocr-ro	OCR_INJECTED	入ロで待つ。	-	入口で待つ。
+o-e	diagnostic	ocr-e	OCR_INJECTED	エ場で働く。	-	工場で働く。
+o-ka	diagnostic	ocr-ka	OCR_INJECTED	カを合わせる。	-	力を合わせる。
+o-ta	diagnostic	ocr-ta	OCR_INJECTED	タ方に帰る。	-	夕方に帰る。
+u-bmp	diagnostic	unknown-bmp	UNKNOWN	鿿	-	-
+u-supplementary	diagnostic	unknown-supplementary	UNKNOWN	𠮷	-	-
+w-unsafe	diagnostic	wrapped-compound	WRAPPED_UNSAFE	学\n校に行く。	-	-
+g-japan	diagnostic	guard-japan	GUARD	日本	-	-
+g-name	diagnostic	guard-honda	GUARD	本田さん	-	-
+g-space	diagnostic	guard-space	GUARD	一 本	-	-
+g-name-count	diagnostic	guard-count-name	GUARD	三本さん	-	-
+d-counter-long-一	development	counter-long	COUNTER	鉛筆を一本買う。	えんぴつをいっぽんかう。	-
+d-counter-long-二	development	counter-long	COUNTER	鉛筆を二本買う。	えんぴつをにほんかう。	-
+d-counter-long-三	development	counter-long	COUNTER	鉛筆を三本買う。	えんぴつをさんぼんかう。	-
+d-counter-long-四	development	counter-long	COUNTER	鉛筆を四本買う。	えんぴつをよんほんかう。	-
+d-counter-long-六	development	counter-long	COUNTER	鉛筆を六本買う。	えんぴつをろっぽんかう。	-
+d-counter-long-八	development	counter-long	COUNTER	鉛筆を八本買う。	えんぴつをはっぽんかう。	-
+d-counter-long-十	development	counter-long	COUNTER	鉛筆を十本買う。	えんぴつをじゅっぽんかう。|えんぴつをじっぽんかう。	-
+e-counter-animals-一	evaluation	counter-animals	COUNTER	猫が一匹いる。	ねこがいっぴきいる。	-
+e-counter-animals-二	evaluation	counter-animals	COUNTER	猫が二匹いる。	ねこがにひきいる。	-
+e-counter-animals-三	evaluation	counter-animals	COUNTER	猫が三匹いる。	ねこがさんびきいる。	-
+e-counter-animals-四	evaluation	counter-animals	COUNTER	猫が四匹いる。	ねこがよんひきいる。	-
+e-counter-animals-六	evaluation	counter-animals	COUNTER	猫が六匹いる。	ねこがろっぴきいる。	-
+e-counter-animals-八	evaluation	counter-animals	COUNTER	猫が八匹いる。	ねこがはっぴきいる。	-
+e-counter-animals-十	evaluation	counter-animals	COUNTER	猫が十匹いる。	ねこがじゅっぴきいる。|ねこがじっぴきいる。	-
+e-counter-cups-一	evaluation	counter-cups	COUNTER	水を一杯飲む。	みずをいっぱいのむ。	-
+e-counter-cups-二	evaluation	counter-cups	COUNTER	水を二杯飲む。	みずをにはいのむ。	-
+e-counter-cups-三	evaluation	counter-cups	COUNTER	水を三杯飲む。	みずをさんばいのむ。	-
+e-counter-cups-四	evaluation	counter-cups	COUNTER	水を四杯飲む。	みずをよんはいのむ。	-
+e-counter-cups-六	evaluation	counter-cups	COUNTER	水を六杯飲む。	みずをろっぱいのむ。	-
+e-counter-cups-八	evaluation	counter-cups	COUNTER	水を八杯飲む。	みずをはっぱいのむ。	-
+e-counter-cups-十	evaluation	counter-cups	COUNTER	水を十杯飲む。	みずをじゅっぱいのむ。|みずをじっぱいのむ。	-

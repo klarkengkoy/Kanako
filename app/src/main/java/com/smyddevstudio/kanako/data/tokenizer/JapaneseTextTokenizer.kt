@@ -14,6 +14,15 @@ class JapaneseTextTokenizer internal constructor(
         // Evidence-backed spatial nouns only; abstract "指導の下" must retain モト.
         private val SPATIAL_MODIFIERS = setOf("木", "机")
         private val LOCATIVE_PARTICLES = setOf("で", "に", "へ", "から", "まで")
+        private val NAME_SUFFIXES = setOf("さん", "様", "さま", "氏", "君", "くん", "ちゃん", "先生")
+        private val COUNTER_TAGS = setOf("接尾辞", "接尾", "助数詞", "助数詞可能")
+        private val REGULAR_COUNTER_ENDINGS = listOf("ニ", "ヨン", "ゴ", "ナナ", "シチ", "キュウ", "ゼロ", "レイ")
+        private data class CounterForms(val normal: String, val voiced: String, val doubled: String)
+        private val H_COUNTERS = mapOf(
+            "本" to CounterForms("ホン", "ボン", "ポン"),
+            "匹" to CounterForms("ヒキ", "ビキ", "ピキ"),
+            "杯" to CounterForms("ハイ", "バイ", "パイ")
+        )
 
         private val DIGRAPHS = mapOf(
             "きゃ" to "kya", "きゅ" to "kyu", "きょ" to "kyo",
@@ -72,26 +81,37 @@ class JapaneseTextTokenizer internal constructor(
                     text.substring(token.position, token.position + surface.length) == surface
                 ) { "Tokenizer must preserve original source spans" }
                 val next = tokens.getOrNull(index + 1)
-                if (token.isNumber) {
+                val precedingNumber = text.getOrNull(token.position - 1)?.let {
+                    it in "0123456789０１２３４５６７８９一二三四五六七八九十百千万億第"
+                } == true
+                val continuesNumber = tokens.getOrNull(index - 1)?.let {
+                    it.isNumber && it.position + it.surface.length == token.position
+                } == true
+                if (token.isNumber && !token.isPersonName && !precedingNumber && !continuesNumber) {
                     var numberEnd = index
                     while (tokens.getOrNull(numberEnd + 1)?.let {
-                        it.isNumber && it.position == tokens[numberEnd].position + tokens[numberEnd].surface.length
+                        it.isNumber && !it.isPersonName &&
+                            it.position == tokens[numberEnd].position + tokens[numberEnd].surface.length
                     } == true) numberEnd++
                     val counter = tokens.getOrNull(numberEnd + 1)
-                    val number = tokens.subList(index, numberEnd + 1).joinToString("") { it.reading.orEmpty() }
-                    val contracted = when {
-                        number.endsWith("イチ") || number.endsWith("ハチ") -> number.dropLast(1) + "ッ"
-                        number.endsWith("ジュウ") -> number.dropLast(1) + "ッ"
-                        else -> null
+                    val numberTokens = tokens.subList(index, numberEnd + 1)
+                    val completeNumber = numberTokens.all {
+                        val reading = it.reading
+                        !reading.isNullOrEmpty() && reading.all { ch -> ch in '\u30A1'..'\u30FA' || ch == 'ー' }
                     }
-                    if (counter?.surface == "冊" && counter.reading == "サツ" &&
-                        (counter.partOfSpeechLevel1 == "接尾辞" || "接尾" in counter.partOfSpeech) &&
+                    val number = numberTokens.joinToString("") { it.reading.orEmpty() }
+                    val corrected = if (completeNumber && counter != null && !counter.isPersonName &&
                         counter.position == tokens[numberEnd].position + tokens[numberEnd].surface.length &&
-                        contracted != null
-                    ) {
+                        tokens.getOrNull(numberEnd + 2)?.surface !in NAME_SUFFIXES
+                    ) counterReading(number, counter) else null
+                    if (corrected != null && counter != null) {
+                        check((index..(numberEnd + 1)).all { i ->
+                            val part = tokens[i]
+                            text.regionMatches(part.position, part.surface, 0, part.surface.length)
+                        }) { "Tokenizer must preserve original source spans" }
                         cursor = counter.position + counter.surface.length
                         add(FuriganaSegment(text.substring(token.position, cursor),
-                            formatReading(contracted + "サツ", scriptType)))
+                            formatReading(corrected, scriptType)))
                         index = numberEnd + 2
                         continue
                     }
@@ -99,9 +119,6 @@ class JapaneseTextTokenizer internal constructor(
                 val afterCounter = tokens.getOrNull(index + 2)
                 val ordinaryCounter = afterCounter == null || afterCounter.partOfSpeechLevel1 in
                     listOf("助詞", "記号", "補助記号") || afterCounter.surface in listOf("組", "連れ")
-                val precedingNumber = text.getOrNull(token.position - 1)?.let {
-                    it in "0123456789０１２３４５６７８９一二三四五六七八九十百千万億第"
-                } == true
                 if (surface in listOf("一", "二") && next?.surface == "人" &&
                     next.position == token.position + surface.length && ordinaryCounter && !precedingNumber
                 ) {
@@ -135,6 +152,28 @@ class JapaneseTextTokenizer internal constructor(
             }
             if (cursor < text.length) add(FuriganaSegment(text.substring(cursor)))
         }
+    }
+
+    private fun counterReading(number: String, counter: JapaneseToken): String? {
+        if (counter.partOfSpeech.none { it in COUNTER_TAGS }) return null
+        if (counter.surface == "冊" && counter.reading == "サツ") {
+            return when {
+                number.endsWith("イチ") || number.endsWith("ハチ") || number.endsWith("ジュウ") ->
+                    number.dropLast(1) + "ッサツ"
+                else -> null
+            }
+        }
+        val forms = H_COUNTERS[counter.surface] ?: return null
+        if (counter.reading != forms.normal && counter.reading != forms.voiced && counter.reading != forms.doubled) return null
+        val reading = when {
+            number.endsWith("ッ") -> number + forms.doubled
+            number.endsWith("イチ") || number.endsWith("ロク") || number.endsWith("ハチ") ||
+                number.endsWith("ジュウ") -> number.dropLast(1) + "ッ" + forms.doubled
+            number.endsWith("サン") -> number + forms.voiced
+            REGULAR_COUNTER_ENDINGS.any(number::endsWith) -> number + forms.normal
+            else -> return null
+        }
+        return reading.takeUnless { it == number + counter.reading }
     }
 
     internal fun tokenizeLines(lines: List<String>): List<List<FuriganaSegment>> {
