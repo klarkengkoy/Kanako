@@ -73,7 +73,10 @@ fun HomeScreen(
     accessibilityEnabled: Boolean = false,
     accessibilityConnected: Boolean = false,
     onRequestOverlay: () -> Unit = {},
-    onRequestAccessibility: () -> Unit = {}
+    onRequestAccessibility: () -> Unit = {},
+    showTutorialInvitation: Boolean = false,
+    onNavigateToTutorial: () -> Unit = {},
+    onDismissTutorialInvitation: () -> Unit = {}
 ) {
     var showAccess by rememberSaveable { mutableStateOf(false) }
     val readingActionModifier = Modifier.widthIn(max = 320.dp).fillMaxWidth().heightIn(min = 48.dp)
@@ -224,6 +227,9 @@ fun HomeScreen(
                             )
                         }
                     }
+                }
+                if (showTutorialInvitation) {
+                    TutorialInvitation(onStart = onNavigateToTutorial, onDismiss = onDismissTutorialInvitation)
                 }
                 TextButton(onClick = onNavigateToHowItWorks, modifier = Modifier.align(Alignment.CenterHorizontally)) {
                     Text(stringResource(R.string.how_it_works))

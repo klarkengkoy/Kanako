@@ -174,4 +174,25 @@
     <string name="home_setup_action">Set up floating reader</string>
     <string name="home_next_step">Open another app, then tap Kanako to read. With Auto-read enabled, reading starts after detected changes settle.</string>
     <string name="reading_bring_front">Bring reading to front</string>
+    <string name="tutorial_title">Practice with Kanako</string>
+    <string name="tutorial_invite">Try both readers with interactive samples. You can skip now and replay from How it works.</string>
+    <string name="tutorial_practice">Start practice</string>
+    <string name="tutorial_exit">Exit practice</string>
+    <string name="tutorial_next">Next</string>
+    <string name="tutorial_skip">Skip step</string>
+    <string name="tutorial_step">Step %1$d of %2$d</string>
+    <string name="tutorial_complete">Finish practice</string>
+    <string name="tutorial_completed">Completed · Replay anytime</string>
+    <string name="tutorial_sample_notice">Practice samples only. No camera or screen capture. No files are created, and your reading settings stay unchanged.</string>
+    <string name="tutorial_floating_read">Tap the sample mascot to show furigana, then tap again to clear it. During real reading, red status messages explain when readings cannot be shown.</string>
+    <string name="tutorial_floating_controls">Drag the sample mascot. Double tap or hold it to open controls, then stop the sample reader. These controls work the same way in the floating reader.</string>
+    <string name="tutorial_camera_focus">Tap the sample to practice focusing. Pinch or use the zoom slider to change its size. This sample does not use your camera.</string>
+    <string name="tutorial_camera_capture">Capture the sample to freeze it for reading. In the real camera, Return to camera lets you take another photo.</string>
+    <string name="tutorial_camera_appearance">Try Kana and Romaji on this sample. In the real reader, Preferences changes the appearance of both readers.</string>
+    <string name="tutorial_camera_save">Try the sample save button. In the real reader, Save with furigana opens Android’s destination picker and saves the whole annotated photo, regardless of zoom.</string>
+    <string name="tutorial_success">Practice action completed</string>
+    <string name="tutorial_save_confirm">This is a practice destination. Confirm to finish the exercise; no image or file will be created.</string>
+    <string name="tutorial_finished">You can replay either path from How it works. Opening the real reader still uses its usual access checks and consent.</string>
+    <string name="tutorial_start_tool">Open reader</string>
+    <string name="tutorial_replay">Choose another path</string>
 </resources>

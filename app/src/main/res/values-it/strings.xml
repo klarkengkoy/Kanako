@@ -174,4 +174,25 @@
     <string name="home_setup_action">Configura lettore mobile</string>
     <string name="home_next_step">Apri un’altra app, poi tocca Kanako per leggere. Con la lettura automatica attiva, la lettura inizia quando le modifiche rilevate si stabilizzano.</string>
     <string name="reading_bring_front">Porta la lettura davanti</string>
+    <string name="tutorial_title">Esercitati con Kanako</string>
+    <string name="tutorial_invite">Prova entrambi i lettori con esempi interattivi. Puoi saltare e riprendere da Come funziona.</string>
+    <string name="tutorial_practice">Inizia la pratica</string>
+    <string name="tutorial_exit">Esci dalla pratica</string>
+    <string name="tutorial_next">Avanti</string>
+    <string name="tutorial_skip">Salta passaggio</string>
+    <string name="tutorial_step">Passaggio %1$d di %2$d</string>
+    <string name="tutorial_complete">Termina la pratica</string>
+    <string name="tutorial_completed">Completato · Ripetibile</string>
+    <string name="tutorial_sample_notice">Solo esempi di pratica. Nessun uso della fotocamera o acquisizione dello schermo. Nessun file creato; le impostazioni restano invariate.</string>
+    <string name="tutorial_floating_read">Tocca il personaggio per mostrare i furigana, poi tocca di nuovo per cancellarli. Nella lettura reale, i messaggi rossi spiegano perché non è possibile mostrare le letture.</string>
+    <string name="tutorial_floating_controls">Trascina il personaggio. Tocca due volte o tieni premuto per aprire i comandi, poi ferma il lettore di esempio. Il lettore mobile usa gli stessi gesti.</string>
+    <string name="tutorial_camera_focus">Tocca l’esempio per simulare la messa a fuoco. Pizzica o usa il cursore per lo zoom. Questo esempio non usa la fotocamera.</string>
+    <string name="tutorial_camera_capture">Scatta una foto dell’esempio per bloccare la lettura. Nella fotocamera reale, Torna alla fotocamera permette di scattarne un’altra.</string>
+    <string name="tutorial_camera_appearance">Prova Kana e Romaji sull’esempio. Nei lettori reali, le preferenze modificano l’aspetto di entrambi.</string>
+    <string name="tutorial_camera_save">Prova il pulsante di salvataggio. Nel lettore reale, Salva con furigana apre il selettore di destinazione Android e salva l’intera foto annotata, indipendentemente dallo zoom.</string>
+    <string name="tutorial_success">Azione di pratica completata</string>
+    <string name="tutorial_save_confirm">Destinazione di pratica. Conferma per terminare l’esercizio; non verranno creati immagini o file.</string>
+    <string name="tutorial_finished">Puoi ripetere entrambi i percorsi da Come funziona. L’apertura del lettore reale mantiene i normali controlli di accesso e consenso.</string>
+    <string name="tutorial_start_tool">Apri lettore</string>
+    <string name="tutorial_replay">Scegli un altro percorso</string>
 </resources>

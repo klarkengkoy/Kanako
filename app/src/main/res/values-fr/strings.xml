@@ -174,4 +174,25 @@
     <string name="home_setup_action">Configurer le lecteur flottant</string>
     <string name="home_next_step">Ouvrez une autre application, puis touchez Kanako pour lire. Si la lecture automatique est activée, elle démarre une fois les changements détectés stabilisés.</string>
     <string name="reading_bring_front">Placer la lecture devant</string>
+    <string name="tutorial_title">S’entraîner avec Kanako</string>
+    <string name="tutorial_invite">Essayez les deux lecteurs avec des exemples interactifs. Vous pouvez passer et reprendre depuis le mode d’emploi.</string>
+    <string name="tutorial_practice">Commencer l’exercice</string>
+    <string name="tutorial_exit">Quitter l’exercice</string>
+    <string name="tutorial_next">Suivant</string>
+    <string name="tutorial_skip">Passer cette étape</string>
+    <string name="tutorial_step">Étape %1$d sur %2$d</string>
+    <string name="tutorial_complete">Terminer l’exercice</string>
+    <string name="tutorial_completed">Terminé · À refaire à tout moment</string>
+    <string name="tutorial_sample_notice">Exemples d’entraînement uniquement. Aucune capture ni utilisation de l’appareil photo. Aucun fichier créé et vos réglages restent inchangés.</string>
+    <string name="tutorial_floating_read">Touchez le personnage pour afficher les furigana, puis touchez à nouveau pour les effacer. En lecture réelle, les messages rouges expliquent pourquoi les lectures ne peuvent pas s’afficher.</string>
+    <string name="tutorial_floating_controls">Faites glisser le personnage. Touchez deux fois ou maintenez pour ouvrir les commandes, puis arrêtez le lecteur d’exemple. Le lecteur flottant utilise les mêmes gestes.</string>
+    <string name="tutorial_camera_focus">Touchez l’exemple pour simuler la mise au point. Pincez ou utilisez le curseur pour zoomer. Cet exemple n’utilise pas votre appareil photo.</string>
+    <string name="tutorial_camera_capture">Prenez une photo de l’exemple pour figer la lecture. Avec le véritable appareil photo, Retour à l’appareil photo permet de reprendre une photo.</string>
+    <string name="tutorial_camera_appearance">Essayez les kana et les romaji sur cet exemple. Les préférences modifient l’apparence des deux véritables lecteurs.</string>
+    <string name="tutorial_camera_save">Essayez le bouton de sauvegarde. En lecture réelle, Enregistrer avec les furigana ouvre le sélecteur de destination Android et enregistre toute la photo annotée, quel que soit le zoom.</string>
+    <string name="tutorial_success">Action d’entraînement effectuée</string>
+    <string name="tutorial_save_confirm">Destination d’entraînement. Confirmez pour terminer l’exercice ; aucune image ni aucun fichier ne sera créé.</string>
+    <string name="tutorial_finished">Vous pouvez refaire chaque parcours depuis le mode d’emploi. L’ouverture du véritable lecteur conserve les vérifications d’accès et le consentement habituels.</string>
+    <string name="tutorial_start_tool">Ouvrir le lecteur</string>
+    <string name="tutorial_replay">Choisir un autre parcours</string>
 </resources>

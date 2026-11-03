@@ -56,7 +56,8 @@ fun HowItWorksScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     onNavigateToHome: () -> Unit = {},
-    initialTopic: HelpTopic = HelpTopic.FLOATING_READER
+    initialTopic: HelpTopic = HelpTopic.FLOATING_READER,
+    onNavigateToTutorial: () -> Unit = {}
 ) {
     var topic by rememberSaveable { mutableStateOf(initialTopic) }
     Scaffold(
@@ -140,6 +141,10 @@ fun HowItWorksScreen(
                         ReadingExplanation(stringResource(R.string.how_limits_title), stringResource(R.string.how_limits))
                         ReadingExplanation(stringResource(R.string.how_recovery_title), stringResource(R.string.how_recovery))
                     }
+                }
+                OutlinedButton(onClick = onNavigateToTutorial,
+                    modifier = Modifier.align(Alignment.CenterHorizontally).heightIn(min = 48.dp)) {
+                    Text(stringResource(R.string.tutorial_title))
                 }
                 OutlinedButton(onClick = onNavigateToHome,
                     modifier = Modifier.align(Alignment.CenterHorizontally).heightIn(min = 48.dp)) {

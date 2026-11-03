@@ -16,6 +16,7 @@ import com.smyddevstudio.kanako.model.FuriganaColor
 import com.smyddevstudio.kanako.model.FuriganaSize
 import com.smyddevstudio.kanako.model.KanakoPreferences
 import com.smyddevstudio.kanako.model.ScriptType
+import com.smyddevstudio.kanako.model.TutorialPath
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -44,6 +45,9 @@ class UserPreferencesRepository(
         private val AUTO_READ_OFFER_PENDING = booleanPreferencesKey("auto_read_offer_pending")
         private val SNAPSHOT_DISCLOSURE_ACCEPTED = booleanPreferencesKey("snapshot_disclosure_accepted")
         private val CAMERA_PERMISSION_DENIED = booleanPreferencesKey("camera_permission_denied")
+        private val TUTORIAL_INVITATION_SEEN = booleanPreferencesKey("tutorial_invitation_seen")
+        private val TUTORIAL_FLOATING_COMPLETED = booleanPreferencesKey("tutorial_floating_completed")
+        private val TUTORIAL_CAMERA_COMPLETED = booleanPreferencesKey("tutorial_camera_completed")
     }
 
     val userPreferencesFlow: Flow<KanakoPreferences> = dataStore.data
@@ -106,7 +110,10 @@ class UserPreferencesRepository(
             autoReadAfterScroll = preferences[AUTO_READ_AFTER_SCROLL] ?: false,
             offerAutoRead = preferences[AUTO_READ_OFFER_PENDING] ?: false,
             hasAcceptedSnapshotDisclosure = preferences[SNAPSHOT_DISCLOSURE_ACCEPTED] ?: false,
-            hasDeniedCameraPermission = preferences[CAMERA_PERMISSION_DENIED] ?: false
+            hasDeniedCameraPermission = preferences[CAMERA_PERMISSION_DENIED] ?: false,
+            hasSeenTutorialInvitation = preferences[TUTORIAL_INVITATION_SEEN] ?: false,
+            completedFloatingTutorial = preferences[TUTORIAL_FLOATING_COMPLETED] ?: false,
+            completedCameraTutorial = preferences[TUTORIAL_CAMERA_COMPLETED] ?: false
         )
     }
 
@@ -124,6 +131,20 @@ class UserPreferencesRepository(
         dataStore.edit {
             it[AUTO_READ_AFTER_SCROLL] = enabled
             it[AUTO_READ_OFFER_PENDING] = false
+        }
+    }
+
+    suspend fun dismissTutorialInvitation() {
+        dataStore.edit { it[TUTORIAL_INVITATION_SEEN] = true }
+    }
+
+    suspend fun completeTutorial(path: TutorialPath) {
+        dataStore.edit {
+            it[TUTORIAL_INVITATION_SEEN] = true
+            it[when (path) {
+                TutorialPath.FLOATING -> TUTORIAL_FLOATING_COMPLETED
+                TutorialPath.CAMERA -> TUTORIAL_CAMERA_COMPLETED
+            }] = true
         }
     }
 

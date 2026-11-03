@@ -2,6 +2,7 @@ package com.smyddevstudio.kanako.ui.navigation
 
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
+import com.smyddevstudio.kanako.model.TutorialPath
 
 sealed interface Screen : NavKey {
     @Serializable
@@ -12,6 +13,9 @@ sealed interface Screen : NavKey {
 
     @Serializable
     data class Help(val topic: HelpTopic) : Screen
+
+    @Serializable
+    data class Tutorial(val path: TutorialPath? = null) : Screen
 
     @Serializable
     data object Camera : Screen

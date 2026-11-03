@@ -12,6 +12,7 @@ import com.smyddevstudio.kanako.model.FuriganaColor
 import com.smyddevstudio.kanako.model.FuriganaSize
 import com.smyddevstudio.kanako.model.KanakoPreferences
 import com.smyddevstudio.kanako.model.ScriptType
+import com.smyddevstudio.kanako.model.TutorialPath
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
@@ -90,6 +91,40 @@ class UserPreferencesRepositoryTest {
         repository.initializeAutoReadOffer(isNewInstallation = true)
         assertTrue(repository.userPreferencesFlow.first().autoReadAfterScroll)
         assertFalse(repository.userPreferencesFlow.first().offerAutoRead)
+    }
+
+    @Test
+    fun dismissingTutorialPreservesExistingReadingChoicesAndConsent() = runTest(testDispatcher) {
+        repository.updateScriptType(ScriptType.ROMAJI)
+        repository.updateFabOffset(480, 620)
+        repository.updateAutoReadAfterScroll(true)
+        repository.acceptSnapshotDisclosure()
+        val before = repository.userPreferencesFlow.first()
+        repository.dismissTutorialInvitation()
+        val restored = UserPreferencesRepository(testDataStore).userPreferencesFlow.first()
+        assertEquals(before.copy(hasSeenTutorialInvitation = true), restored)
+    }
+
+    @Test
+    fun tutorialCompletionIsIndependentForEachPathAndNeverGrantsAccess() = runTest(testDispatcher) {
+        val before = repository.userPreferencesFlow.first()
+        repository.completeTutorial(TutorialPath.FLOATING)
+        val floating = UserPreferencesRepository(testDataStore).userPreferencesFlow.first()
+        assertEquals(before.copy(hasSeenTutorialInvitation = true, completedFloatingTutorial = true), floating)
+        repository.completeTutorial(TutorialPath.CAMERA)
+        val both = UserPreferencesRepository(testDataStore).userPreferencesFlow.first()
+        assertEquals(floating.copy(completedCameraTutorial = true), both)
+        assertFalse(both.hasAcceptedSnapshotDisclosure)
+        assertFalse(both.autoReadAfterScroll)
+        assertFalse(both.isOverlayActive)
+    }
+
+    @Test
+    fun tutorialDismissalDoesNotAcceptOrDismissTheSeparateAutoReadOffer() = runTest(testDispatcher) {
+        repository.initializeAutoReadOffer(isNewInstallation = true)
+        val before = repository.userPreferencesFlow.first()
+        repository.dismissTutorialInvitation()
+        assertEquals(before.copy(hasSeenTutorialInvitation = true), repository.userPreferencesFlow.first())
     }
 
     @Test

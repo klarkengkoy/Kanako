@@ -45,6 +45,8 @@ import com.smyddevstudio.kanako.data.repository.UserPreferencesRepository
 import com.smyddevstudio.kanako.model.KanakoPreferences
 import com.smyddevstudio.kanako.service.KanakoOverlayService
 import com.smyddevstudio.kanako.service.KanakoOverlaySession
+import com.smyddevstudio.kanako.ui.screens.TutorialScreen
+import com.smyddevstudio.kanako.model.TutorialPath
 import com.smyddevstudio.kanako.ui.screens.HomeScreen
 import com.smyddevstudio.kanako.ui.screens.HowItWorksScreen
 import com.smyddevstudio.kanako.ui.screens.PreferencesScreen
@@ -69,9 +71,11 @@ fun KanakoApp(
     val preferences by preferencesFlow.collectAsStateWithLifecycle(initialValue = KanakoPreferences())
     val coroutineScope = rememberCoroutineScope()
     val backStack = rememberNavBackStack(Screen.Home)
+    var onboardingInitialized by remember { mutableStateOf(false) }
     LaunchedEffect(repository) {
         val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
         repository.initializeAutoReadOffer(packageInfo.firstInstallTime == packageInfo.lastUpdateTime)
+        onboardingInitialized = true
     }
     val cameraReader: CameraReaderViewModel = viewModel()
     val hasCameraEntry = Screen.Camera in backStack
@@ -206,7 +210,14 @@ fun KanakoApp(
                         context.startActivity(KanakoOverlayService.createOverlayPermissionIntent(context))
                     },
                     onRequestAccessibility = { showDisclosure = true },
-                    onNavigateToPreferences = { backStack.add(Screen.Preferences) }
+                    onNavigateToPreferences = { backStack.add(Screen.Preferences) },
+                    showTutorialInvitation = onboardingInitialized && !preferences.hasSeenTutorialInvitation &&
+                        !preferences.offerAutoRead,
+                    onNavigateToTutorial = {
+                        coroutineScope.launch { repository.dismissTutorialInvitation() }
+                        backStack.add(Screen.Tutorial())
+                    },
+                    onDismissTutorialInvitation = { coroutineScope.launch { repository.dismissTutorialInvitation() } }
                 )
             }
             entry<Screen.SetupPermissions> {
@@ -221,14 +232,37 @@ fun KanakoApp(
                     },
                     onNavigateToHome = {
                         openHome()
-                    }
+                    },
+                    onNavigateToTutorial = { backStack.add(Screen.Tutorial()) }
                 )
             }
             entry<Screen.Help> { route ->
                 HowItWorksScreen(
                     initialTopic = route.topic,
                     onBack = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) },
-                    onNavigateToHome = { openHome() }
+                    onNavigateToHome = { openHome() },
+                    onNavigateToTutorial = { backStack.add(Screen.Tutorial()) }
+                )
+            }
+            entry<Screen.Tutorial> { route ->
+                TutorialScreen(
+                    initialPath = route.path,
+                    preferences = preferences,
+                    onBack = { if (backStack.lastOrNull() is Screen.Tutorial) backStack.removeAt(backStack.lastIndex) },
+                    onComplete = { path ->
+                        coroutineScope.launch {
+                            repository.completeTutorial(path)
+                            if (backStack.lastOrNull() is Screen.Tutorial) backStack.removeAt(backStack.lastIndex)
+                        }
+                    },
+                    onOpenReader = { path ->
+                        if (path == TutorialPath.FLOATING) openHome() else {
+                            val existing = backStack.indexOfLast { it == Screen.CameraResult || it == Screen.Camera }
+                            if (existing >= 0) {
+                                while (backStack.lastIndex > existing) backStack.removeAt(backStack.lastIndex)
+                            } else backStack.add(Screen.Camera)
+                        }
+                    }
                 )
             }
             entry<Screen.Camera> {

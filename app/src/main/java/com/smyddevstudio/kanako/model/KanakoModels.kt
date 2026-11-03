@@ -47,6 +47,9 @@ enum class FabDocking(val label: String) {
 }
 
 @Serializable
+enum class TutorialPath { FLOATING, CAMERA }
+
+@Serializable
 data class KanakoPreferences(
     val furiganaSize: FuriganaSize = FuriganaSize.MEDIUM,
     val furiganaColor: FuriganaColor = FuriganaColor.MUSHROOM_CRIMSON,
@@ -65,5 +68,8 @@ data class KanakoPreferences(
     val isOverlayActive: Boolean = false,
     val isAutoTranslateEnabled: Boolean = false,
     val isDarkMode: Boolean = false,
-    val hasDeniedCameraPermission: Boolean = false
+    val hasDeniedCameraPermission: Boolean = false,
+    val hasSeenTutorialInvitation: Boolean = false,
+    val completedFloatingTutorial: Boolean = false,
+    val completedCameraTutorial: Boolean = false
 )
