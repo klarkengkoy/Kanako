@@ -2,7 +2,6 @@ package com.smyddevstudio.kanako.service
 
 import android.graphics.Rect
 import com.google.mlkit.vision.text.Text
-import com.smyddevstudio.kanako.data.tokenizer.JapaneseTextTokenizer
 import com.smyddevstudio.kanako.ui.components.FuriganaSegment
 import java.util.concurrent.Executors
 import com.google.mlkit.common.MlKitException
@@ -102,9 +101,8 @@ internal class ScreenCaptureEngine : AutoCloseable {
 internal fun screenReadingLines(
     text: Text, left: Int, top: Int, windowId: Int, viewport: ReadingBounds
 ): List<RecognizedTextLine> {
-    val tokenizer = JapaneseTextTokenizer()
-    return text.textBlocks.flatMap { block ->
-        val lines = block.lines.mapNotNull { line ->
+    val blocks = text.textBlocks.map { block ->
+        block.lines.mapNotNull { line ->
             val box = line.boundingBox
             if (line.text.isBlank() || box == null || box.isEmpty) null else {
                 fun bounds(rect: Rect) = ReadingBounds(rect.left + left, rect.top + top,
@@ -135,21 +133,14 @@ internal fun screenReadingLines(
                     })
             }
         }
-        val groups = mutableListOf<MutableList<RecognizedTextLine>>()
-        lines.forEach { line ->
-            val previous = groups.lastOrNull()?.lastOrNull()
-            if (previous != null && continuesReadingLine(previous.text,
-                    ReadingBounds(previous.bounds.left, previous.bounds.top, previous.bounds.right, previous.bounds.bottom),
-                    ReadingBounds(line.bounds.left, line.bounds.top, line.bounds.right, line.bounds.bottom))
-            ) groups.last().add(line) else groups.add(mutableListOf(line))
-        }
-        groups.flatMap { group ->
-            val segments = tokenizer.tokenizeLines(group.map { it.text })
-            group.mapIndexed { index, line -> line.copy(segments = segments[index]) }
-        }.filter { line -> viewport.intersection(
+    }
+    val readings = ReadingContext().tokenize(blocks, { it.text }, {
+        ReadingBounds(it.bounds.left, it.bounds.top, it.bounds.right, it.bounds.bottom)
+    })
+    return blocks.flatten().mapIndexed { index, line -> line.copy(segments = readings[index]) }
+        .filter { line -> viewport.intersection(
             ReadingBounds(line.bounds.left, line.bounds.top, line.bounds.right, line.bounds.bottom)) != null
         }
-    }
 }
 
 internal class SnapshotFailure(val reason: Reason) : Exception() {

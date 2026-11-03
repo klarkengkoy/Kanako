@@ -19,7 +19,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.japanese.JapaneseTextRecognizerOptions
-import com.smyddevstudio.kanako.ui.components.FuriganaSegment
+import com.smyddevstudio.kanako.service.ReadingContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
 import java.util.concurrent.atomic.AtomicBoolean
@@ -43,7 +43,7 @@ internal class LiveCameraSession(
     private val geometryLock = Any()
     @Volatile private var transform: Matrix? = null
     private var lastStarted = 0L
-    private var cachedReadings = emptyMap<String, List<FuriganaSegment>>()
+    private val readingContext = ReadingContext()
 
     private val imageCapture = ImageCapture.Builder()
         .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
@@ -106,8 +106,7 @@ internal class LiveCameraSession(
                         if (closed.get() || geometryTicket != geometry.get() || ticket() != currentTicket) return@MlKitAnalyzer
                         val reading = runCatching {
                             result.getThrowable(recognizer)?.let { throw it }
-                            cameraReadingLines(result.getValue(recognizer) ?: error("No recognition result"), cachedReadings)
-                                .also { lines -> cachedReadings = lines.associate { it.text to it.segments } }
+                            cameraReadingLines(result.getValue(recognizer) ?: error("No recognition result"), readingContext)
                         }
                         main.execute {
                             if (!closed.get() && geometryTicket == geometry.get()) {

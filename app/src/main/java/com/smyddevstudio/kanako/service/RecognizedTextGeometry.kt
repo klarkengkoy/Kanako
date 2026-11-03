@@ -30,7 +30,8 @@ internal fun readingTokenBounds(
 internal fun continuesReadingLine(text: String, bounds: ReadingBounds, next: ReadingBounds): Boolean {
     val height = bounds.bottom - bounds.top
     val nextHeight = next.bottom - next.top
-    if (text.isBlank() || text.last() in "。！？!?」』" || height <= 0 ||
+    val content = text.trimEnd()
+    if (content.isEmpty() || content.last() in "。！？!?」』" || height <= 0 ||
         bounds.right - bounds.left < height * 2 || next.right - next.left < nextHeight * 2
     ) return false
     val characterWidth = (bounds.right - bounds.left) / text.length.coerceAtLeast(1)

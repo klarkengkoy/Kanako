@@ -104,6 +104,32 @@ class CameraLiveReadingsTest {
         assertEquals(listOf(moved), readings.update(1860, 1860, listOf(moved)))
     }
 
+    @Test fun changedContextReadingHidesTheOldPronunciationUntilConfirmed() {
+        val readings = CameraLiveReadings()
+        val old = line("言").copy(segments = listOf(FuriganaSegment("言", "げん")))
+        val corrected = old.copy(segments = listOf(FuriganaSegment("言", "い")))
+        readings.update(1000, 1010, listOf(old))
+        assertEquals(listOf(old), readings.update(1160, 1170, listOf(old)))
+        assertTrue(readings.update(1320, 1330, listOf(corrected))!!.isEmpty())
+        assertTrue(readings.update(1480, 1490, listOf(corrected))!!.isEmpty())
+        assertTrue(readings.update(1800, 1810, listOf(corrected))!!.isEmpty())
+        assertEquals(listOf(corrected), readings.update(1860, 1870, listOf(corrected)))
+    }
+
+    @Test fun unstableContextCannotPublishAReadingAfterTheContentDeadline() {
+        val readings = CameraLiveReadings()
+        val original = line("言").copy(segments = listOf(FuriganaSegment("言", "げん")))
+        val transient = original.copy(segments = listOf(FuriganaSegment("言", "い")))
+        val unknown = original.copy(segments = listOf(FuriganaSegment("言")))
+        readings.update(1000, 1000, listOf(original))
+        readings.update(1160, 1160, listOf(original))
+        readings.update(1700, 1700, listOf(original))
+        assertTrue(readings.update(1900, 1900, listOf(transient))!!.isEmpty())
+        assertTrue(readings.update(2060, 2060, listOf(unknown))!!.isEmpty())
+        assertTrue(readings.update(2220, 2220, listOf(transient))!!.isEmpty())
+        assertEquals(listOf(original), readings.update(2380, 2380, listOf(original)))
+    }
+
     @Test fun oldResultAgeBoundaryIsInclusive() {
         val readings = CameraLiveReadings()
         assertNotNull(readings.update(1000, 1650, emptyList()))

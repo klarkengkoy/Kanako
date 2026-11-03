@@ -9,6 +9,7 @@ import com.google.android.gms.tasks.Tasks
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.japanese.JapaneseTextRecognizerOptions
+import com.smyddevstudio.kanako.camera.cameraReadingLines
 import java.util.concurrent.TimeUnit
 import org.junit.Assert.*
 import org.junit.Test
@@ -29,6 +30,9 @@ class ScreenReadingTest {
             val clip = ReadingBounds(0, 0, 1300, 600)
             val original = screenReadingLines(text, 0, 0, 7, clip)
             val shifted = screenReadingLines(text, 43, 71, 7, clip)
+            val camera = cameraReadingLines(text)
+            assertEquals(original.map { it.text }, camera.map { it.text })
+            assertEquals(original.map { it.segments }, camera.map { it.segments })
             assertTrue(original.any { it.text.contains("日本語") })
             assertEquals(original.size, shifted.size)
             original.zip(shifted).forEach { (a, b) ->

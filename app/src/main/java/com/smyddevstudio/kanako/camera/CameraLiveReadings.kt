@@ -6,7 +6,7 @@ import kotlin.math.max
 internal const val CAMERA_LIVE_RESULT_MAX_AGE_MS = 650L
 internal const val CAMERA_TEXT_UPDATE_INTERVAL_MS = 700L
 
-// Content and geometry have separate clocks. Exact text matches can move on every fresh OCR frame;
+// Content and geometry have separate clocks. Matching text/readings can move on every fresh OCR frame;
 // new content needs two consecutive observations and cannot replace content more often than 700 ms.
 internal class CameraLiveReadings {
     private var lastFrame = Long.MIN_VALUE
@@ -70,7 +70,7 @@ internal class CameraLiveReadings {
     }
 
     private fun matches(a: CameraReadingLine, b: CameraReadingLine) =
-        a.text == b.text && closeEnough(a.bounds, b.bounds)
+        a.text == b.text && a.segments == b.segments && closeEnough(a.bounds, b.bounds)
 
     private fun distance(a: CameraRect, b: CameraRect): Float =
         abs(a.left + a.right - b.left - b.right) + abs(a.top + a.bottom - b.top - b.bottom)
