@@ -10,7 +10,7 @@
     <string name="reading_ready">Tap to read · Double tap or hold for controls</string>
     <string name="reading_working">Reading this view…</string>
     <string name="reading_shown">Tap to clear · Double tap or hold for controls</string>
-    <string name="reading_no_text">No kanji found. Try another view.</string>
+    <string name="reading_no_text">No furigana could be shown. Try another view.</string>
     <string name="reading_service_missing">Enable Kanako in Accessibility settings.</string>
     <string name="reading_unsupported">Screen reading needs Android 11 or later.</string>
     <string name="reading_sensitive">Reading paused around sensitive input.</string>

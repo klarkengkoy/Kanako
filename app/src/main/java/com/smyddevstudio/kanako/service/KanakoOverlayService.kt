@@ -80,6 +80,7 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
     private var annotationOverlayView: ComposeView? = null
     private var screenCaptureEngine: ScreenCaptureEngine? = null
     private val recognizedTextLines = mutableStateOf<List<RecognizedTextLine>>(emptyList())
+    private val hasVisibleReadings = mutableStateOf(false)
     private val mainHandler = Handler(Looper.getMainLooper())
     private var layoutParams: WindowManager.LayoutParams? = null
     private var annotationLayoutParams: WindowManager.LayoutParams? = null
@@ -278,6 +279,7 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
         automaticReadPending = false
         requestGate.invalidate()
         recognizedTextLines.value = emptyList()
+        hasVisibleReadings.value = false
         isReading.value = false
         readingStatus.intValue = message
     }
@@ -285,7 +287,7 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
     private fun readOrClear() {
         autoReader.cancel()
         automaticReadPending = false
-        if (isReading.value || recognizedTextLines.value.isNotEmpty()) {
+        if (isReading.value || hasVisibleReadings.value) {
             clearReading()
             autoReadPausedUntilMovement = true
         } else {
@@ -337,8 +339,12 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
                 }
             }
         } else emptyList()
-        readingStatus.intValue = if (recognizedTextLines.value.isEmpty()) R.string.reading_ready
-            else R.string.reading_shown
+        if (recognizedTextLines.value.isEmpty()) hasVisibleReadings.value = false
+        readingStatus.intValue = when {
+            recognizedTextLines.value.isEmpty() -> R.string.reading_ready
+            hasVisibleReadings.value -> R.string.reading_shown
+            else -> R.string.reading_no_text
+        }
         autoReadPausedUntilMovement = false
         if (update.canAutoRead) scheduleAutomaticRead() else autoReader.cancel()
     }
@@ -390,12 +396,13 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
                 result.fold(
                     onSuccess = { lines ->
                         recognizedTextLines.value = lines
-                        readingStatus.intValue = if (lines.any { line ->
-                            line.text.any { it in '\u3400'..'\u9FFF' || it == '々' }
-                        }) R.string.reading_shown else R.string.reading_no_text
+                        hasVisibleReadings.value = false
+                        readingStatus.intValue = if (lines.isEmpty()) R.string.reading_no_text
+                            else R.string.reading_working
                     },
                     onFailure = { error ->
                         recognizedTextLines.value = emptyList()
+                        hasVisibleReadings.value = false
                         readingStatus.intValue = when ((error as? SnapshotFailure)?.reason) {
                             SnapshotFailure.Reason.SERVICE_UNAVAILABLE -> R.string.reading_service_missing
                             SnapshotFailure.Reason.UNSUPPORTED -> R.string.reading_unsupported
@@ -451,7 +458,10 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
                 KanakoTheme {
                     val preferences by preferencesRepository.userPreferencesFlow
                         .collectAsStateWithLifecycle(initialValue = KanakoPreferences())
-                    val hasAnnotations = recognizedTextLines.value.isNotEmpty()
+                    val lines = recognizedTextLines.value
+                    val readingInProgress = isReading.value
+                    val status = readingStatus.intValue
+                    val hasAnnotations = hasVisibleReadings.value
                     LaunchedEffect(preferences.touchPassthrough, hasAnnotations) {
                         val currentParams = annotationLayoutParams ?: return@LaunchedEffect
                         currentParams.flags = if (preferences.touchPassthrough || !hasAnnotations) {
@@ -462,9 +472,21 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
                         runCatching { windowManager?.updateViewLayout(this@apply, currentParams) }
                     }
                     RecognizedTextOverlayContent(
-                        lines = recognizedTextLines.value,
+                        lines = lines,
                         preferences = preferences,
-                        origin = annotationOrigin.value
+                        origin = annotationOrigin.value,
+                        onReadingsVisibleChanged = { visible ->
+                            if (recognizedTextLines.value === lines && isReading.value == readingInProgress &&
+                                readingStatus.intValue == status
+                            ) {
+                                hasVisibleReadings.value = visible
+                                if (!readingInProgress && lines.isNotEmpty() && status in listOf(
+                                        R.string.reading_working, R.string.reading_shown, R.string.reading_no_text
+                                    )) {
+                                    readingStatus.intValue = if (visible) R.string.reading_shown else R.string.reading_no_text
+                                }
+                            }
+                        }
                     )
                 }
             }
@@ -571,7 +593,7 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
                             floatingControlWidth = width
                             positionFloatingOverlay()
                         },
-                        showFurigana = recognizedTextLines.value.isNotEmpty(),
+                        showFurigana = hasVisibleReadings.value,
                         onReadOrClear = ::readOrClear,
                         onLayoutSizeChanged = { size ->
                             floatingContentSize = size

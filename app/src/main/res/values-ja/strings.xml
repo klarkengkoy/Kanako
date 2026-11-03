@@ -10,7 +10,7 @@
     <string name="reading_ready">タップで読み取り・ダブルタップか長押しでメニュー</string>
     <string name="reading_working">画面を読み取り中…</string>
     <string name="reading_shown">タップで消去・ダブルタップか長押しでメニュー</string>
-    <string name="reading_no_text">漢字が見つかりません。別の画面をお試しください。</string>
+    <string name="reading_no_text">ふりがなを表示できませんでした。別の画面をお試しください。</string>
     <string name="reading_service_missing">ユーザー補助設定でかなこを有効にしてください。</string>
     <string name="reading_unsupported">画面読み取りにはAndroid 11以降が必要です。</string>
     <string name="reading_sensitive">機密性の高い入力の周辺では読み取りを停止します。</string>

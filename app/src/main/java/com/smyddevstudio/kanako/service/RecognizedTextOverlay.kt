@@ -9,6 +9,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -55,7 +56,8 @@ internal fun RecognizedTextOverlayContent(
     lines: List<RecognizedTextLine>,
     preferences: KanakoPreferences,
     origin: IntOffset,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onReadingsVisibleChanged: (Boolean) -> Unit = {}
 ) {
     val density = LocalDensity.current
     val measurer = rememberTextMeasurer()
@@ -125,6 +127,7 @@ internal fun RecognizedTextOverlayContent(
     val targets = measured.mapIndexedNotNull { index, ruby ->
         placement[index]?.let { ReadingTarget(ruby.key, ruby.request.anchor, it) }
     }
+    SideEffect { onReadingsVisibleChanged(targets.isNotEmpty()) }
     val currentTargets by rememberUpdatedState(targets)
     val currentOrigin by rememberUpdatedState(origin)
     val interaction = if (preferences.touchPassthrough) Modifier else Modifier.pointerInput(Unit) {
