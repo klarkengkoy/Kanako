@@ -4,7 +4,6 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.smyddevstudio.kanako.R
@@ -46,7 +45,7 @@ class TutorialScreenTest {
         var completions = 0
         var exits = 0
         compose.setContent { KanakoTheme { TutorialScreen({ exits++ }, { completions++ }) } }
-        compose.onNodeWithText(text(R.string.guided_skip)).performScrollTo().performClick()
+        compose.onNodeWithText(text(R.string.guided_skip)).assertIsDisplayed().performClick()
         compose.runOnIdle {
             assertEquals(1, exits)
             assertEquals(0, completions)
@@ -70,7 +69,7 @@ class TutorialScreenTest {
             GuidedReaderSession.returnFromPreferences()
             GuidedReaderSession.advance(GuidedReaderStep.STOP, GuidedReaderStep.COMPLETE)
         }
-        compose.onNodeWithText(text(R.string.done)).performScrollTo().performClick()
+        compose.onNodeWithText(text(R.string.done)).assertIsDisplayed().performClick()
         compose.runOnIdle { assertEquals(1, completions) }
     }
 }

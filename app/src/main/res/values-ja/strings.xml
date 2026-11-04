@@ -202,11 +202,11 @@
     <string name="guided_overlay">まず、他のアプリの上にかなこを表示することを許可します。強調表示されたボタンを押し、Android の設定でかなこを選んで許可してください。画面名は端末によって異なります。終わったら戻ってください。</string>
     <string name="guided_accessibility">次にスクリーンショットの説明を確認し、Android のユーザー補助設定でかなこを有効にしてください。「インストール済みアプリ」などに表示される場合があります。設定後に戻ると、実際の許可状態を確認して次へ進みます。</string>
     <string name="guided_show">「フローティングリーダーを表示」を押してください。実際のリーダーで、このアプリの日本語を読みます。</string>
-    <string name="guided_read">強調表示されたマスコットをタップして日本語を読みます。読み仮名が表示されない場合は、少し待ってから再試行してください。</string>
-    <string name="guided_clear">読み仮名が表示されました。もう一度マスコットをタップして消してください。</string>
-    <string name="guided_drag">マスコットを別の位置にドラッグし、指を離してください。</string>
-    <string name="guided_controls">マスコットをダブルタップするか長押しして、操作メニューを開いてください。</string>
-    <string name="guided_stop">操作メニューの「停止」を押し、実際のリーダーを停止してください。</string>
+    <string name="guided_read">強調表示されたかなこをタップして日本語を読みます。読み仮名が表示されない場合は、少し待ってから再試行してください。</string>
+    <string name="guided_clear">読み仮名が表示されました。もう一度かなこをタップして消してください。</string>
+    <string name="guided_drag">かなこを別の位置にドラッグし、指を離してください。</string>
+    <string name="guided_controls">かなこをダブルタップするか長押しして、操作メニューを開いてください。</string>
+    <string name="guided_stop">かなこをダブルタップするか長押しして操作メニューを開き、「停止」を押してフローティングリーダーを停止してください。</string>
     <string name="guided_complete">準備完了です。このレッスン以外では、別のアプリを開いてかなこをタップしてください。自動読み取りは任意で、別途同意が必要です。</string>
     <string name="guided_camera_intro">実際のカメラリーダーです。必要に応じてカメラを許可し、印刷された日本語に向けてください。画面をタップしてピントを合わせ、ズームして撮影できます。自動では保存されません。</string>
     <string name="guided_camera_begin">カメラを試す</string>
@@ -219,4 +219,5 @@
     <string name="guided_preferences_visit">ここでは読み仮名の大きさ、色、背景やフローティングリーダーの設定を変更できます。今は変更する必要はありません。チュートリアルに戻り、かなこのメニューを再び開いて停止してください。</string>
     <string name="guided_return">チュートリアルに戻る</string>
     <string name="guided_replay">チュートリアルをもう一度見る</string>
+    <string name="guided_action">次の操作</string>
 </resources>

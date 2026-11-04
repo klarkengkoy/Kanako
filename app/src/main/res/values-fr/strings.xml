@@ -203,11 +203,11 @@
     <string name="guided_overlay">Autorisez d’abord Kanako à apparaître au-dessus des autres applications. Touchez le bouton encadré, trouvez Kanako dans les paramètres Android et activez cet accès. Les écrans varient selon l’appareil. Revenez ensuite ici.</string>
     <string name="guided_accessibility">Lisez ensuite les informations sur les captures d’écran. Activez Kanako dans les paramètres d’accessibilité Android, parfois sous Applications installées ou téléchargées. Revenez ici. L’étape avance uniquement lorsque l’accès est réellement accordé.</string>
     <string name="guided_show">Touchez Afficher le lecteur flottant. Le vrai lecteur apparaîtra sur cette application pour lire un exemple japonais.</string>
-    <string name="guided_read">Touchez la mascotte encadrée pour lire le japonais. Si les lectures ne s’affichent pas, attendez un instant puis réessayez.</string>
-    <string name="guided_clear">Les lectures sont apparues. Touchez à nouveau la mascotte pour les effacer.</string>
-    <string name="guided_drag">Déplacez la mascotte en la faisant glisser, puis relâchez.</string>
-    <string name="guided_controls">Touchez deux fois la mascotte ou maintenez-la pour ouvrir ses commandes.</string>
-    <string name="guided_stop">Touchez Arrêter dans les commandes flottantes pour arrêter le vrai lecteur.</string>
+    <string name="guided_read">Touchez Kanako encadrée pour lire le japonais. Si les lectures ne s’affichent pas, attendez un instant puis réessayez.</string>
+    <string name="guided_clear">Les lectures sont apparues. Touchez à nouveau Kanako pour les effacer.</string>
+    <string name="guided_drag">Déplacez Kanako en la faisant glisser, puis relâchez.</string>
+    <string name="guided_controls">Touchez deux fois Kanako ou maintenez-la pour ouvrir ses commandes.</string>
+    <string name="guided_stop">Touchez deux fois Kanako ou maintenez-la pour ouvrir les commandes, puis touchez Arrêter pour arrêter le lecteur flottant.</string>
     <string name="guided_complete">Tout est prêt ! Hors de cette leçon, ouvrez une autre application et touchez Kanako. La lecture automatique est facultative et nécessite un accord distinct.</string>
     <string name="guided_camera_intro">Voici le vrai lecteur caméra. Autorisez la caméra si nécessaire et visez du japonais imprimé. Touchez l’aperçu pour faire le point, réglez le zoom et prenez une photo. Rien n’est enregistré automatiquement.</string>
     <string name="guided_camera_begin">Essayer la caméra</string>
@@ -220,4 +220,5 @@
     <string name="guided_preferences_visit">Vous pouvez changer ici la taille, la couleur et le fond des lectures ainsi que les options du lecteur flottant. Aucun changement n’est nécessaire. Revenez au tutoriel, puis rouvrez les commandes pour arrêter le lecteur.</string>
     <string name="guided_return">Revenir au tutoriel</string>
     <string name="guided_replay">Revoir le tutoriel</string>
+    <string name="guided_action">À vous de jouer</string>
 </resources>

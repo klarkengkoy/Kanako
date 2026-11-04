@@ -117,7 +117,7 @@ fun FloatingOverlayContent(
     }
     val guided = guidedStep != GuidedReaderStep.INACTIVE
     fun openControls() {
-        if (!guided || guidedStep in listOf(GuidedReaderStep.CONTROLS, GuidedReaderStep.SCRIPT, GuidedReaderStep.PREFERENCES, GuidedReaderStep.STOP)) {
+        if (!guided || guidedStep in listOf(GuidedReaderStep.CONTROLS, GuidedReaderStep.SCRIPT, GuidedReaderStep.CLEAR, GuidedReaderStep.PREFERENCES, GuidedReaderStep.STOP)) {
             statusPopupMessage = null
             isExpanded = true
             GuidedReaderSession.advance(GuidedReaderStep.CONTROLS, GuidedReaderStep.SCRIPT)
@@ -130,7 +130,7 @@ fun FloatingOverlayContent(
         reaction = null
     }
     LaunchedEffect(guidedStep) {
-        if (guidedStep == GuidedReaderStep.PREFERENCES || guidedStep == GuidedReaderStep.CLEAR) dismiss()
+        if (guidedStep == GuidedReaderStep.PREFERENCES) dismiss()
     }
     LaunchedEffect(controlsVisible) {
         if (!controlsVisible) dismiss()
@@ -266,7 +266,8 @@ fun FloatingOverlayContent(
                 popupPositionProvider = popupPosition,
                 onDismissRequest = ::dismiss,
                 properties = PopupProperties(
-                    focusable = isExpanded,
+                    // Keep the lesson window focused so opening controls does not invalidate its readings.
+                    focusable = isExpanded && !guided,
                     dismissOnBackPress = true,
                     dismissOnClickOutside = true,
                     excludeFromSystemGesture = false
@@ -291,7 +292,7 @@ fun FloatingOverlayContent(
                             FloatingMenuAction(
                                 stringResource(R.string.controls_script, stringResource(preferences.scriptType.labelRes)),
                                 Icons.Rounded.Language, onToggleScriptType,
-                                enabled = !guided || guidedStep == GuidedReaderStep.SCRIPT
+                                enabled = !guided || guidedStep == GuidedReaderStep.SCRIPT || guidedStep == GuidedReaderStep.CLEAR
                             )
                             if (!guided) FloatingMenuAction(stringResource(R.string.controls_open),
                                 Icons.AutoMirrored.Rounded.OpenInNew, { dismiss(); onOpenApp() })

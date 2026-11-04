@@ -15,6 +15,8 @@ import android.view.View
 import androidx.compose.ui.platform.LocalView
 import android.graphics.drawable.AnimatedImageDrawable
 import android.widget.ImageView
+import androidx.compose.runtime.collectAsState
+import com.smyddevstudio.kanako.model.ScriptType
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalAccessibilityManager
@@ -51,6 +53,51 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class FloatingReaderControlsTest {
     @get:Rule val compose = createComposeRule()
+
+
+    @Test fun tutorialDoubleTapKeepsReadingsAndAllowsRepeatedScriptChanges() {
+        val preferences = mutableStateOf(KanakoPreferences())
+        var clears = 0
+        var switches = 0
+        GuidedReaderSession.begin()
+        GuidedReaderSession.setSampleVisible(true)
+        GuidedReaderSession.advance(GuidedReaderStep.SHOW, GuidedReaderStep.READ)
+        GuidedReaderSession.advance(GuidedReaderStep.READ, GuidedReaderStep.CONTROLS)
+        try {
+            compose.setContent {
+                KanakoTheme {
+                    FloatingOverlayContent(
+                        preferences = preferences.value, showFurigana = true,
+                        guidedStep = GuidedReaderSession.step.collectAsState().value,
+                        onReadOrClear = { clears++ },
+                        onDrag = { _, _ -> }, onDragEnd = {},
+                        onToggleScriptType = {
+                            switches++
+                            preferences.value = preferences.value.copy(
+                                scriptType = if (preferences.value.scriptType == ScriptType.KANA)
+                                    ScriptType.ROMAJI else ScriptType.KANA
+                            )
+                            GuidedReaderSession.advance(GuidedReaderStep.SCRIPT, GuidedReaderStep.CLEAR)
+                        },
+                        onOpenApp = {}, onStopService = {}
+                    )
+                }
+            }
+            val context = InstrumentationRegistry.getInstrumentation().targetContext
+            fun scriptLabel(id: Int) = context.getString(R.string.controls_script, context.getString(id))
+            compose.onNodeWithContentDescription(description).performTouchInput { doubleClick() }
+            compose.onNodeWithText(scriptLabel(R.string.script_kana)).assertIsDisplayed().performClick()
+            compose.onNodeWithText(scriptLabel(R.string.script_romaji)).assertIsDisplayed().performClick()
+            compose.onNodeWithText(scriptLabel(R.string.script_kana)).assertIsDisplayed()
+            compose.runOnIdle {
+                assertEquals(0, clears)
+                assertEquals(2, switches)
+                assertEquals(GuidedReaderStep.CLEAR, GuidedReaderSession.step.value)
+            }
+        } finally {
+            GuidedReaderSession.end()
+        }
+    }
 
     private val description get() = InstrumentationRegistry.getInstrumentation().targetContext
         .getString(R.string.floating_control_description)

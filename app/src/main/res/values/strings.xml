@@ -154,7 +154,7 @@
     <string name="reading_mode">Reading mode</string>
     <string name="tap_to_read">Tap to read</string>
     <string name="how_preferences_title">Adjust reading behavior</string>
-    <string name="how_preferences">Choose Kana or Romaji, reading size, color, and plates in Preferences. With Touch through readings on, you can use the app underneath the furigana. Turn it off to tap a reading or its kanji and bring that reading in front; tap overlapping readings again to cycle through them. Hide button while typing hides the mascot when the keyboard is visible. Capture pauses while a keyboard or password field is detected, even when the mascot stays visible. The fixed preview shows appearance only.</string>
+    <string name="how_preferences">Choose Kana or Romaji, reading size, color, and plates in Preferences. With Touch through readings on, you can use the app underneath the furigana. Turn it off to tap a reading or its kanji and bring that reading in front; tap overlapping readings again to cycle through them. Hide button while typing hides Kanako when the keyboard is visible. Capture pauses while a keyboard or password field is detected, even when Kanako stays visible. The fixed preview shows appearance only.</string>
     <string name="preview_sample_short"><annotation reading="ニホンゴ">日本語</annotation></string>
     <string name="preferences_appearance_summary">Applies to both readers. The preview shows appearance only.</string>
     <string name="privacy_access">Privacy and screen access</string>
@@ -184,8 +184,8 @@
     <string name="tutorial_complete">Finish practice</string>
     <string name="tutorial_completed">Completed · Replay anytime</string>
     <string name="tutorial_sample_notice">Practice samples only. No camera or screen capture. No files are created, and your reading settings stay unchanged.</string>
-    <string name="tutorial_floating_read">Tap the sample mascot to show furigana, then tap again to clear it. During real reading, red status messages explain when readings cannot be shown.</string>
-    <string name="tutorial_floating_controls">Drag the sample mascot. Double tap or hold it to open controls, then stop the sample reader. These controls work the same way in the floating reader.</string>
+    <string name="tutorial_floating_read">Tap Kanako to show furigana, then tap again to clear it. During real reading, red status messages explain when readings cannot be shown.</string>
+    <string name="tutorial_floating_controls">Drag Kanako. Double tap or hold it to open controls, then stop the sample reader. These controls work the same way in the floating reader.</string>
     <string name="tutorial_camera_focus">Tap the sample to practice focusing. Pinch or use the zoom slider to change its size. This sample does not use your camera.</string>
     <string name="tutorial_camera_capture">Capture the sample to freeze it for reading. In the real camera, Return to camera lets you take another photo.</string>
     <string name="tutorial_camera_appearance">Try Kana and Romaji on this sample. In the real reader, Preferences changes the appearance of both readers.</string>
@@ -203,11 +203,11 @@
     <string name="guided_overlay">First, allow Kanako to appear over other apps. Tap the highlighted button. In Android Settings, find Kanako and enable display over other apps. Screen names vary by device. Return here when finished.</string>
     <string name="guided_accessibility">Next, review the screenshot disclosure. Then find Kanako in Android’s accessibility settings and enable its service. Your device may put it under Installed or Downloaded apps. Return here afterwards. Only the actual permission state advances this step.</string>
     <string name="guided_show">Tap Show floating reader. Kanako will appear over this app. We’ll use the real reader on a Japanese sample.</string>
-    <string name="guided_read">Tap the highlighted floating mascot to read the Japanese text. If readings do not appear, wait a moment and try again.</string>
-    <string name="guided_clear">Readings appeared. Tap the mascot again to clear them.</string>
-    <string name="guided_drag">Drag the highlighted mascot to a new position, then lift your finger.</string>
-    <string name="guided_controls">Double-tap or hold the highlighted mascot to open its controls.</string>
-    <string name="guided_stop">Tap Stop in the floating controls to stop the real reader.</string>
+    <string name="guided_read">Tap Kanako to read the Japanese text. If readings do not appear, wait a moment and try again.</string>
+    <string name="guided_clear">Readings appeared. Tap Kanako again to clear them.</string>
+    <string name="guided_drag">Drag Kanako to a new position, then lift your finger.</string>
+    <string name="guided_controls">Double-tap or hold Kanako to open its controls.</string>
+    <string name="guided_stop">Double-tap or hold Kanako to open the controls, then tap Stop to stop the floating reader.</string>
     <string name="guided_complete">You’re ready! Outside this lesson, open another app and tap Kanako to read Japanese. Auto-read is optional and requires a separate agreement.</string>
     <string name="guided_sample" translatable="false">日本語を読みます。\n今日は本を三冊読みました。</string>
     <string name="guided_camera_intro">This is the real camera reader. Allow camera access if requested, then point it at printed Japanese. Tap the preview to focus, adjust zoom, and capture a photo to inspect the readings. Nothing is saved automatically.</string>
@@ -221,4 +221,5 @@
     <string name="guided_preferences_visit">Here you can change reading size, color, background and floating-reader options. You do not need to change anything now. Return to the tutorial, then reopen Kanako’s controls to stop the reader.</string>
     <string name="guided_return">Return to tutorial</string>
     <string name="guided_replay">Replay tutorial</string>
+    <string name="guided_action">Your next action</string>
 </resources>

@@ -203,11 +203,11 @@
     <string name="guided_overlay">Per prima cosa consenti a Kanako di apparire sopra altre app. Tocca il pulsante evidenziato, trova Kanako nelle impostazioni Android e abilita l’accesso. Le schermate variano tra dispositivi. Poi torna qui.</string>
     <string name="guided_accessibility">Leggi le informazioni sugli screenshot. Poi abilita Kanako nelle impostazioni di accessibilità Android, talvolta sotto App installate o scaricate. Torna qui: il passaggio avanza solo quando l’accesso è realmente concesso.</string>
     <string name="guided_show">Tocca Mostra lettore mobile. Il lettore reale apparirà sopra questa app per leggere un esempio giapponese.</string>
-    <string name="guided_read">Tocca la mascotte evidenziata per leggere il giapponese. Se le letture non appaiono, attendi un momento e riprova.</string>
-    <string name="guided_clear">Le letture sono apparse. Tocca di nuovo la mascotte per cancellarle.</string>
-    <string name="guided_drag">Trascina la mascotte in una nuova posizione, poi solleva il dito.</string>
-    <string name="guided_controls">Tocca due volte o tieni premuta la mascotte per aprire i comandi.</string>
-    <string name="guided_stop">Tocca Arresta nei comandi mobili per fermare il lettore reale.</string>
+    <string name="guided_read">Tocca Kanako evidenziata per leggere il giapponese. Se le letture non appaiono, attendi un momento e riprova.</string>
+    <string name="guided_clear">Le letture sono apparse. Tocca di nuovo Kanako per cancellarle.</string>
+    <string name="guided_drag">Trascina Kanako in una nuova posizione, poi solleva il dito.</string>
+    <string name="guided_controls">Tocca due volte o tieni premuta Kanako per aprire i comandi.</string>
+    <string name="guided_stop">Tocca due volte Kanako o tienila premuta per aprire i comandi, poi tocca Ferma per arrestare il lettore mobile.</string>
     <string name="guided_complete">Tutto pronto! Fuori da questa lezione, apri un’altra app e tocca Kanako. La lettura automatica è facoltativa e richiede un consenso separato.</string>
     <string name="guided_camera_intro">Questo è il lettore fotocamera reale. Consenti l’accesso se richiesto e inquadra del giapponese stampato. Tocca l’anteprima per mettere a fuoco, regola lo zoom e scatta una foto. Nulla viene salvato automaticamente.</string>
     <string name="guided_camera_begin">Prova la fotocamera</string>
@@ -220,4 +220,5 @@
     <string name="guided_preferences_visit">Qui puoi cambiare dimensioni, colore e sfondo delle letture e le opzioni del lettore mobile. Non occorre modificare nulla ora. Torna al tutorial e riapri i comandi per fermare il lettore.</string>
     <string name="guided_return">Torna al tutorial</string>
     <string name="guided_replay">Ripeti il tutorial</string>
+    <string name="guided_action">La prossima azione</string>
 </resources>
