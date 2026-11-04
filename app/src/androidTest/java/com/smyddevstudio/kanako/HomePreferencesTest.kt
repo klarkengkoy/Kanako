@@ -2,6 +2,12 @@ package com.smyddevstudio.kanako
 
 import android.content.res.Configuration
 import android.os.LocaleList
+import android.graphics.drawable.AnimatedImageDrawable
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageView
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.matcher.ViewMatchers.isRoot
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.ui.Modifier
@@ -44,7 +50,7 @@ class HomePreferencesTest {
                     preferences = KanakoPreferences(hasAcceptedSnapshotDisclosure = consent.value),
                     overlayGranted = overlay.value, accessibilityEnabled = true,
                     accessibilityConnected = connected.value,
-                    onUpdateOverlayActive = { starts++ },
+                    onUpdateOverlayActive = { starts++ }, animationsEnabled = false,
                     onRequestOverlay = { overlayRequests++ })
             }
         }
@@ -129,7 +135,7 @@ class HomePreferencesTest {
                         HomeScreen({ helpOpens++ }, {}, {},
                             preferences = KanakoPreferences(isOverlayActive = active.value, hasAcceptedSnapshotDisclosure = true),
                             overlayGranted = true, accessibilityEnabled = true, accessibilityConnected = true,
-                            onUpdateOverlayActive = { active.value = it })
+                            onUpdateOverlayActive = { active.value = it }, animationsEnabled = false)
                     }
                 }
             }
@@ -141,6 +147,80 @@ class HomePreferencesTest {
         compose.runOnIdle { assertFalse(active.value) }
         compose.onNodeWithText(context.getString(R.string.how_it_works)).performScrollTo().performClick()
         compose.runOnIdle { assertEquals(1, helpOpens) }
+    }
+
+    @androidx.test.filters.SdkSuppress(minSdkVersion = 28)
+    @Test fun showReaderWaitsForDepartureAndStopRemainsImmediate() {
+        val active = mutableStateOf(false)
+        var starts = 0
+        var stops = 0
+        compose.setContent {
+            KanakoTheme {
+                HomeScreen({}, {}, {},
+                    preferences = KanakoPreferences(isOverlayActive = active.value, hasAcceptedSnapshotDisclosure = true),
+                    overlayGranted = true, accessibilityEnabled = true, accessibilityConnected = true,
+                    animationsEnabled = true,
+                    onUpdateOverlayActive = {
+                        if (it) starts++ else stops++
+                        active.value = it
+                    })
+            }
+        }
+        compose.onNodeWithText(context.getString(R.string.setup_enable)).performScrollTo().performClick()
+        compose.runOnIdle { assertEquals(0, starts) }
+        compose.onNodeWithText(context.getString(R.string.setup_enable)).assertIsNotEnabled()
+        compose.waitUntil(timeoutMillis = 6_000) { starts == 1 }
+        compose.onNodeWithText(context.getString(R.string.setup_stop)).performScrollTo().assertIsEnabled().performClick()
+        compose.runOnIdle {
+            assertEquals(1, starts)
+            assertEquals(1, stops)
+            assertFalse(active.value)
+        }
+    }
+
+    private fun imageViews(): List<ImageView> {
+        val result = mutableListOf<ImageView>()
+        onView(isRoot()).check { root, _ ->
+            fun collect(view: View) {
+                if (view is ImageView) result += view
+                if (view is ViewGroup) repeat(view.childCount) { collect(view.getChildAt(it)) }
+            }
+            collect(root)
+        }
+        return result
+    }
+
+    @androidx.test.filters.SdkSuppress(minSdkVersion = 28)
+    @Test fun homeButtonsMatchAndTappingTheGreetingReplaysIt() {
+        compose.setContent {
+            KanakoTheme {
+                HomeScreen({}, {}, {},
+                    preferences = KanakoPreferences(hasAcceptedSnapshotDisclosure = true),
+                    overlayGranted = true, accessibilityEnabled = true, accessibilityConnected = true,
+                    animationsEnabled = true)
+            }
+        }
+        val reader = compose.onNode(hasText(context.getString(R.string.setup_enable)) and hasClickAction())
+            .performScrollTo().fetchSemanticsNode().boundsInRoot
+        val camera = compose.onNode(hasText(context.getString(R.string.camera_open)) and hasClickAction())
+            .performScrollTo().fetchSemanticsNode().boundsInRoot
+        assertEquals(camera.width, reader.width, 0.5f)
+        assertEquals(camera.height, reader.height, 0.5f)
+        val greeting = compose.onNodeWithContentDescription(context.getString(R.string.replay_mascot_greeting))
+        greeting.performScrollTo()
+        fun animation() = imageViews().maxByOrNull { it.width }?.drawable as? AnimatedImageDrawable
+        compose.waitUntil(timeoutMillis = 5_000) { animation() != null }
+        val original = requireNotNull(animation())
+        compose.waitUntil(timeoutMillis = 6_000) { !original.isRunning }
+        greeting.performClick()
+        compose.waitUntil(timeoutMillis = 3_000) { animation()?.let { it !== original && it.isRunning } == true }
+        compose.runOnIdle { assertFalse(original.isRunning) }
+    }
+
+    @Test fun preferencesMascotIsAStaticImage() {
+        compose.setContent { KanakoTheme { PreferencesScreen(onBack = {}) } }
+        compose.onNodeWithContentDescription(context.getString(R.string.preview_control)).assertIsDisplayed()
+        assertTrue(imageViews().isEmpty())
     }
 
     @Test fun recommendedAutoReadRequiresExplicitAgreementAndCanBeDeclined() {

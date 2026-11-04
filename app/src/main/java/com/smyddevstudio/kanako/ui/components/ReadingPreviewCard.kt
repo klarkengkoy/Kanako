@@ -3,12 +3,13 @@ package com.smyddevstudio.kanako.ui.components
 import android.text.Annotation
 import android.text.Spanned
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -21,7 +22,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalResources
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.smyddevstudio.kanako.R
@@ -116,7 +116,7 @@ internal fun ReadingPreviewCard(
                     FabSize.LARGE -> 68.dp
                 }
                 Image(
-                    painterResource(R.drawable.kanako_floating),
+                    painter = painterResource(R.drawable.kanako_floating),
                     contentDescription = stringResource(R.string.preview_control),
                     modifier = Modifier.size(controlSize)
                 )

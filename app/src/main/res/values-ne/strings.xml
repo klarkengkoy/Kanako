@@ -195,4 +195,5 @@
     <string name="tutorial_finished">दुवै अभ्यास कसरी काम गर्छबाट फेरि गर्न सक्नुहुन्छ। वास्तविक रिडर खोल्दा सामान्य पहुँच जाँच र सहमति कायम रहन्छन्।</string>
     <string name="tutorial_start_tool">रिडर खोल्नुहोस्</string>
     <string name="tutorial_replay">अर्को अभ्यास छान्नुहोस्</string>
+    <string name="replay_mascot_greeting">कानाकोको अभिवादन फेरि देखाउनुहोस्</string>
 </resources>

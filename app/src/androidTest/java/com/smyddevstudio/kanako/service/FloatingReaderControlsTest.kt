@@ -69,45 +69,54 @@ class FloatingReaderControlsTest {
     }
 
     @androidx.test.filters.SdkSuppress(minSdkVersion = 28)
-    @Test fun loadingGifLoopsAndStopsWhenReadingEndsOrControlIsRemoved() {
-        val reading = mutableStateOf(true)
+    @Test fun shortReadingFinishesAWholeLoopBeforeTheOutroAndRemovalStopsPlayback() {
+        val reading = mutableStateOf(false)
         val visible = mutableStateOf(true)
-        var reads = 0
         compose.setContent {
             KanakoTheme {
                 if (visible.value) FloatingOverlayContent(
                     preferences = KanakoPreferences(), showFurigana = false,
                     onDrag = { _, _ -> }, onDragEnd = {},
                     onToggleScriptType = {}, onOpenApp = {}, onStopService = {},
-                    onReadOrClear = { reads++ }, isReading = reading.value,
+                    isReading = reading.value,
                     statusMessage = if (reading.value) R.string.reading_working else R.string.reading_ready
                 )
             }
         }
-        fun awaitAnimation(): AnimatedImageDrawable {
+        fun currentAnimation(): AnimatedImageDrawable? {
             var animation: AnimatedImageDrawable? = null
-            compose.waitUntil(timeoutMillis = 5_000) {
-                onView(isAssignableFrom(ImageView::class.java)).check { view, _ ->
-                    animation = (view as ImageView).drawable as? AnimatedImageDrawable
-                }
-                animation?.isRunning == true
+            onView(isAssignableFrom(ImageView::class.java)).check { view, _ ->
+                animation = (view as ImageView).drawable as? AnimatedImageDrawable
+            }
+            return animation
+        }
+        fun awaitDifferent(previous: AnimatedImageDrawable?, timeout: Long = 5_000): AnimatedImageDrawable {
+            var animation: AnimatedImageDrawable? = null
+            compose.waitUntil(timeoutMillis = timeout) {
+                animation = currentAnimation()
+                animation != null && animation !== previous && animation?.isRunning == true
             }
             return requireNotNull(animation)
         }
-        val firstAnimation = awaitAnimation()
-        assertEquals(AnimatedImageDrawable.REPEAT_INFINITE, firstAnimation.repeatCount)
-        compose.onNodeWithContentDescription(description).performTouchInput { click() }
-        compose.mainClock.advanceTimeBy(600)
-        compose.runOnIdle {
-            assertEquals(1, reads)
-            reading.value = false
-        }
-        compose.runOnIdle { assertFalse(firstAnimation.isRunning) }
+        awaitDifferent(null)
+        compose.waitUntil(timeoutMillis = 5_000) { currentAnimation() == null }
+        compose.runOnIdle { reading.value = true }
+        val intro = awaitDifferent(null)
+        compose.runOnIdle { reading.value = false }
+        val loop = awaitDifferent(intro)
+        assertEquals(0, loop.repeatCount)
+        val loopObservedAt = SystemClock.elapsedRealtime()
+        val outro = awaitDifferent(loop, timeout = 7_000)
+        val observedDuration = SystemClock.elapsedRealtime() - loopObservedAt
+        println("KANAKO_READING_LOOP_OBSERVED_MS=$observedDuration")
+        assertTrue("Reading loop cut short: $observedDuration ms", observedDuration >= 3_900)
+        assertEquals(0, outro.repeatCount)
+        compose.waitUntil(timeoutMillis = 5_000) { currentAnimation() == null }
         compose.onNodeWithContentDescription(description).assertIsDisplayed()
         compose.runOnIdle { reading.value = true }
-        val nextAnimation = awaitAnimation()
+        val interrupted = awaitDifferent(null)
         compose.runOnIdle { visible.value = false }
-        compose.runOnIdle { assertFalse(nextAnimation.isRunning) }
+        compose.runOnIdle { assertFalse(interrupted.isRunning) }
     }
 
     @Test fun readingsRemainAvailableToAccessibilityServices() {

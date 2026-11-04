@@ -43,20 +43,28 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.Image
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.smyddevstudio.kanako.R
 import com.smyddevstudio.kanako.model.KanakoPreferences
+import com.smyddevstudio.kanako.model.FabSize
+import com.smyddevstudio.kanako.ui.components.AnimatedMascot
+import com.smyddevstudio.kanako.ui.components.rememberAnimationsEnabled
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import kotlinx.coroutines.delay
 import com.smyddevstudio.kanako.ui.theme.KanakoTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,13 +84,46 @@ fun HomeScreen(
     onRequestAccessibility: () -> Unit = {},
     showTutorialInvitation: Boolean = false,
     onNavigateToTutorial: () -> Unit = {},
-    onDismissTutorialInvitation: () -> Unit = {}
+    onDismissTutorialInvitation: () -> Unit = {},
+    animationsEnabled: Boolean = rememberAnimationsEnabled()
 ) {
     var showAccess by rememberSaveable { mutableStateOf(false) }
+    var departing by remember { mutableStateOf(false) }
+    var awaitingReader by remember { mutableStateOf(false) }
+    var departureVersion by remember { mutableIntStateOf(0) }
+    var greetingVersion by remember { mutableIntStateOf(0) }
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    DisposableEffect(lifecycle) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP) {
+                departing = false
+                awaitingReader = false
+            }
+        }
+        lifecycle.addObserver(observer)
+        onDispose { lifecycle.removeObserver(observer) }
+    }
+    LaunchedEffect(awaitingReader) {
+        if (awaitingReader) {
+            delay(5_000L)
+            awaitingReader = false
+        }
+    }
+    val mascotSize = when (preferences.fabSize) {
+        FabSize.COMPACT -> 48.dp
+        FabSize.MEDIUM -> 56.dp
+        FabSize.LARGE -> 68.dp
+    }
     val readingActionModifier = Modifier.widthIn(max = 320.dp).fillMaxWidth().heightIn(min = 48.dp)
     val ready = supported && overlayGranted && accessibilityEnabled && accessibilityConnected &&
         preferences.hasAcceptedSnapshotDisclosure
-    LaunchedEffect(ready) { if (ready) showAccess = false }
+    LaunchedEffect(ready, preferences.isOverlayActive) {
+        if (ready) showAccess = false
+        if (!ready || preferences.isOverlayActive) {
+            departing = false
+            awaitingReader = false
+        }
+    }
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -110,11 +151,20 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Image(
-                        painter = painterResource(R.drawable.kanako_mascot),
-                        contentDescription = null,
-                        modifier = Modifier.size(48.dp)
-                    )
+                    IconButton(
+                        onClick = { greetingVersion++ },
+                        modifier = Modifier.size(mascotSize)
+                    ) {
+                        AnimatedMascot(
+                            animationRes = R.drawable.kanako_welcome_wave,
+                            size = mascotSize,
+                            staticRes = R.drawable.kanako_mascot,
+                            playbackKey = greetingVersion,
+                            contentDescription = stringResource(R.string.replay_mascot_greeting),
+                            animationsEnabled = animationsEnabled,
+                            holdLastFrame = true
+                        )
+                    }
                     Text(
                         stringResource(R.string.screen_reader_title),
                         style = MaterialTheme.typography.headlineSmall,
@@ -184,17 +234,40 @@ fun HomeScreen(
                             }
                         }
                         Button(
-                            onClick = { onUpdateOverlayActive(!preferences.isOverlayActive) },
-                            enabled = preferences.isOverlayActive || ready,
-                            modifier = Modifier.align(Alignment.CenterHorizontally).then(readingActionModifier),
+                            onClick = {
+                                if (preferences.isOverlayActive) onUpdateOverlayActive(false)
+                                else if (!departing && !awaitingReader && ready) {
+                                    departureVersion++
+                                    departing = true
+                                }
+                            },
+                            enabled = preferences.isOverlayActive || (ready && !departing && !awaitingReader),
+                            modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 16.dp).then(readingActionModifier),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = if (preferences.isOverlayActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
                                 contentColor = if (preferences.isOverlayActive) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondary
                             )
                         ) {
-                            // TODO: Animate the floating mascot icon for the Show and Stop reader actions.
-                            Image(painterResource(R.drawable.kanako_floating), contentDescription = null, modifier = Modifier.size(24.dp))
-                            Spacer(Modifier.width(8.dp))
+                            if (!preferences.isOverlayActive) {
+                                AnimatedMascot(
+                                    animationRes = if (departing || awaitingReader) R.drawable.kanako_peek_button else null,
+                                    size = 24.dp,
+                                    durationMillis = 700,
+                                    playbackKey = departureVersion,
+                                    animationsEnabled = animationsEnabled,
+                                    holdLastFrame = true,
+                                    onFinished = {
+                                        if (departing && ready && !preferences.isOverlayActive &&
+                                            lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+                                        ) {
+                                            departing = false
+                                            awaitingReader = true
+                                            onUpdateOverlayActive(true)
+                                        }
+                                    }
+                                )
+                                Spacer(Modifier.width(8.dp))
+                            }
                             AnimatedContent(targetState = preferences.isOverlayActive, label = "Reader action") { active ->
                                 Text(stringResource(if (active) R.string.setup_stop else R.string.setup_enable))
                             }

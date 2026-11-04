@@ -1,13 +1,11 @@
 package com.smyddevstudio.kanako.service
 
 import android.graphics.Rect
-import android.os.Build
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -45,7 +43,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
@@ -53,9 +53,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalAccessibilityManager
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
@@ -65,6 +63,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
@@ -78,6 +77,10 @@ import com.smyddevstudio.kanako.R
 import com.smyddevstudio.kanako.model.FabSize
 import com.smyddevstudio.kanako.model.KanakoPreferences
 import com.smyddevstudio.kanako.ui.components.labelRes
+import com.smyddevstudio.kanako.ui.components.AnimatedMascot
+import com.smyddevstudio.kanako.ui.components.FloatingMascotMotion
+import com.smyddevstudio.kanako.ui.components.MascotPhase
+import com.smyddevstudio.kanako.ui.components.rememberAnimationsEnabled
 import com.smyddevstudio.kanako.ui.theme.KanakoTheme
 import kotlinx.coroutines.delay
 
@@ -102,21 +105,34 @@ fun FloatingOverlayContent(
     var isExpanded by remember { mutableStateOf(false) }
     var readAttempt by remember { mutableIntStateOf(0) }
     var statusPopupMessage by remember { mutableStateOf<Int?>(null) }
+    var reaction by remember { mutableStateOf<Int?>(null) }
+    var reactionVersion by remember { mutableIntStateOf(0) }
+    var motion by remember { mutableStateOf(FloatingMascotMotion()) }
+    val animationsEnabled = rememberAnimationsEnabled()
+    LaunchedEffect(isReading, controlsVisible, animationsEnabled) {
+        motion = motion.update(isReading, controlsVisible, animationsEnabled)
+    }
     val accessibilityManager = LocalAccessibilityManager.current
     fun dismiss() {
         isExpanded = false
         statusPopupMessage = null
+        reaction = null
     }
     LaunchedEffect(controlsVisible) {
         if (!controlsVisible) dismiss()
     }
-    LaunchedEffect(statusMessage, isReading, readAttempt) {
-        if (!controlsVisible || isReading || statusMessage == R.string.reading_shown ||
-            statusMessage == R.string.reading_working
-        ) {
+    LaunchedEffect(statusMessage, isReading, readAttempt, showFurigana) {
+        if (!controlsVisible || isReading || statusMessage == R.string.reading_working) {
             statusPopupMessage = null
+            reaction = null
+        } else if (statusMessage == R.string.reading_shown) {
+            statusPopupMessage = null
+            reaction = if (showFurigana) R.drawable.kanako_success else null
+            if (reaction != null) reactionVersion++
         } else if (statusMessage != R.string.reading_ready) {
             statusPopupMessage = statusMessage
+            reaction = R.drawable.kanako_error_reaction
+            reactionVersion++
         }
     }
     LaunchedEffect(statusPopupMessage, readAttempt, accessibilityManager) {
@@ -156,26 +172,56 @@ fun FloatingOverlayContent(
                     onDoubleClick = { statusPopupMessage = null; isExpanded = !isExpanded }
                 )
                 .pointerInput(Unit) {
+                    var pickupOffset = Offset.Zero
                     detectDragGestures(
-                        onDragStart = { dismiss() },
-                        onDragEnd = onDragEnd,
+                        onDragStart = { position ->
+                            val bodyAnchor = Offset(size.width * 0.5f, size.height * 0.7f)
+                            pickupOffset = position - bodyAnchor
+                            dismiss()
+                            motion = motion.startDrag()
+                        },
+                        onDragEnd = { motion = motion.endDrag(); onDragEnd() },
+                        onDragCancel = { motion = motion.endDrag(); onDragEnd() },
                         onDrag = { change, dragAmount ->
                             change.consume()
-                            onDrag(dragAmount.x, dragAmount.y)
+                            val bodyPosition = change.position - pickupOffset
+                            val previousBodyPosition = change.position - dragAmount - pickupOffset
+                            val movement = bodyPosition - previousBodyPosition
+                            onDrag(movement.x, movement.y)
                         }
                     )
                 },
             contentAlignment = Alignment.Center
         ) {
+            val phase = motion.phase
             val mascotModifier = Modifier.fillMaxSize().graphicsLayer {
+                transformOrigin = TransformOrigin(0.5f, 0.7f)
                 scaleX = if (mirrorMascot) -1f else 1f
             }
-            if (isReading && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && !LocalInspectionMode.current) {
-                LoadingMascot(size = fabSize, modifier = mascotModifier)
-            } else {
-                Image(painterResource(R.drawable.kanako_floating), contentDescription = null,
-                    modifier = mascotModifier)
-            }
+            AnimatedMascot(
+                animationRes = mascotAnimation(phase) ?: reaction.takeIf {
+                    controlsVisible && phase == MascotPhase.RESTING
+                },
+                size = fabSize,
+                modifier = mascotModifier,
+                staticRes = if (phase == MascotPhase.DRAGGING) R.drawable.kanako_drag_hold
+                    else R.drawable.kanako_floating,
+                playbackKey = when (phase) {
+                    MascotPhase.RESTING -> reactionVersion
+                    MascotPhase.LOADING_LOOP -> phase to motion.loopPass
+                    else -> phase
+                },
+                animationsEnabled = animationsEnabled,
+                loop = phase == MascotPhase.LOADING_LOOP && motion.reading,
+                holdLastFrame = phase != MascotPhase.RESTING,
+                showStaticWhileLoading = phase != MascotPhase.CREEPING,
+                onFinished = {
+                    if (motion.phase == phase && phase in listOf(MascotPhase.CREEPING, MascotPhase.LOADING_END)) {
+                        reaction = null
+                    }
+                    motion = motion.finished(phase)
+                }
+            )
             val dotColor = when {
                 isReading || statusMessage !in listOf(R.string.reading_ready, R.string.reading_shown) ->
                     MaterialTheme.colorScheme.error
@@ -246,6 +292,37 @@ fun FloatingOverlayContent(
             }
         }
     }
+}
+
+private fun mascotAnimation(phase: MascotPhase): Int? = when (phase) {
+    MascotPhase.CREEPING -> R.drawable.kanako_floater_creep
+    MascotPhase.LOADING_START -> R.drawable.kanako_loading_1_start
+    MascotPhase.LOADING_LOOP -> R.drawable.kanako_loading_2_reading_loop
+    MascotPhase.LOADING_END -> R.drawable.kanako_loading_3_end
+    else -> null
+}
+
+@Composable
+internal fun LoadingMascot(
+    size: Dp,
+    modifier: Modifier = Modifier,
+    animationsEnabled: Boolean = rememberAnimationsEnabled()
+) {
+    var motion by remember { mutableStateOf(FloatingMascotMotion(MascotPhase.RESTING)) }
+    LaunchedEffect(animationsEnabled) {
+        motion = motion.update(reading = true, visible = true, motionEnabled = animationsEnabled)
+    }
+    val phase = motion.phase
+    AnimatedMascot(
+        animationRes = mascotAnimation(phase),
+        playbackKey = if (phase == MascotPhase.LOADING_LOOP) phase to motion.loopPass else phase,
+        size = size,
+        modifier = modifier,
+        loop = phase == MascotPhase.LOADING_LOOP && motion.reading,
+        animationsEnabled = animationsEnabled,
+        holdLastFrame = true,
+        onFinished = { motion = motion.finished(phase) }
+    )
 }
 
 @Composable

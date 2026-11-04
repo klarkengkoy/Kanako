@@ -194,4 +194,5 @@
     <string name="tutorial_finished">どちらの練習も使い方から繰り返せます。実際のリーダーを開く場合は、通常のアクセス確認と同意が必要です。</string>
     <string name="tutorial_start_tool">リーダーを開く</string>
     <string name="tutorial_replay">別の練習を選ぶ</string>
+    <string name="replay_mascot_greeting">かなこのあいさつをもう一度再生</string>
 </resources>

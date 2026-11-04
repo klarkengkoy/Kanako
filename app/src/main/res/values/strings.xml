@@ -195,4 +195,5 @@
     <string name="tutorial_finished">You can replay either path from How it works. Opening the real reader still uses its usual access checks and consent.</string>
     <string name="tutorial_start_tool">Open reader</string>
     <string name="tutorial_replay">Choose another path</string>
+    <string name="replay_mascot_greeting">Replay Kanako’s greeting</string>
 </resources>

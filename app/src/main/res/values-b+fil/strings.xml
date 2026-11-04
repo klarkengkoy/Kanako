@@ -195,4 +195,5 @@
     <string name="tutorial_finished">Maaari mong ulitin ang alinmang pagsasanay mula sa Paano ito gumagana. Gagamitin pa rin ang karaniwang pagsusuri sa access at pahintulot kapag binuksan ang tunay na reader.</string>
     <string name="tutorial_start_tool">Buksan ang reader</string>
     <string name="tutorial_replay">Pumili ng ibang pagsasanay</string>
+    <string name="replay_mascot_greeting">Ulitin ang pagbati ni Kanako</string>
 </resources>
