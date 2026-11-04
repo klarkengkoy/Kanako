@@ -207,7 +207,7 @@
     <string name="guided_clear">Readings appeared. Tap Kanako again to clear them.</string>
     <string name="guided_drag">Drag Kanako to a new position, then lift your finger.</string>
     <string name="guided_controls">Double-tap or hold Kanako to open its controls.</string>
-    <string name="guided_stop">Double-tap or hold Kanako to open the controls, then tap Stop to stop the floating reader.</string>
+    <string name="guided_stop">Double-tap or hold Kanako to open the controls, then tap “Stop reader” to stop the floating reader.</string>
     <string name="guided_complete">You’re ready! Outside this lesson, open another app and tap Kanako to read Japanese. Auto-read is optional and requires a separate agreement.</string>
     <string name="guided_sample" translatable="false">日本語を読みます。\n今日は本を三冊読みました。</string>
     <string name="guided_camera_intro">This is the real camera reader. Allow camera access if requested, then point it at printed Japanese. Tap the preview to focus, adjust zoom, and capture a photo to inspect the readings. Nothing is saved automatically.</string>

@@ -207,7 +207,7 @@
     <string name="guided_clear">Lumitaw na ang mga pagbasa. I-tap muli si Kanako para burahin ang mga ito.</string>
     <string name="guided_drag">I-drag si Kanako sa bagong posisyon, saka iangat ang daliri.</string>
     <string name="guided_controls">I-double tap o pindutin nang matagal si Kanako para buksan ang mga kontrol.</string>
-    <string name="guided_stop">I-double tap o pindutin nang matagal si Kanako para buksan ang mga kontrol, saka pindutin ang Ihinto para ihinto ang floating reader.</string>
+    <string name="guided_stop">I-double tap o pindutin nang matagal si Kanako para buksan ang mga kontrol, saka pindutin ang “Ihinto ang reader” para ihinto ang floating reader.</string>
     <string name="guided_complete">Handa ka na! Sa labas ng araling ito, magbukas ng ibang app at i-tap ang Kanako. Opsyonal ang awtomatikong pagbasa at kailangan ng hiwalay na pagsang-ayon.</string>
     <string name="guided_camera_intro">Ito ang tunay na camera reader. Payagan ang camera kung hihilingin, at itutok sa nakalimbag na Japanese. I-tap ang preview para mag-focus, mag-zoom at kumuha ng larawan. Walang awtomatikong ise-save.</string>
     <string name="guided_camera_begin">Subukan ang camera</string>
@@ -215,7 +215,7 @@
     <string name="guided_camera_zoom">Pindutin ang naka-highlight na zoom-in button.</string>
     <string name="guided_camera_capture">Pindutin ang naka-highlight na capture button. Kukuha ito ng tunay na larawang masusuri ngunit hindi awtomatikong ise-save.</string>
     <string name="guided_camera_review_first">Tapusin munang suriin ang kasalukuyang larawan bago simulan ang gabay sa camera.</string>
-    <string name="guided_script">Pindutin ang Script para lumipat sa Kana o Romaji. Makikita sa menu ang kasalukuyang pinili.</string>
+    <string name="guided_script">Pindutin ang Sistema ng pagsulat para lumipat sa Kana o Romaji. Makikita sa menu ang kasalukuyang pinili.</string>
     <string name="guided_preferences">Para sa iba pang opsyon, pindutin ang naka-highlight na gear icon sa Home.</string>
     <string name="guided_preferences_visit">Dito mababago ang laki, kulay at background ng pagbasa at mga opsyon ng floating reader. Hindi kailangang baguhin ang anuman ngayon. Bumalik sa tutorial at buksan muli ang mga kontrol para ihinto ang reader.</string>
     <string name="guided_return">Bumalik sa tutorial</string>

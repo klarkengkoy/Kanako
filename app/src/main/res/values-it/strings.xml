@@ -207,7 +207,7 @@
     <string name="guided_clear">Le letture sono apparse. Tocca di nuovo Kanako per cancellarle.</string>
     <string name="guided_drag">Trascina Kanako in una nuova posizione, poi solleva il dito.</string>
     <string name="guided_controls">Tocca due volte o tieni premuta Kanako per aprire i comandi.</string>
-    <string name="guided_stop">Tocca due volte Kanako o tienila premuta per aprire i comandi, poi tocca Ferma per arrestare il lettore mobile.</string>
+    <string name="guided_stop">Tocca due volte Kanako o tienila premuta per aprire i comandi, poi tocca «Ferma lettore» per arrestare il lettore mobile.</string>
     <string name="guided_complete">Tutto pronto! Fuori da questa lezione, apri un’altra app e tocca Kanako. La lettura automatica è facoltativa e richiede un consenso separato.</string>
     <string name="guided_camera_intro">Questo è il lettore fotocamera reale. Consenti l’accesso se richiesto e inquadra del giapponese stampato. Tocca l’anteprima per mettere a fuoco, regola lo zoom e scatta una foto. Nulla viene salvato automaticamente.</string>
     <string name="guided_camera_begin">Prova la fotocamera</string>
