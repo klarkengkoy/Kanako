@@ -221,4 +221,7 @@
     <string name="guided_return">Torna al tutorial</string>
     <string name="guided_replay">Ripeti il tutorial</string>
     <string name="guided_action">La prossima azione</string>
+    <string name="setup_accessibility_disconnected">Attivo, disconnesso</string>
+    <string name="setup_accessibility_reconnect">Kanako è attivo nelle impostazioni Android, ma il servizio di lettura è disconnesso. Nelle impostazioni di accessibilità, disattiva e riattiva Kanako, poi torna qui.</string>
+    <string name="setup_disclosure_needed">Leggi le informazioni sulle acquisizioni</string>
 </resources>

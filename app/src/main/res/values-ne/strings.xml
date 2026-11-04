@@ -221,4 +221,7 @@
     <string name="guided_return">ट्युटोरियलमा फर्कनुहोस्</string>
     <string name="guided_replay">ट्युटोरियल फेरि हेर्नुहोस्</string>
     <string name="guided_action">अब के गर्ने</string>
+    <string name="setup_accessibility_disconnected">सक्षम छ, जडान छैन</string>
+    <string name="setup_accessibility_reconnect">Android सेटिङमा कानाको सक्षम छ तर स्क्रिन पढ्ने सेवा जडान भएको छैन। पहुँचयोग्यता सेटिङमा कानाको बन्द गरेर फेरि खोल्नुहोस् र यहाँ फर्कनुहोस्।</string>
+    <string name="setup_disclosure_needed">स्क्रिन पढाइको जानकारी हेर्नुहोस्</string>
 </resources>

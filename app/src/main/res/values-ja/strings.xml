@@ -220,4 +220,7 @@
     <string name="guided_return">チュートリアルに戻る</string>
     <string name="guided_replay">チュートリアルをもう一度見る</string>
     <string name="guided_action">次の操作</string>
+    <string name="setup_accessibility_disconnected">有効・未接続</string>
+    <string name="setup_accessibility_reconnect">Android の設定でかなこは有効ですが、読み取りサービスが接続されていません。ユーザー補助設定でかなこを一度オフにしてからオンにし、ここに戻ってください。</string>
+    <string name="setup_disclosure_needed">画面読み取りの説明を確認</string>
 </resources>

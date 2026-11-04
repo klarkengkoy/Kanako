@@ -9,6 +9,7 @@ import android.graphics.Bitmap
 import android.graphics.Rect
 import android.os.Build
 import android.os.PowerManager
+import android.provider.Settings
 import android.text.InputType
 import android.view.Display
 import android.view.accessibility.AccessibilityEvent
@@ -79,14 +80,20 @@ class KanakoAccessibilityService : AccessibilityService() {
         private val mutableConnected = MutableStateFlow(false)
         val connected = mutableConnected.asStateFlow()
 
-        fun isEnabled(context: Context): Boolean =
-            context.getSystemService(AccessibilityManager::class.java)
-                .getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
-                .any { info ->
-                    val service = info.resolveInfo.serviceInfo
-                    ComponentName(service.packageName, service.name) ==
-                        ComponentName(context, KanakoAccessibilityService::class.java)
-                }
+        fun isEnabled(context: Context): Boolean {
+            val component = ComponentName(context, KanakoAccessibilityService::class.java)
+            return try {
+                Settings.Secure.getString(context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
+                    ?.split(':')?.any { ComponentName.unflattenFromString(it) == component } == true
+            } catch (_: SecurityException) {
+                context.getSystemService(AccessibilityManager::class.java)
+                    .getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
+                    .any { info ->
+                        val service = info.resolveInfo.serviceInfo
+                        ComponentName(service.packageName, service.name) == component
+                    }
+            }
+        }
 
         internal fun requestScreenshot(callback: (Result<ScreenshotFrame>) -> Unit) {
             val service = instance

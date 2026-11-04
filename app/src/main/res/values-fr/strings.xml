@@ -221,4 +221,7 @@
     <string name="guided_return">Revenir au tutoriel</string>
     <string name="guided_replay">Revoir le tutoriel</string>
     <string name="guided_action">À vous de jouer</string>
+    <string name="setup_accessibility_disconnected">Activé, déconnecté</string>
+    <string name="setup_accessibility_reconnect">Kanako est activé dans Android, mais son service de lecture est déconnecté. Dans les paramètres d’accessibilité, désactivez puis réactivez Kanako et revenez ici.</string>
+    <string name="setup_disclosure_needed">Lire les informations sur les captures</string>
 </resources>

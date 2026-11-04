@@ -247,8 +247,15 @@ fun HomeScreen(
                             )
                             PermissionRequirement(
                                 title = stringResource(R.string.setup_accessibility_title),
-                                description = stringResource(R.string.setup_accessibility_description),
-                                granted = accessibilityEnabled && preferences.hasAcceptedSnapshotDisclosure,
+                                description = stringResource(if (accessibilityEnabled && preferences.hasAcceptedSnapshotDisclosure && !accessibilityConnected)
+                                    R.string.setup_accessibility_reconnect else R.string.setup_accessibility_description),
+                                status = stringResource(when {
+                                    !accessibilityEnabled -> R.string.setup_required
+                                    !preferences.hasAcceptedSnapshotDisclosure -> R.string.setup_disclosure_needed
+                                    !accessibilityConnected -> R.string.setup_accessibility_disconnected
+                                    else -> R.string.setup_ready
+                                }),
+                                granted = accessibilityEnabled && accessibilityConnected && preferences.hasAcceptedSnapshotDisclosure,
                                 action = stringResource(
                                     if (accessibilityEnabled && preferences.hasAcceptedSnapshotDisclosure)
                                         R.string.setup_manage_accessibility else R.string.setup_open_accessibility
@@ -366,9 +373,10 @@ private fun PermissionRequirement(
     modifier: Modifier = Modifier,
     connecting: Boolean = false,
     enabled: Boolean = true,
-    actionModifier: Modifier = Modifier
+    actionModifier: Modifier = Modifier,
+    status: String? = null
 ) {
-    val status = stringResource(when {
+    val statusText = status ?: stringResource(when {
         connecting -> R.string.setup_allowed_connecting
         granted -> R.string.setup_granted
         else -> R.string.setup_required
@@ -377,7 +385,7 @@ private fun PermissionRequirement(
         verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(title, style = MaterialTheme.typography.titleSmall)
         Text(description, style = MaterialTheme.typography.bodySmall)
-        AccessStatusBadge(status, granted = granted, connecting = connecting)
+        AccessStatusBadge(statusText, granted = granted, connecting = connecting)
         OutlinedButton(onClick = onAction, enabled = enabled, modifier = actionModifier) { Text(action) }
     }
 }

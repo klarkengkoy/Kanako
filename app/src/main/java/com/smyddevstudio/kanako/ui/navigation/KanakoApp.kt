@@ -93,6 +93,9 @@ fun KanakoApp(
     var overlayGranted by remember { mutableStateOf(KanakoOverlayService.canDrawOverlays(context)) }
     var accessibilityEnabled by remember { mutableStateOf(KanakoAccessibilityService.isEnabled(context)) }
     val accessibilityConnected by KanakoAccessibilityService.connected.collectAsStateWithLifecycle()
+    LaunchedEffect(accessibilityConnected) {
+        accessibilityEnabled = KanakoAccessibilityService.isEnabled(context)
+    }
     var resumeEpoch by remember { mutableIntStateOf(0) }
     var pendingActivation by rememberSaveable { mutableStateOf(false) }
     var showDisclosure by rememberSaveable { mutableStateOf(false) }

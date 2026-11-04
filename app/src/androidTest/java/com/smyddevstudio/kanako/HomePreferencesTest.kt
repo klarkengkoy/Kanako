@@ -37,6 +37,35 @@ class HomePreferencesTest {
     @get:Rule val compose = createComposeRule()
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
+    @Test fun disconnectedServiceIsNotReportedAsMissingPermission() {
+        val connected = mutableStateOf(false)
+        compose.setContent {
+            KanakoTheme {
+                HomeScreen({}, {}, {},
+                    preferences = KanakoPreferences(hasAcceptedSnapshotDisclosure = true),
+                    overlayGranted = true, accessibilityEnabled = true, accessibilityConnected = connected.value)
+            }
+        }
+        compose.onNodeWithText(context.getString(R.string.home_setup_action)).performClick()
+        compose.onNodeWithText(context.getString(R.string.setup_enable)).assertIsNotEnabled()
+        compose.onNodeWithText(context.getString(R.string.setup_accessibility_disconnected)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.setup_accessibility_reconnect)).assertIsDisplayed()
+        compose.runOnIdle { connected.value = true }
+        compose.onNodeWithText(context.getString(R.string.setup_enable)).assertIsEnabled()
+    }
+
+    @Test fun enabledServiceWithMissingDisclosureShowsTheSeparateReviewStep() {
+        compose.setContent {
+            KanakoTheme {
+                HomeScreen({}, {}, {}, preferences = KanakoPreferences(),
+                    overlayGranted = true, accessibilityEnabled = true, accessibilityConnected = true)
+            }
+        }
+        compose.onNodeWithText(context.getString(R.string.home_setup_action)).performClick()
+        compose.onNodeWithText(context.getString(R.string.setup_disclosure_needed)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.setup_enable)).assertIsNotEnabled()
+    }
+
     @Test fun preferencesLessonEnablesOnlyTheHomeGear() {
         var opens = 0
         compose.setContent {

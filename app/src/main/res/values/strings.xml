@@ -222,4 +222,7 @@
     <string name="guided_return">Return to tutorial</string>
     <string name="guided_replay">Replay tutorial</string>
     <string name="guided_action">Your next action</string>
+    <string name="setup_accessibility_disconnected">Enabled, disconnected</string>
+    <string name="setup_accessibility_reconnect">Kanako is enabled in Android settings, but its screen-reading service is disconnected. Open accessibility settings, turn Kanako off and on, then return here.</string>
+    <string name="setup_disclosure_needed">Review screen-reading disclosure</string>
 </resources>

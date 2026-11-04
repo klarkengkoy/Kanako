@@ -221,4 +221,7 @@
     <string name="guided_return">Bumalik sa tutorial</string>
     <string name="guided_replay">Ulitin ang tutorial</string>
     <string name="guided_action">Ang susunod mong gagawin</string>
+    <string name="setup_accessibility_disconnected">Naka-on, hindi nakakonekta</string>
+    <string name="setup_accessibility_reconnect">Naka-on ang Kanako sa Android settings pero hindi nakakonekta ang serbisyo sa pagbasa ng screen. Sa accessibility settings, i-off at i-on muli ang Kanako, saka bumalik dito.</string>
+    <string name="setup_disclosure_needed">Basahin ang paliwanag sa screen reading</string>
 </resources>
