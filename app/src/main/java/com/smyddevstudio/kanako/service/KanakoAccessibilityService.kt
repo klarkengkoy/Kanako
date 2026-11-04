@@ -263,7 +263,7 @@ class KanakoAccessibilityService : AccessibilityService() {
         } finally {
             recycle(root)
         }
-        if (sourcePackage == null || sourcePackage == packageName) {
+        if (sourcePackage == null || !GuidedReaderSession.allowsSource(sourcePackage == packageName)) {
             fail(SnapshotFailure.Reason.NO_SOURCE)
             return
         }

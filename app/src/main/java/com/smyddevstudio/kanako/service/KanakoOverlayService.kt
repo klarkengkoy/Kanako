@@ -99,6 +99,7 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
     private var activeRequestIsAutomatic = false
     private var autoReadPausedUntilMovement = false
     private val autoReader = AutoReadDebouncer(serviceScope, { requestReading(automatic = true) })
+    private var tutorialMoved = false
     private var inputHidden = false
     private var screenCapturePaused = false
     private var screenStateReceiverRegistered = false
@@ -154,7 +155,8 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
         return null
     }
 
-    private fun setOverlayHidden(hidden: Boolean) {
+    private fun setOverlayHidden(requestedHidden: Boolean) {
+        val hidden = requestedHidden || GuidedReaderSession.step.value in listOf(GuidedReaderStep.PREFERENCES, GuidedReaderStep.RETURN)
         floatingControlsVisible.value = !hidden
         val visibility = if (hidden) View.INVISIBLE else View.VISIBLE
         overlayView?.visibility = visibility
@@ -297,6 +299,7 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
     }
 
     private fun scheduleAutomaticRead() {
+        if (GuidedReaderSession.active) { autoReader.cancel(); return }
         autoReader.onMovement(
             !autoReadPausedUntilMovement && !screenCapturePaused &&
                 !KanakoInputVisibility.hidden.value && KanakoOverlaySession.isActive.value &&
@@ -350,6 +353,8 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
     }
 
     private fun requestReading(automatic: Boolean) {
+        if (GuidedReaderSession.active && (automatic || !GuidedReaderSession.sampleVisible ||
+                GuidedReaderSession.step.value != GuidedReaderStep.READ)) return
         if (!canDrawOverlays(this) || !KanakoAccessibilityService.connected.value) {
             stopSelf()
             return
@@ -471,7 +476,9 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
                         }
                         runCatching { windowManager?.updateViewLayout(this@apply, currentParams) }
                     }
+                    val tutorialStep by GuidedReaderSession.step.collectAsStateWithLifecycle()
                     RecognizedTextOverlayContent(
+                        tutorialContrast = tutorialStep != GuidedReaderStep.INACTIVE,
                         lines = lines,
                         preferences = preferences,
                         origin = annotationOrigin.value,
@@ -480,6 +487,7 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
                                 readingStatus.intValue == status
                             ) {
                                 hasVisibleReadings.value = visible
+                                if (visible) GuidedReaderSession.advance(GuidedReaderStep.READ, GuidedReaderStep.CONTROLS)
                                 if (!readingInProgress && lines.isNotEmpty() && status in listOf(
                                         R.string.reading_working, R.string.reading_shown, R.string.reading_no_text
                                     )) {
@@ -583,7 +591,10 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
                     val preferences by preferencesRepository.userPreferencesFlow
                         .collectAsStateWithLifecycle(initialValue = initialPreferences)
 
+                    val guidedStep by GuidedReaderSession.step.collectAsStateWithLifecycle()
+                    LaunchedEffect(guidedStep) { setOverlayHidden(inputHidden || screenCapturePaused) }
                     FloatingOverlayContent(
+                        guidedStep = guidedStep,
                         preferences = preferences,
                         mirrorMascot = floatingOnLeft.value,
                         controlsVisible = floatingControlsVisible.value,
@@ -594,13 +605,21 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
                             positionFloatingOverlay()
                         },
                         showFurigana = hasVisibleReadings.value,
-                        onReadOrClear = ::readOrClear,
+                        onReadOrClear = {
+                            val step = GuidedReaderSession.step.value
+                            if (!GuidedReaderSession.active || step == GuidedReaderStep.READ || step == GuidedReaderStep.CLEAR) {
+                                readOrClear()
+                                if (step == GuidedReaderStep.CLEAR) GuidedReaderSession.advance(step, GuidedReaderStep.DRAG)
+                            }
+                        },
                         onLayoutSizeChanged = { size ->
                             floatingContentSize = size
                             positionFloatingOverlay()
                         },
                         onDrag = { dx, dy ->
+                            if (GuidedReaderSession.active && GuidedReaderSession.step.value != GuidedReaderStep.DRAG) return@FloatingOverlayContent
                             val anchor = floatingAnchor ?: return@FloatingOverlayContent
+                            if (dx != 0f || dy != 0f) tutorialMoved = true
                             floatingAnchor = floatingAnchor(
                                 usableFloatingArea(), floatingControlWidth,
                                 FloatingPoint((anchor.x + dx).roundToInt(), (anchor.y + dy).roundToInt())
@@ -608,6 +627,8 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
                             positionFloatingOverlay()
                         },
                         onDragEnd = {
+                            if (tutorialMoved) GuidedReaderSession.advance(GuidedReaderStep.DRAG, GuidedReaderStep.PREFERENCES)
+                            tutorialMoved = false
                             val anchor = floatingAnchor
                             if (anchor != null) serviceScope.launch {
                                 preferencesRepository.updateFabOffset(anchor.x, anchor.y)
@@ -620,6 +641,7 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
                             }
                             serviceScope.launch {
                                 preferencesRepository.updateScriptType(nextScript)
+                                GuidedReaderSession.advance(GuidedReaderStep.SCRIPT, GuidedReaderStep.CLEAR)
                             }
                         },
                         onOpenApp = {
@@ -629,6 +651,7 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
                             startActivity(appIntent)
                         },
                         onStopService = {
+                            GuidedReaderSession.advance(GuidedReaderStep.STOP, GuidedReaderStep.COMPLETE)
                             KanakoOverlaySession.setActive(false)
                             stopSelf()
                         }

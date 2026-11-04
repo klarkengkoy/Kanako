@@ -196,4 +196,29 @@
     <string name="tutorial_start_tool">Open reader</string>
     <string name="tutorial_replay">Choose another path</string>
     <string name="replay_mascot_greeting">Replay Kanako’s greeting</string>
+    <string name="guided_intro_title">Let’s set up Kanako</string>
+    <string name="guided_intro_body">Follow the highlighted controls in the real app. We’ll help you grant access, then try the floating reader on Japanese text here. You can skip and return from How it works.</string>
+    <string name="guided_start">Start setup</string>
+    <string name="guided_skip">Skip tutorial</string>
+    <string name="guided_overlay">First, allow Kanako to appear over other apps. Tap the highlighted button. In Android Settings, find Kanako and enable display over other apps. Screen names vary by device. Return here when finished.</string>
+    <string name="guided_accessibility">Next, review the screenshot disclosure. Then find Kanako in Android’s accessibility settings and enable its service. Your device may put it under Installed or Downloaded apps. Return here afterwards. Only the actual permission state advances this step.</string>
+    <string name="guided_show">Tap Show floating reader. Kanako will appear over this app. We’ll use the real reader on a Japanese sample.</string>
+    <string name="guided_read">Tap the highlighted floating mascot to read the Japanese text. If readings do not appear, wait a moment and try again.</string>
+    <string name="guided_clear">Readings appeared. Tap the mascot again to clear them.</string>
+    <string name="guided_drag">Drag the highlighted mascot to a new position, then lift your finger.</string>
+    <string name="guided_controls">Double-tap or hold the highlighted mascot to open its controls.</string>
+    <string name="guided_stop">Tap Stop in the floating controls to stop the real reader.</string>
+    <string name="guided_complete">You’re ready! Outside this lesson, open another app and tap Kanako to read Japanese. Auto-read is optional and requires a separate agreement.</string>
+    <string name="guided_sample" translatable="false">日本語を読みます。\n今日は本を三冊読みました。</string>
+    <string name="guided_camera_intro">This is the real camera reader. Allow camera access if requested, then point it at printed Japanese. Tap the preview to focus, adjust zoom, and capture a photo to inspect the readings. Nothing is saved automatically.</string>
+    <string name="guided_camera_begin">Try the camera</string>
+    <string name="guided_camera_focus">Point the camera at printed Japanese, then tap the highlighted preview to focus.</string>
+    <string name="guided_camera_zoom">Tap the highlighted zoom-in button.</string>
+    <string name="guided_camera_capture">Tap the highlighted capture button. This takes a real photo for review; it is not saved automatically.</string>
+    <string name="guided_camera_review_first">Finish reviewing your current photo before starting the camera guide.</string>
+    <string name="guided_script">Tap Script to switch between Kana and Romaji. The menu label shows your current choice.</string>
+    <string name="guided_preferences">For more options, tap the highlighted gear icon on Home.</string>
+    <string name="guided_preferences_visit">Here you can change reading size, color, background and floating-reader options. You do not need to change anything now. Return to the tutorial, then reopen Kanako’s controls to stop the reader.</string>
+    <string name="guided_return">Return to tutorial</string>
+    <string name="guided_replay">Replay tutorial</string>
 </resources>

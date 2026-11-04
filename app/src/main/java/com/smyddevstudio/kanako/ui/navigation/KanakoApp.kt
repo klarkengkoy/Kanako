@@ -1,5 +1,8 @@
 package com.smyddevstudio.kanako.ui.navigation
 
+import com.smyddevstudio.kanako.service.GuidedReaderSession
+import com.smyddevstudio.kanako.service.GuidedReaderStep
+import androidx.activity.compose.BackHandler
 import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.rememberScrollState
@@ -52,7 +55,6 @@ import com.smyddevstudio.kanako.ui.screens.HowItWorksScreen
 import com.smyddevstudio.kanako.ui.screens.PreferencesScreen
 import com.smyddevstudio.kanako.ui.screens.CameraReaderScreen
 import com.smyddevstudio.kanako.ui.screens.CameraResultScreen
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 @Composable
@@ -64,14 +66,18 @@ fun KanakoApp(
     val resources = LocalResources.current
     val repository = remember(context) { UserPreferencesRepository(context) }
     val preferencesFlow = remember(repository) {
-        combine(repository.userPreferencesFlow, KanakoOverlaySession.isActive) { preferences, isActive ->
-            preferences.copy(isOverlayActive = isActive)
-        }
+        repository.userPreferencesFlow
     }
-    val preferences by preferencesFlow.collectAsStateWithLifecycle(initialValue = KanakoPreferences())
+    val savedPreferences by preferencesFlow.collectAsStateWithLifecycle(initialValue = KanakoPreferences())
+    val readerActive by KanakoOverlaySession.isActive.collectAsStateWithLifecycle()
+    val preferences = savedPreferences.copy(isOverlayActive = readerActive)
     val coroutineScope = rememberCoroutineScope()
     val backStack = rememberNavBackStack(Screen.Home)
     var onboardingInitialized by remember { mutableStateOf(false) }
+    var guidedSetup by rememberSaveable { mutableStateOf(false) }
+    var lessonOwnsReader by rememberSaveable { mutableStateOf(false) }
+    var cameraIntroduction by rememberSaveable { mutableStateOf(false) }
+    var cameraGuide by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(repository) {
         val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
         repository.initializeAutoReadOffer(packageInfo.firstInstallTime == packageInfo.lastUpdateTime)
@@ -80,7 +86,7 @@ fun KanakoApp(
     val cameraReader: CameraReaderViewModel = viewModel()
     val hasCameraEntry = Screen.Camera in backStack
     LaunchedEffect(hasCameraEntry) {
-        if (!hasCameraEntry) cameraReader.returnToLive()
+        if (!hasCameraEntry) { cameraReader.returnToLive(); cameraGuide = false }
     }
     val snackbar = remember { SnackbarHostState() }
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -90,7 +96,7 @@ fun KanakoApp(
     var resumeEpoch by remember { mutableIntStateOf(0) }
     var pendingActivation by rememberSaveable { mutableStateOf(false) }
     var showDisclosure by rememberSaveable { mutableStateOf(false) }
-    if (preferences.offerAutoRead && backStack.lastOrNull() == Screen.Home && !showDisclosure) {
+    if (preferences.offerAutoRead && !preferences.offerGuidedSetup && !guidedSetup && backStack.lastOrNull() == Screen.Home && !showDisclosure) {
         com.smyddevstudio.kanako.ui.components.AutoReadDisclosure(
             onConfirm = { coroutineScope.launch { repository.updateAutoReadAfterScroll(true) } },
             onDismiss = { coroutineScope.launch { repository.updateAutoReadAfterScroll(false) } }
@@ -162,6 +168,113 @@ fun KanakoApp(
             feedback(R.string.setup_incomplete)
         }
     }
+    fun openCamera(guided: Boolean) {
+        val existing = backStack.indexOfLast { it == Screen.Camera || it == Screen.CameraResult }
+        if (existing >= 0) {
+            val reviewingPhoto = backStack[existing] == Screen.CameraResult
+            cameraGuide = guided && !reviewingPhoto
+            while (backStack.lastIndex > existing) backStack.removeAt(backStack.lastIndex)
+            if (guided && reviewingPhoto) feedback(R.string.guided_camera_review_first)
+        } else {
+            cameraGuide = guided
+            backStack.add(Screen.Camera)
+        }
+    }
+    fun beginGuide() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            coroutineScope.launch { repository.dismissGuidedSetup(); repository.dismissTutorialInvitation() }
+            feedback(R.string.reading_unsupported)
+            cameraIntroduction = true
+        } else if (preferences.isOverlayActive) {
+            feedback(R.string.setup_stop)
+        } else {
+            openHome()
+            GuidedReaderSession.begin()
+            guidedSetup = true
+            lessonOwnsReader = false
+            coroutineScope.launch {
+                repository.dismissGuidedSetup()
+                repository.dismissTutorialInvitation()
+            }
+        }
+    }
+    fun exitGuide(completed: Boolean = false) {
+        if (guidedSetup) KanakoOverlayService.stopService(context)
+        lessonOwnsReader = false
+        GuidedReaderSession.end()
+        guidedSetup = false
+        openHome()
+        if (completed) coroutineScope.launch { repository.completeTutorial(TutorialPath.FLOATING) }
+    }
+    LaunchedEffect(guidedSetup) {
+        if (guidedSetup && !GuidedReaderSession.active) GuidedReaderSession.begin()
+        else if (!guidedSetup) GuidedReaderSession.end()
+    }
+    val guidedReaderStep by GuidedReaderSession.step.collectAsStateWithLifecycle()
+    fun returnToLesson() {
+        if (backStack.lastOrNull() == Screen.Preferences) backStack.removeAt(backStack.lastIndex)
+        GuidedReaderSession.returnFromPreferences()
+        if (guidedSetup && backStack.lastOrNull() == Screen.Home) backStack.add(Screen.Tutorial(TutorialPath.FLOATING))
+    }
+    fun handleBack() {
+        if (guidedSetup && backStack.lastOrNull() == Screen.Preferences) returnToLesson()
+        else if (guidedSetup) exitGuide()
+        else if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
+    }
+    LaunchedEffect(guidedReaderStep) {
+        if (guidedSetup && guidedReaderStep == GuidedReaderStep.PREFERENCES) openHome()
+    }
+    BackHandler(enabled = guidedSetup) { handleBack() }
+    if (guidedSetup && guidedReaderStep == GuidedReaderStep.RETURN &&
+        backStack.lastOrNull() == Screen.Preferences) {
+        AlertDialog(
+            onDismissRequest = { returnToLesson() },
+            title = { Text(stringResource(R.string.preferences_title)) },
+            text = { Text(stringResource(R.string.guided_preferences_visit)) },
+            confirmButton = { TextButton(onClick = { returnToLesson() }) {
+                Text(stringResource(R.string.guided_return))
+            } }
+        )
+    }
+    LaunchedEffect(guidedSetup, preferences.isOverlayActive) {
+        if (guidedSetup && preferences.isOverlayActive && backStack.lastOrNull() == Screen.Home &&
+            GuidedReaderSession.step.value !in listOf(GuidedReaderStep.PREFERENCES, GuidedReaderStep.RETURN)) {
+            lessonOwnsReader = true
+            backStack.add(Screen.Tutorial(TutorialPath.FLOATING))
+        } else if (guidedSetup && lessonOwnsReader && !preferences.isOverlayActive &&
+            GuidedReaderSession.step.value != GuidedReaderStep.COMPLETE) exitGuide()
+    }
+    DisposableEffect(Unit) {
+        onDispose { GuidedReaderSession.setSampleVisible(false) }
+    }
+    if (onboardingInitialized && preferences.offerGuidedSetup && !guidedSetup) {
+        AlertDialog(
+            onDismissRequest = { coroutineScope.launch { repository.dismissGuidedSetup() } },
+            title = { Text(stringResource(R.string.guided_intro_title)) },
+            text = { Text(stringResource(R.string.guided_intro_body)) },
+            confirmButton = { TextButton(onClick = { beginGuide() }) { Text(stringResource(R.string.guided_start)) } },
+            dismissButton = { TextButton(onClick = {
+                coroutineScope.launch { repository.dismissGuidedSetup() }
+            }) { Text(stringResource(R.string.guided_skip)) } }
+        )
+    }
+    if (cameraIntroduction) {
+        AlertDialog(
+            onDismissRequest = { cameraIntroduction = false },
+            title = { Text(stringResource(R.string.camera_title)) },
+            text = { Text(stringResource(R.string.guided_camera_intro)) },
+            confirmButton = { TextButton(onClick = {
+                cameraIntroduction = false
+                coroutineScope.launch { repository.dismissCameraGuide() }
+                openCamera(guided = true)
+            }) { Text(stringResource(R.string.guided_camera_begin)) } },
+            dismissButton = { TextButton(onClick = {
+                cameraIntroduction = false
+                coroutineScope.launch { repository.dismissCameraGuide() }
+                openCamera(guided = false)
+            }) { Text(stringResource(R.string.guided_skip)) } }
+        )
+    }
     if (showDisclosure) {
         AlertDialog(
             onDismissRequest = { showDisclosure = false; pendingActivation = false },
@@ -194,6 +307,7 @@ fun KanakoApp(
     Box(modifier = modifier.fillMaxSize()) {
     NavDisplay(
         backStack = backStack,
+        onBack = { handleBack() },
         modifier = Modifier,
         entryProvider = entryProvider {
             entry<Screen.Home> {
@@ -201,7 +315,13 @@ fun KanakoApp(
                     preferences = preferences,
                     onUpdateOverlayActive = handleToggleOverlay,
                     onNavigateToHowItWorks = { backStack.add(Screen.HowItWorks) },
-                    onNavigateToCamera = { backStack.add(Screen.Camera) },
+                    onNavigateToCamera = {
+                        if (!preferences.hasSeenCameraGuide) cameraIntroduction = true
+                        else openCamera(guided = false)
+                    },
+                    guidedSetup = guidedSetup,
+                    guidePreferences = guidedReaderStep == GuidedReaderStep.PREFERENCES,
+                    onSkipGuidedSetup = { exitGuide() },
                     supported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R,
                     overlayGranted = overlayGranted,
                     accessibilityEnabled = accessibilityEnabled,
@@ -210,13 +330,12 @@ fun KanakoApp(
                         context.startActivity(KanakoOverlayService.createOverlayPermissionIntent(context))
                     },
                     onRequestAccessibility = { showDisclosure = true },
-                    onNavigateToPreferences = { backStack.add(Screen.Preferences) },
-                    showTutorialInvitation = onboardingInitialized && !preferences.hasSeenTutorialInvitation &&
-                        !preferences.offerAutoRead,
-                    onNavigateToTutorial = {
-                        coroutineScope.launch { repository.dismissTutorialInvitation() }
-                        backStack.add(Screen.Tutorial())
+                    onNavigateToPreferences = {
+                        if (guidedSetup) GuidedReaderSession.openPreferencesFromHome()
+                        backStack.add(Screen.Preferences)
                     },
+                    showTutorialInvitation = false,
+                    onNavigateToTutorial = { beginGuide() },
                     onDismissTutorialInvitation = { coroutineScope.launch { repository.dismissTutorialInvitation() } }
                 )
             }
@@ -233,7 +352,8 @@ fun KanakoApp(
                     onNavigateToHome = {
                         openHome()
                     },
-                    onNavigateToTutorial = { backStack.add(Screen.Tutorial()) }
+                    onNavigateToTutorial = { beginGuide() },
+                    onNavigateToCameraTutorial = { cameraIntroduction = true }
                 )
             }
             entry<Screen.Help> { route ->
@@ -241,40 +361,33 @@ fun KanakoApp(
                     initialTopic = route.topic,
                     onBack = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) },
                     onNavigateToHome = { openHome() },
-                    onNavigateToTutorial = { backStack.add(Screen.Tutorial()) }
+                    onNavigateToTutorial = { beginGuide() },
+                    onNavigateToCameraTutorial = { cameraIntroduction = true }
                 )
             }
-            entry<Screen.Tutorial> { route ->
-                TutorialScreen(
-                    initialPath = route.path,
-                    preferences = preferences,
-                    onBack = { if (backStack.lastOrNull() is Screen.Tutorial) backStack.removeAt(backStack.lastIndex) },
-                    onComplete = { path ->
-                        coroutineScope.launch {
-                            repository.completeTutorial(path)
-                            if (backStack.lastOrNull() is Screen.Tutorial) backStack.removeAt(backStack.lastIndex)
-                        }
-                    },
-                    onOpenReader = { path ->
-                        if (path == TutorialPath.FLOATING) openHome() else {
-                            val existing = backStack.indexOfLast { it == Screen.CameraResult || it == Screen.Camera }
-                            if (existing >= 0) {
-                                while (backStack.lastIndex > existing) backStack.removeAt(backStack.lastIndex)
-                            } else backStack.add(Screen.Camera)
-                        }
-                    }
+            entry<Screen.Tutorial> {
+                if (!guidedSetup) LaunchedEffect(Unit) { openHome() }
+                else TutorialScreen(
+                    onBack = { exitGuide() },
+                    onComplete = { exitGuide(completed = true) }
                 )
             }
             entry<Screen.Camera> {
                 CameraReaderScreen(
                     viewModel = cameraReader,
                     preferences = preferences,
+                    guidedTutorial = cameraGuide,
+                    onSkipTutorial = { cameraGuide = false },
+                    onCompleteTutorial = {
+                        if (cameraGuide) coroutineScope.launch { repository.completeTutorial(TutorialPath.CAMERA) }
+                        cameraGuide = false
+                    },
                     onPermissionDenied = {
                         coroutineScope.launch {
                             repository.recordCameraPermissionDenial()
                         }
                     },
-                    onBack = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) },
+                    onBack = { cameraGuide = false; if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) },
                     onCaptured = { if (backStack.lastOrNull() == Screen.Camera) backStack.add(Screen.CameraResult) },
                     onNavigateToPreferences = { backStack.add(Screen.Preferences) }
                 )
@@ -317,11 +430,7 @@ fun KanakoApp(
                     },
                     onRequestAccessibility = { openHome() },
                     onNavigateToPrivacy = { backStack.add(Screen.Help(HelpTopic.PRIVACY)) },
-                    onBack = {
-                        if (backStack.size > 1) {
-                            backStack.removeAt(backStack.lastIndex)
-                        }
-                    }
+                    onBack = { handleBack() }
                 )
             }
         }

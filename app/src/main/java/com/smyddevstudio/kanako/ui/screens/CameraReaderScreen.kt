@@ -23,6 +23,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,6 +49,8 @@ import com.smyddevstudio.kanako.camera.CameraReaderViewModel
 import com.smyddevstudio.kanako.camera.LiveCameraSession
 import com.smyddevstudio.kanako.model.KanakoPreferences
 import com.smyddevstudio.kanako.ui.components.CameraReadingOverlay
+import com.smyddevstudio.kanako.ui.components.GuidedSpotlight
+import androidx.compose.ui.geometry.Rect
 
 @Composable
 internal fun CameraReaderScreen(
@@ -57,7 +60,10 @@ internal fun CameraReaderScreen(
     onNavigateToPreferences: () -> Unit,
     modifier: Modifier = Modifier,
     preferences: KanakoPreferences = KanakoPreferences(),
-    onPermissionDenied: () -> Unit = onBack
+    onPermissionDenied: () -> Unit = onBack,
+    guidedTutorial: Boolean = false,
+    onSkipTutorial: () -> Unit = {},
+    onCompleteTutorial: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -193,12 +199,25 @@ internal fun CameraReaderScreen(
             }
         )
     }
+    var lessonStep by rememberSaveable { mutableIntStateOf(1) }
+    var previousGuidance by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(guidedTutorial) {
+        if (guidedTutorial && !previousGuidance) lessonStep = 1
+        previousGuidance = guidedTutorial
+    }
+    val guideTarget = if (!guidedTutorial) -1 else if (!granted) 0 else if (
+        state.status == com.smyddevstudio.kanako.camera.CameraReadingStatus.CAMERA_ERROR ||
+        state.status == com.smyddevstudio.kanako.camera.CameraReadingStatus.READ_ERROR) 4 else lessonStep
+    var guideBounds by remember(guideTarget) { mutableStateOf<Rect?>(null) }
+    Box(modifier) {
     CameraReaderContent(
+        guideTarget = guideTarget,
+        onGuideBounds = { guideBounds = it },
         state = state,
         granted = granted,
-        onBack = { viewModel.returnToLive(); onBack() },
-        onPreferences = onNavigateToPreferences,
-        onCapture = { session?.let { viewModel.capture(it, onCaptured) } },
+        onBack = { if (!guidedTutorial) { viewModel.returnToLive(); onBack() } },
+        onPreferences = { if (!guidedTutorial) onNavigateToPreferences() },
+        onCapture = { session?.let { viewModel.capture(it) { onCompleteTutorial(); onCaptured() } } },
         onPermission = {
             when {
                 permanentlyDenied -> context.startActivity(Intent(
@@ -212,8 +231,9 @@ internal fun CameraReaderScreen(
         onZoom = { factor ->
             viewModel.invalidateGeometry()
             session?.zoomBy(factor)
+            if (guidedTutorial && lessonStep == 2 && session != null) lessonStep = 3
         },
-        modifier = modifier,
+        modifier = Modifier,
         permissionLabel = if (permanentlyDenied) R.string.camera_settings else R.string.camera_allow,
         displayRotation = displayRotation,
         viewfinder = { cameraModifier ->
@@ -228,12 +248,20 @@ internal fun CameraReaderScreen(
                         }
                     },
                     modifier = Modifier.fillMaxSize().cameraReaderGestures(
-                        onZoom = { session?.zoomBy(it) },
-                        onFocus = { session?.focusAt(it) },
+                        onZoom = { if (!guidedTutorial || lessonStep == 2) {
+                            session?.zoomBy(it)
+                            if (guidedTutorial && session != null) lessonStep = 3
+                        } },
+                        onFocus = { if (!guidedTutorial || lessonStep == 1) {
+                            session?.focusAt(it)
+                            if (guidedTutorial && session != null) lessonStep = 2
+                        } },
                         onInteraction = viewModel::invalidateGeometry,
                         onSelect = { point ->
-                            selectedReading = selectReading(readingTargets, point.x, point.y, selectedReading)
-                            selectedReading != null
+                            if (guidedTutorial) false else {
+                                selectedReading = selectReading(readingTargets, point.x, point.y, selectedReading)
+                                selectedReading != null
+                            }
                         }
                     ),
                     update = { it.contentDescription = liveDescription },
@@ -250,6 +278,14 @@ internal fun CameraReaderScreen(
             }
         }
     )
+    if (guidedTutorial && !rationale) GuidedSpotlight(guideBounds, stringResource(when (guideTarget) {
+        0 -> R.string.camera_state_permission_body
+        1 -> R.string.guided_camera_focus
+        2 -> R.string.guided_camera_zoom
+        3 -> R.string.guided_camera_capture
+        else -> R.string.camera_state_error
+    }), onSkipTutorial)
+    }
 }
 
 private fun hasCameraPermission(context: Context) =

@@ -1,6 +1,8 @@
 package com.smyddevstudio.kanako.service
 
 import android.graphics.Rect
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.pointerInput
@@ -57,6 +59,7 @@ internal fun RecognizedTextOverlayContent(
     preferences: KanakoPreferences,
     origin: IntOffset,
     modifier: Modifier = Modifier,
+    tutorialContrast: Boolean = false,
     onReadingsVisibleChanged: (Boolean) -> Unit = {}
 ) {
     val density = LocalDensity.current
@@ -135,13 +138,14 @@ internal fun RecognizedTextOverlayContent(
             selected = selectReading(currentTargets, point.x + currentOrigin.x, point.y + currentOrigin.y, selected)
         }
     }
-    val plateColor = when (preferences.annotationPlateStyle) {
+    val plateColor = if (tutorialContrast) MaterialTheme.colorScheme.surface else when (preferences.annotationPlateStyle) {
         AnnotationPlateStyle.CLEAR -> Color.Transparent
         AnnotationPlateStyle.WASHI_CAPSULE -> CreamBackgroundDark
         AnnotationPlateStyle.HIGH_CONTRAST -> MaterialTheme.colorScheme.inverseSurface
         AnnotationPlateStyle.SUBTLE -> MaterialTheme.colorScheme.surfaceVariant
     }
-    val rubyColor = if (preferences.annotationPlateStyle == AnnotationPlateStyle.HIGH_CONTRAST)
+    val rubyColor = if (tutorialContrast) MaterialTheme.colorScheme.onSurface
+        else if (preferences.annotationPlateStyle == AnnotationPlateStyle.HIGH_CONTRAST)
         MaterialTheme.colorScheme.inverseOnSurface else Color(preferences.furiganaColor.colorHex)
     val accessibleReadings = measured.mapIndexedNotNull { index, ruby ->
         if (placement[index] == null) null else AnnotatedString(
@@ -205,5 +209,21 @@ private fun CrowdedReadingPreview() {
                 segments = listOf(FuriganaSegment("情報処理技術", "じょうほうしょりぎじゅつ")))),
             KanakoPreferences(), IntOffset.Zero
         )
+    }
+}
+
+@Preview(name = "Tutorial light", widthDp = 360, heightDp = 180, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_NO)
+@Preview(name = "Tutorial dark", widthDp = 360, heightDp = 180, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun TutorialReadingContrastPreview() {
+    KanakoTheme {
+        Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
+            RecognizedTextOverlayContent(
+                listOf(RecognizedTextLine("日本語", Rect(80, 220, 280, 280), 1, ReadingBounds(0, 0, 1080, 720),
+                    segments = listOf(FuriganaSegment("日本語", "にほんご")))),
+                KanakoPreferences(annotationPlateStyle = AnnotationPlateStyle.CLEAR), IntOffset.Zero,
+                tutorialContrast = true
+            )
+        }
     }
 }

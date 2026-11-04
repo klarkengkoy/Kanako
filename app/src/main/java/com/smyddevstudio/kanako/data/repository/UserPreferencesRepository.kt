@@ -45,6 +45,8 @@ class UserPreferencesRepository(
         private val AUTO_READ_OFFER_PENDING = booleanPreferencesKey("auto_read_offer_pending")
         private val SNAPSHOT_DISCLOSURE_ACCEPTED = booleanPreferencesKey("snapshot_disclosure_accepted")
         private val CAMERA_PERMISSION_DENIED = booleanPreferencesKey("camera_permission_denied")
+        private val CAMERA_GUIDE_SEEN = booleanPreferencesKey("camera_guide_seen")
+        private val GUIDED_SETUP_PENDING = booleanPreferencesKey("guided_setup_pending")
         private val TUTORIAL_INVITATION_SEEN = booleanPreferencesKey("tutorial_invitation_seen")
         private val TUTORIAL_FLOATING_COMPLETED = booleanPreferencesKey("tutorial_floating_completed")
         private val TUTORIAL_CAMERA_COMPLETED = booleanPreferencesKey("tutorial_camera_completed")
@@ -109,11 +111,13 @@ class UserPreferencesRepository(
             autoHideOnKeyboard = autoHideOnKeyboard,
             autoReadAfterScroll = preferences[AUTO_READ_AFTER_SCROLL] ?: false,
             offerAutoRead = preferences[AUTO_READ_OFFER_PENDING] ?: false,
+            offerGuidedSetup = preferences[GUIDED_SETUP_PENDING] ?: false,
             hasAcceptedSnapshotDisclosure = preferences[SNAPSHOT_DISCLOSURE_ACCEPTED] ?: false,
             hasDeniedCameraPermission = preferences[CAMERA_PERMISSION_DENIED] ?: false,
             hasSeenTutorialInvitation = preferences[TUTORIAL_INVITATION_SEEN] ?: false,
             completedFloatingTutorial = preferences[TUTORIAL_FLOATING_COMPLETED] ?: false,
-            completedCameraTutorial = preferences[TUTORIAL_CAMERA_COMPLETED] ?: false
+            completedCameraTutorial = preferences[TUTORIAL_CAMERA_COMPLETED] ?: false,
+            hasSeenCameraGuide = preferences[CAMERA_GUIDE_SEEN] ?: false
         )
     }
 
@@ -123,6 +127,7 @@ class UserPreferencesRepository(
                 val untouched = preferences.asMap().isEmpty()
                 preferences[AUTO_READ_OFFER_INITIALIZED] = true
                 preferences[AUTO_READ_OFFER_PENDING] = isNewInstallation && untouched
+                preferences[GUIDED_SETUP_PENDING] = isNewInstallation && untouched
             }
         }
     }
@@ -132,6 +137,14 @@ class UserPreferencesRepository(
             it[AUTO_READ_AFTER_SCROLL] = enabled
             it[AUTO_READ_OFFER_PENDING] = false
         }
+    }
+
+    suspend fun dismissCameraGuide() {
+        dataStore.edit { it[CAMERA_GUIDE_SEEN] = true }
+    }
+
+    suspend fun dismissGuidedSetup() {
+        dataStore.edit { it[GUIDED_SETUP_PENDING] = false }
     }
 
     suspend fun dismissTutorialInvitation() {

@@ -1,20 +1,19 @@
 package com.smyddevstudio.kanako.ui.screens
 
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsEnabled
-import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.v2.createComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
-import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.smyddevstudio.kanako.R
-import com.smyddevstudio.kanako.model.TutorialPath
+import com.smyddevstudio.kanako.service.GuidedReaderSession
+import com.smyddevstudio.kanako.service.GuidedReaderStep
 import com.smyddevstudio.kanako.ui.theme.KanakoTheme
+import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -23,72 +22,55 @@ import org.junit.runner.RunWith
 class TutorialScreenTest {
     @get:Rule val compose = createComposeRule()
     private fun text(id: Int) = InstrumentationRegistry.getInstrumentation().targetContext.getString(id)
+    @Before fun begin() { GuidedReaderSession.begin() }
+    @After fun finish() { GuidedReaderSession.end() }
 
-    @Test
-    fun floatingPracticeRequiresReadAndClearBeforeContinuing() {
-        compose.setContent { KanakoTheme { TutorialScreen({}, {}, initialPath = TutorialPath.FLOATING) } }
-        compose.onNodeWithText(text(R.string.tutorial_next)).performScrollTo().performClick()
-        compose.onNodeWithText(text(R.string.tutorial_next)).assertIsNotEnabled()
-        val mascot = compose.onNodeWithContentDescription(text(R.string.floating_control_description))
-        mascot.performScrollTo().performClick()
-        compose.onNodeWithText(text(R.string.tutorial_next)).assertIsNotEnabled()
-        mascot.performClick()
-        compose.onNodeWithText(text(R.string.tutorial_next)).assertIsEnabled()
+    @Test fun realLessonHasNoSimulatedReaderOrManualAdvanceButton() {
+        compose.setContent { KanakoTheme { TutorialScreen({}, {}) } }
+        compose.onNodeWithText(text(R.string.guided_read)).assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.guided_sample)).assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.tutorial_next)).assertDoesNotExist()
+        compose.onNodeWithText(text(R.string.done)).assertDoesNotExist()
     }
 
-    @Test
-    fun recreationRestoresTheLessonAndReadClearProgress() {
-        val restoration = StateRestorationTester(compose)
-        restoration.setContent { KanakoTheme { TutorialScreen({}, {}, initialPath = TutorialPath.FLOATING) } }
-        compose.onNodeWithText(text(R.string.tutorial_next)).performScrollTo().performClick()
-        compose.onNodeWithContentDescription(text(R.string.floating_control_description)).performScrollTo().performClick()
-        restoration.emulateSavedInstanceStateRestore()
-        compose.onNodeWithContentDescription(text(R.string.floating_control_description)).performScrollTo().performClick()
-        compose.onNodeWithText(text(R.string.tutorial_next)).assertIsEnabled()
+    @Test fun sampleStaysAtTheSamePositionWhenInstructionsChangeAfterOcr() {
+        compose.setContent { KanakoTheme { TutorialScreen({}, {}) } }
+        val sample = compose.onNodeWithText(text(R.string.guided_sample))
+        val before = sample.fetchSemanticsNode().boundsInRoot
+        compose.runOnIdle { GuidedReaderSession.advance(GuidedReaderStep.READ, GuidedReaderStep.CONTROLS) }
+        compose.onNodeWithText(text(R.string.guided_controls)).assertIsDisplayed()
+        assertEquals(before, sample.fetchSemanticsNode().boundsInRoot)
     }
 
-    @Test
-    fun skippingAndExitingNeverRecordsCompletion() {
+    @Test fun skippingNeverRecordsCompletion() {
         var completions = 0
         var exits = 0
-        compose.setContent {
-            KanakoTheme { TutorialScreen({ exits++ }, { completions++ }, initialPath = TutorialPath.CAMERA) }
-        }
-        compose.onNodeWithText(text(R.string.tutorial_skip)).performScrollTo().performClick()
-        compose.onNodeWithContentDescription(text(R.string.tutorial_exit)).performClick()
+        compose.setContent { KanakoTheme { TutorialScreen({ exits++ }, { completions++ }) } }
+        compose.onNodeWithText(text(R.string.guided_skip)).performScrollTo().performClick()
         compose.runOnIdle {
             assertEquals(1, exits)
             assertEquals(0, completions)
         }
     }
 
-    @Test
-    fun cancellingThePracticeSaveDoesNotCompleteTheExercise() {
-        compose.setContent {
-            KanakoTheme { TutorialScreen({}, {}, initialPath = TutorialPath.CAMERA, initialStep = 4) }
+    @Test fun completionRequiresAllRealServiceEvents() {
+        var completions = 0
+        compose.setContent { KanakoTheme { TutorialScreen({}, { completions++ }) } }
+        compose.runOnIdle {
+            GuidedReaderSession.advance(GuidedReaderStep.STOP, GuidedReaderStep.COMPLETE)
         }
-        compose.onNodeWithText(text(R.string.tutorial_next)).assertIsNotEnabled()
-        compose.onNodeWithText(text(R.string.camera_save)).performScrollTo().performClick()
-        compose.onNodeWithText(text(R.string.snapshot_disclosure_cancel)).performClick()
-        compose.onNodeWithText(text(R.string.tutorial_next)).assertIsNotEnabled()
-        compose.onNodeWithText(text(R.string.camera_save)).performScrollTo().performClick()
-        compose.onNodeWithText(text(R.string.done)).performClick()
-        compose.onNodeWithText(text(R.string.tutorial_next)).assertIsEnabled()
-    }
-
-    @Test
-    fun finishingOnePathReportsOnlyThatPathAndLeavesReplayAvailable() {
-        var completed: TutorialPath? = null
-        compose.setContent {
-            KanakoTheme { TutorialScreen({}, { completed = it }, initialPath = TutorialPath.CAMERA) }
+        compose.onNodeWithText(text(R.string.done)).assertDoesNotExist()
+        compose.runOnIdle {
+            GuidedReaderSession.advance(GuidedReaderStep.READ, GuidedReaderStep.CONTROLS)
+            GuidedReaderSession.advance(GuidedReaderStep.CONTROLS, GuidedReaderStep.SCRIPT)
+            GuidedReaderSession.advance(GuidedReaderStep.SCRIPT, GuidedReaderStep.CLEAR)
+            GuidedReaderSession.advance(GuidedReaderStep.CLEAR, GuidedReaderStep.DRAG)
+            GuidedReaderSession.advance(GuidedReaderStep.DRAG, GuidedReaderStep.PREFERENCES)
+            GuidedReaderSession.advance(GuidedReaderStep.PREFERENCES, GuidedReaderStep.RETURN)
+            GuidedReaderSession.returnFromPreferences()
+            GuidedReaderSession.advance(GuidedReaderStep.STOP, GuidedReaderStep.COMPLETE)
         }
-        repeat(5) {
-            compose.onNodeWithText(text(R.string.tutorial_skip)).performScrollTo().performClick()
-        }
-        compose.onNodeWithText(text(R.string.tutorial_complete)).performScrollTo().performClick()
-        compose.runOnIdle { assertEquals(TutorialPath.CAMERA, completed) }
-        compose.onNodeWithText(text(R.string.tutorial_replay)).performScrollTo().performClick()
-        compose.onNodeWithText(text(R.string.help_floating)).assertIsDisplayed()
-        compose.onNodeWithText(text(R.string.camera_title)).assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.done)).performScrollTo().performClick()
+        compose.runOnIdle { assertEquals(1, completions) }
     }
 }

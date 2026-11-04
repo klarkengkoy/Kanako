@@ -37,6 +37,59 @@ class HomePreferencesTest {
     @get:Rule val compose = createComposeRule()
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
+    @Test fun preferencesLessonEnablesOnlyTheHomeGear() {
+        var opens = 0
+        compose.setContent {
+            KanakoTheme {
+                HomeScreen({}, {}, { opens++ },
+                    preferences = KanakoPreferences(isOverlayActive = true, hasAcceptedSnapshotDisclosure = true),
+                    overlayGranted = true, accessibilityEnabled = true, accessibilityConnected = true,
+                    guidedSetup = true, guidePreferences = true, animationsEnabled = false)
+            }
+        }
+        compose.onNodeWithText(context.getString(R.string.camera_open)).assertIsNotEnabled()
+        compose.onNodeWithText(context.getString(R.string.setup_stop)).assertIsNotEnabled()
+        compose.onNodeWithContentDescription(context.getString(R.string.preferences_title)).assertIsEnabled().performClick()
+        compose.runOnIdle { assertEquals(1, opens) }
+    }
+
+    @Test fun guidedSetupRestrictsActionsAndWaitsForRealAccessState() {
+        val overlay = mutableStateOf(false)
+        val connected = mutableStateOf(false)
+        val consent = mutableStateOf(false)
+        var overlayRequests = 0
+        var accessibilityRequests = 0
+        var starts = 0
+        var skips = 0
+        compose.setContent {
+            KanakoTheme {
+                HomeScreen({}, {}, {},
+                    preferences = KanakoPreferences(hasAcceptedSnapshotDisclosure = consent.value),
+                    overlayGranted = overlay.value, accessibilityEnabled = true,
+                    accessibilityConnected = connected.value,
+                    onUpdateOverlayActive = { starts++ }, animationsEnabled = false,
+                    onRequestOverlay = { overlayRequests++ },
+                    onRequestAccessibility = { accessibilityRequests++ },
+                    guidedSetup = true, onSkipGuidedSetup = { skips++ })
+            }
+        }
+        compose.onNodeWithText(context.getString(R.string.camera_open)).assertIsNotEnabled()
+        compose.onNodeWithText(context.getString(R.string.setup_enable)).assertIsNotEnabled()
+        compose.waitForIdle()
+        compose.onNodeWithText(context.getString(R.string.setup_open_overlay)).performClick()
+        compose.runOnIdle { assertEquals(1, overlayRequests); assertEquals(0, starts) }
+        compose.runOnIdle { overlay.value = true }
+        compose.waitForIdle()
+        compose.onNodeWithText(context.getString(R.string.setup_open_accessibility)).performClick()
+        compose.runOnIdle { assertEquals(1, accessibilityRequests); assertEquals(0, starts) }
+        compose.runOnIdle { consent.value = true; connected.value = true }
+        compose.waitForIdle()
+        compose.onNodeWithText(context.getString(R.string.setup_enable)).performScrollTo().performClick()
+        compose.waitUntil(3_000) { starts == 1 }
+        compose.onNodeWithText(context.getString(R.string.guided_skip)).performClick()
+        compose.runOnIdle { assertEquals(1, skips) }
+    }
+
     @Test fun homeRequiresConnectedAccessAndConsentButCameraIsIndependent() {
         val consent = mutableStateOf(false)
         val connected = mutableStateOf(false)

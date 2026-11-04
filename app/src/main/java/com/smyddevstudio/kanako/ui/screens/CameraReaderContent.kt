@@ -67,6 +67,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.smyddevstudio.kanako.R
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.boundsInRoot
 import com.smyddevstudio.kanako.camera.CameraReaderUiState
 import com.smyddevstudio.kanako.camera.CameraReadingStatus
 import com.smyddevstudio.kanako.ui.theme.KanakoTheme
@@ -82,6 +85,8 @@ internal fun CameraReaderContent(
     onRetry: () -> Unit,
     onZoom: (Float) -> Unit,
     modifier: Modifier = Modifier,
+    guideTarget: Int = -1,
+    onGuideBounds: (Rect) -> Unit = {},
     permissionLabel: Int = R.string.camera_allow,
     displayRotation: Int = DisplaySurface.ROTATION_0,
     viewfinder: @Composable (Modifier) -> Unit = { Box(it.background(MaterialTheme.colorScheme.surfaceVariant)) }
@@ -100,7 +105,11 @@ internal fun CameraReaderContent(
         } + 16.dp)
         val controlsGutter = if (granted && landscape) 72.dp + edgePadding else 0.dp
         val controlRotation = rememberCameraControlRotation(displayRotation)
-        if (granted) viewfinder(Modifier.fillMaxSize())
+        if (granted) viewfinder(Modifier.fillMaxSize().then(if (guideTarget == 1) Modifier.onGloballyPositioned {
+            val bounds = it.boundsInRoot()
+            onGuideBounds(Rect(bounds.left + bounds.width * 0.1f, bounds.top + bounds.height * 0.4f,
+                bounds.right - bounds.width * 0.1f, bounds.bottom - bounds.height * 0.4f))
+        } else Modifier))
         Spacer(Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.safeDrawing)
             .background(MaterialTheme.colorScheme.background).align(Alignment.TopCenter))
         Spacer(Modifier.fillMaxWidth().windowInsetsBottomHeight(WindowInsets.safeDrawing)
@@ -114,12 +123,12 @@ internal fun CameraReaderContent(
                 if (granted) {
                     Row(modifier = motion.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)) {
-                            IconButton(onClick = onBack, modifier = Modifier.size(48.dp)) {
+                            IconButton(onClick = onBack, enabled = guideTarget < 0, modifier = Modifier.size(48.dp)) {
                                 Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.navigate_back))
                             }
                         }
                         Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)) {
-                            IconButton(onClick = onPreferences, modifier = Modifier.size(48.dp)) {
+                            IconButton(onClick = onPreferences, enabled = guideTarget < 0, modifier = Modifier.size(48.dp)) {
                                 Icon(Icons.Rounded.Settings, stringResource(R.string.camera_appearance))
                             }
                         }
@@ -141,10 +150,11 @@ internal fun CameraReaderContent(
                                     verticalArrangement = Arrangement.spacedBy(4.dp),
                                     itemVerticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Button(onClick = onPermission, modifier = Modifier.heightIn(min = 48.dp)) {
+                                    Button(onClick = onPermission, modifier = Modifier.heightIn(min = 48.dp).then(
+                                        if (guideTarget == 0) Modifier.onGloballyPositioned { onGuideBounds(it.boundsInRoot()) } else Modifier)) {
                                         Text(stringResource(permissionLabel))
                                     }
-                                    TextButton(onClick = onBack, modifier = Modifier.heightIn(min = 48.dp)) {
+                                    TextButton(onClick = onBack, enabled = guideTarget < 0, modifier = Modifier.heightIn(min = 48.dp)) {
                                         Text(stringResource(R.string.camera_not_now))
                                     }
                                 }
@@ -165,7 +175,8 @@ internal fun CameraReaderContent(
                         }
                     }
                     if (state.status == CameraReadingStatus.CAMERA_ERROR || state.status == CameraReadingStatus.READ_ERROR) {
-                        Button(onClick = onRetry, modifier = Modifier.padding(top = 8.dp)) { Text(stringResource(R.string.camera_retry)) }
+                        Button(onClick = onRetry, modifier = Modifier.padding(top = 8.dp).then(
+                            if (guideTarget == 4) Modifier.onGloballyPositioned { onGuideBounds(it.boundsInRoot()) } else Modifier)) { Text(stringResource(R.string.camera_retry)) }
                     }
                     Spacer(Modifier.height(if (landscape) 8.dp else 84.dp + edgePadding))
                 }
@@ -174,7 +185,7 @@ internal fun CameraReaderContent(
         if (granted) {
             CameraCaptureControls(state, onCapture, onZoom, controlRotation,
                 modifier = Modifier.fillMaxSize(), displayRotation = displayRotation,
-                edgePadding = edgePadding)
+                edgePadding = edgePadding, guideTarget = guideTarget, onGuideBounds = onGuideBounds)
             if (!compact) Box(Modifier.fillMaxSize().safeDrawingPadding(),
                 contentAlignment = Alignment.BottomCenter) {
                 Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
@@ -195,15 +206,17 @@ private fun CameraCaptureControls(
     iconRotation: State<Float>,
     modifier: Modifier = Modifier,
     displayRotation: Int = DisplaySurface.ROTATION_0,
-    edgePadding: androidx.compose.ui.unit.Dp = 16.dp
+    edgePadding: androidx.compose.ui.unit.Dp = 16.dp,
+    guideTarget: Int = -1,
+    onGuideBounds: (Rect) -> Unit = {}
 ) {
     Layout(modifier = modifier, content = {
         for (control in listOf(-1, 0, 1)) {
             if (control == 0) {
                 Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary) {
                     IconButton(onClick = onCapture,
-                        enabled = state.ready && state.status != CameraReadingStatus.CAPTURING,
-                        modifier = Modifier.size(72.dp)) {
+                        enabled = state.ready && state.status != CameraReadingStatus.CAPTURING && (guideTarget < 0 || guideTarget == 3),
+                        modifier = Modifier.size(72.dp).then(if (guideTarget == 3) Modifier.onGloballyPositioned { onGuideBounds(it.boundsInRoot()) } else Modifier)) {
                         Icon(Icons.Rounded.CameraAlt, stringResource(R.string.camera_capture),
                             Modifier.size(32.dp).graphicsLayer { rotationZ = iconRotation.value },
                             tint = MaterialTheme.colorScheme.onPrimary)
@@ -213,7 +226,8 @@ private fun CameraCaptureControls(
                 Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
                     contentColor = MaterialTheme.colorScheme.onSurface) {
                     IconButton(onClick = { onZoom(if (control > 0) 1.5f else 1 / 1.5f) },
-                        enabled = state.ready, modifier = Modifier.size(48.dp)) {
+                        enabled = state.ready && (guideTarget < 0 || guideTarget == 2), modifier = Modifier.size(48.dp).then(
+                            if (guideTarget == 2 && control > 0) Modifier.onGloballyPositioned { onGuideBounds(it.boundsInRoot()) } else Modifier)) {
                         Icon(if (control > 0) Icons.Rounded.ZoomIn else Icons.Rounded.ZoomOut,
                             stringResource(if (control > 0) R.string.camera_zoom_in else R.string.camera_zoom_out),
                             Modifier.graphicsLayer { rotationZ = iconRotation.value })

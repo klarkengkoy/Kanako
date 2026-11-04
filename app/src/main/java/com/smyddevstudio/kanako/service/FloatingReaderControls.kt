@@ -6,6 +6,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -39,6 +40,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -100,7 +102,8 @@ fun FloatingOverlayContent(
     onLayoutSizeChanged: (IntSize) -> Unit = {},
     isReading: Boolean = false,
     statusMessage: Int = R.string.reading_ready,
-    controlsVisible: Boolean = true
+    controlsVisible: Boolean = true,
+    guidedStep: GuidedReaderStep = GuidedReaderStep.INACTIVE
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     var readAttempt by remember { mutableIntStateOf(0) }
@@ -112,11 +115,22 @@ fun FloatingOverlayContent(
     LaunchedEffect(isReading, controlsVisible, animationsEnabled) {
         motion = motion.update(isReading, controlsVisible, animationsEnabled)
     }
+    val guided = guidedStep != GuidedReaderStep.INACTIVE
+    fun openControls() {
+        if (!guided || guidedStep in listOf(GuidedReaderStep.CONTROLS, GuidedReaderStep.SCRIPT, GuidedReaderStep.PREFERENCES, GuidedReaderStep.STOP)) {
+            statusPopupMessage = null
+            isExpanded = true
+            GuidedReaderSession.advance(GuidedReaderStep.CONTROLS, GuidedReaderStep.SCRIPT)
+        }
+    }
     val accessibilityManager = LocalAccessibilityManager.current
     fun dismiss() {
         isExpanded = false
         statusPopupMessage = null
         reaction = null
+    }
+    LaunchedEffect(guidedStep) {
+        if (guidedStep == GuidedReaderStep.PREFERENCES || guidedStep == GuidedReaderStep.CLEAR) dismiss()
     }
     LaunchedEffect(controlsVisible) {
         if (!controlsVisible) dismiss()
@@ -150,7 +164,9 @@ fun FloatingOverlayContent(
     }
     val controlDescription = stringResource(R.string.floating_control_description)
     val statusDescription = stringResource(statusMessage)
-    val popupPosition = rememberFloatingMenuPosition()
+    var bubbleAbove by remember { mutableStateOf(false) }
+    var bubbleTip by remember { mutableStateOf(0.5f) }
+    val popupPosition = rememberFloatingMenuPosition { above, tip -> bubbleAbove = above; bubbleTip = tip }
     val menuMaxHeight = maxOf(48.dp, LocalConfiguration.current.screenHeightDp.dp - 96.dp)
 
     Box(
@@ -161,29 +177,32 @@ fun FloatingOverlayContent(
     ) {
         Box(
             modifier = Modifier.fillMaxSize()
+                .then(if (guided) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, CircleShape) else Modifier)
                 .systemGestureExclusion()
                 .semantics {
                     contentDescription = controlDescription
                     stateDescription = statusDescription
                 }
                 .combinedClickable(
-                    onClick = { dismiss(); readAttempt++; onReadOrClear() },
-                    onLongClick = { statusPopupMessage = null; isExpanded = !isExpanded },
-                    onDoubleClick = { statusPopupMessage = null; isExpanded = !isExpanded }
+                    onClick = { if (!guided || guidedStep == GuidedReaderStep.READ || guidedStep == GuidedReaderStep.CLEAR) { dismiss(); readAttempt++; onReadOrClear() } },
+                    onLongClick = { if (guided) openControls() else { statusPopupMessage = null; isExpanded = !isExpanded } },
+                    onDoubleClick = { if (guided) openControls() else { statusPopupMessage = null; isExpanded = !isExpanded } }
                 )
-                .pointerInput(Unit) {
+                .pointerInput(guidedStep) {
                     var pickupOffset = Offset.Zero
                     detectDragGestures(
                         onDragStart = { position ->
+                            if (guided && guidedStep != GuidedReaderStep.DRAG) return@detectDragGestures
                             val bodyAnchor = Offset(size.width * 0.5f, size.height * 0.7f)
                             pickupOffset = position - bodyAnchor
                             dismiss()
                             motion = motion.startDrag()
                         },
-                        onDragEnd = { motion = motion.endDrag(); onDragEnd() },
-                        onDragCancel = { motion = motion.endDrag(); onDragEnd() },
+                        onDragEnd = { if (!guided || guidedStep == GuidedReaderStep.DRAG) { motion = motion.endDrag(); onDragEnd() } },
+                        onDragCancel = { if (!guided || guidedStep == GuidedReaderStep.DRAG) { motion = motion.endDrag(); onDragEnd() } },
                         onDrag = { change, dragAmount ->
                             change.consume()
+                            if (guided && guidedStep != GuidedReaderStep.DRAG) return@detectDragGestures
                             val bodyPosition = change.position - pickupOffset
                             val previousBodyPosition = change.position - dragAmount - pickupOffset
                             val movement = bodyPosition - previousBodyPosition
@@ -255,13 +274,13 @@ fun FloatingOverlayContent(
             ) {
                 Surface(
                     modifier = Modifier.width(200.dp).heightIn(max = menuMaxHeight),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = MascotSpeechBubbleShape(bubbleAbove, bubbleTip),
                     color = MaterialTheme.colorScheme.surface,
                     shadowElevation = 8.dp,
                     border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer)
                 ) {
                     Column(
-                        Modifier.verticalScroll(rememberScrollState()).padding(12.dp),
+                        Modifier.verticalScroll(rememberScrollState()).padding(vertical = 8.dp).padding(12.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         if (isExpanded) {
@@ -271,18 +290,19 @@ fun FloatingOverlayContent(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
                             FloatingMenuAction(
                                 stringResource(R.string.controls_script, stringResource(preferences.scriptType.labelRes)),
-                                Icons.Rounded.Language, onToggleScriptType
+                                Icons.Rounded.Language, onToggleScriptType,
+                                enabled = !guided || guidedStep == GuidedReaderStep.SCRIPT
                             )
-                            FloatingMenuAction(stringResource(R.string.controls_open),
+                            if (!guided) FloatingMenuAction(stringResource(R.string.controls_open),
                                 Icons.AutoMirrored.Rounded.OpenInNew, { dismiss(); onOpenApp() })
                             FloatingMenuAction(stringResource(R.string.controls_stop),
                                 Icons.Rounded.PowerSettingsNew, { dismiss(); onStopService() },
-                                emphasized = true)
+                                emphasized = true, enabled = !guided || guidedStep == GuidedReaderStep.STOP)
                         } else {
                             Text(stringResource(statusPopupMessage ?: statusMessage),
                                 modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                                 style = MaterialTheme.typography.bodySmall)
-                            TextButton(onClick = { isExpanded = true; statusPopupMessage = null },
+                            TextButton(onClick = { openControls() },
                                 modifier = Modifier.fillMaxWidth()) {
                                 Text(stringResource(R.string.controls_title))
                             }
@@ -331,13 +351,15 @@ private fun FloatingMenuAction(
     icon: ImageVector,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     emphasized: Boolean = false
 ) {
     Surface(
         modifier = modifier.fillMaxWidth().heightIn(min = 48.dp),
         shape = RoundedCornerShape(8.dp),
         color = if (emphasized) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-        onClick = onClick
+        onClick = onClick,
+        enabled = enabled
     ) {
         Row(Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically) {
@@ -353,7 +375,8 @@ private fun FloatingMenuAction(
 }
 
 @Composable
-private fun rememberFloatingMenuPosition(): PopupPositionProvider {
+private fun rememberFloatingMenuPosition(onPosition: (Boolean, Float) -> Unit = { _, _ -> }): PopupPositionProvider {
+    val latestPosition by rememberUpdatedState(onPosition)
     val host = LocalView.current
     val gap = with(LocalDensity.current) { 8.dp.roundToPx() }
     return remember(host, gap) {
@@ -377,6 +400,8 @@ private fun rememberFloatingMenuPosition(): PopupPositionProvider {
                     anchorBounds.right + origin.x, anchorBounds.bottom + origin.y)
                 val position = floatingMenuPosition(area, anchor,
                     popupContentSize.width, popupContentSize.height, gap)
+                latestPosition(position.y + popupContentSize.height / 2 < (anchor.top + anchor.bottom) / 2,
+                    ((anchor.left + anchor.right) / 2f - position.x) / popupContentSize.width.coerceAtLeast(1))
                 return IntOffset(position.x - origin.x, position.y - origin.y)
             }
         }

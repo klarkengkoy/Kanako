@@ -64,6 +64,7 @@ data class KanakoPreferences(
     val autoHideOnKeyboard: Boolean = true,
     val autoReadAfterScroll: Boolean = false,
     val offerAutoRead: Boolean = false,
+    val offerGuidedSetup: Boolean = false,
     val hasAcceptedSnapshotDisclosure: Boolean = false,
     val isOverlayActive: Boolean = false,
     val isAutoTranslateEnabled: Boolean = false,
@@ -71,5 +72,6 @@ data class KanakoPreferences(
     val hasDeniedCameraPermission: Boolean = false,
     val hasSeenTutorialInvitation: Boolean = false,
     val completedFloatingTutorial: Boolean = false,
-    val completedCameraTutorial: Boolean = false
+    val completedCameraTutorial: Boolean = false,
+    val hasSeenCameraGuide: Boolean = false
 )

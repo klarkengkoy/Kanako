@@ -49,6 +49,26 @@ class UserPreferencesRepositoryTest {
     }
 
     @Test
+    fun guidedIntroductionIsFreshInstallOnlyAndDismissalDoesNotGrantConsent() = runTest(testDispatcher) {
+        repository.initializeAutoReadOffer(isNewInstallation = true)
+        assertTrue(repository.userPreferencesFlow.first().offerGuidedSetup)
+        repository.dismissGuidedSetup()
+        repository.initializeAutoReadOffer(isNewInstallation = true)
+        val preferences = repository.userPreferencesFlow.first()
+        assertFalse(preferences.offerGuidedSetup)
+        assertFalse(preferences.hasAcceptedSnapshotDisclosure)
+        assertFalse(preferences.autoReadAfterScroll)
+        assertFalse(preferences.completedFloatingTutorial)
+        assertTrue(preferences.offerAutoRead)
+    }
+
+    @Test
+    fun updatesDoNotOfferGuidedIntroduction() = runTest(testDispatcher) {
+        repository.initializeAutoReadOffer(isNewInstallation = false)
+        assertFalse(repository.userPreferencesFlow.first().offerGuidedSetup)
+    }
+
+    @Test
     fun newInstallationOffersAutoReadWithoutActivatingBeforeConsent() = runTest(testDispatcher) {
         repository.initializeAutoReadOffer(isNewInstallation = true)
         assertTrue(repository.userPreferencesFlow.first().offerAutoRead)
