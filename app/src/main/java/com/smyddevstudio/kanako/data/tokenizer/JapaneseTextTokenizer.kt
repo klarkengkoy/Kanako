@@ -81,6 +81,21 @@ class JapaneseTextTokenizer internal constructor(
                     text.substring(token.position, token.position + surface.length) == surface
                 ) { "Tokenizer must preserve original source spans" }
                 val next = tokens.getOrNull(index + 1)
+                if (surface == "一昨" && token.reading == "イッサク" &&
+                    token.partOfSpeechLevel1 == "名詞" && !token.isPersonName &&
+                    next?.surface == "日" && next.reading in setOf("ニチ", "ヒ") &&
+                    next.partOfSpeechLevel1 == "名詞" && !next.isPersonName &&
+                    next.position == token.position + surface.length &&
+                    tokens.getOrNull(index + 2)?.surface !in NAME_SUFFIXES
+                ) {
+                    check(text.regionMatches(next.position, next.surface, 0, next.surface.length)) {
+                        "Tokenizer must preserve original source spans"
+                    }
+                    add(FuriganaSegment(surface + next.surface, formatReading("イッサクジツ", scriptType)))
+                    cursor = next.position + next.surface.length
+                    index += 2
+                    continue
+                }
                 val precedingNumber = text.getOrNull(token.position - 1)?.let {
                     it in "0123456789０１２３４５６７８９一二三四五六七八九十百千万億第"
                 } == true
