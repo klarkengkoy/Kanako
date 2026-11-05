@@ -55,7 +55,6 @@ data class KanakoPreferences(
     val furiganaColor: FuriganaColor = FuriganaColor.MUSHROOM_CRIMSON,
     val scriptType: ScriptType = ScriptType.KANA,
     val annotationPlateStyle: AnnotationPlateStyle = AnnotationPlateStyle.WASHI_CAPSULE,
-    val touchPassthrough: Boolean = true,
     val fabSize: FabSize = FabSize.MEDIUM,
     val fabDocking: FabDocking = FabDocking.FLOATING,
     val fabOffsetX: Int = 100,

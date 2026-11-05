@@ -13,6 +13,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.IntOffset
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import com.smyddevstudio.kanako.R
 import com.smyddevstudio.kanako.model.KanakoPreferences
 import com.smyddevstudio.kanako.ui.components.FuriganaSegment
 import com.smyddevstudio.kanako.ui.theme.KanakoTheme
@@ -30,26 +32,29 @@ class ReadingOverlayInteractionTest {
     @Test fun kanjiTapsSelectTheirPartnerUsingTheActualOverlayOrigin() {
         compose.setContent {
             KanakoTheme {
-                RecognizedTextOverlayContent(listOf(line), KanakoPreferences(touchPassthrough = false),
+                RecognizedTextOverlayContent(listOf(line), KanakoPreferences(autoReadAfterScroll = false),
                     IntOffset(50, 100), Modifier.testTag("readings"))
             }
         }
         val readings = compose.onNodeWithTag("readings")
         readings.performTouchInput { click(Offset(75f, 120f)) }
-        readings.assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "にほんご"))
+        readings.assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription,
+            InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.photo_reading_selected, "日本語", "にほんご")))
         readings.performTouchInput { click(Offset(135f, 120f)) }
-        readings.assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "ほん"))
+        readings.assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription,
+            InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.photo_reading_selected, "本", "ほん")))
     }
 
-    @Test fun touchThroughPreferenceKeepsSelectionDisabled() {
+    @Test fun autoReadAllowsSelectingHighlightedKanji() {
         compose.setContent {
             KanakoTheme {
-                RecognizedTextOverlayContent(listOf(line), KanakoPreferences(touchPassthrough = true),
+                RecognizedTextOverlayContent(listOf(line), KanakoPreferences(autoReadAfterScroll = true),
                     IntOffset(50, 100), Modifier.testTag("readings"))
             }
         }
         compose.onNodeWithTag("readings").performTouchInput { click(Offset(75f, 120f)) }
         compose.onNodeWithTag("readings").assert(
-            SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, ""))
+            SemanticsMatcher.expectValue(SemanticsProperties.StateDescription,
+                InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.photo_reading_selected, "日本語", "にほんご")))
     }
 }

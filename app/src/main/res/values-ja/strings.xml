@@ -47,17 +47,15 @@
     <string name="quick_settings_guide_title">かなこをクイック設定に追加</string>
     <string name="quick_settings_guide_body">画面上端から2回下にスワイプし、クイック設定を開きます。編集をタップし、かなこのタイルを使用中のタイルへドラッグしてください。タップでフローティングリーダーを表示・停止できます。タイルの追加では撮影しません。自動読み取りが有効な場合、リーダー開始後に読み取りを行います。</string>
     <string name="auto_read_title">自動読み取り</string>
-    <string name="auto_read_summary">自動は変化が落ち着くと読み取り、タップは好きなタイミングで読み取ります。</string>
+    <string name="auto_read_summary">どちらのモードでも強調表示された漢字をタップできます。自動では他の場所からアプリを操作でき、読みの選択中は自動更新を一時停止します。タップで読むモードでは、Kanakoで読みを消すまでアプリへのタップを遮断します。</string>
     <string name="auto_read_disclosure">フローティングリーダーの動作中、スクロール、アプリの切り替え、コンテンツの更新が約0.7秒間落ち着いた後、自動でスクリーンショットを撮影します。リーダー開始時やロック解除時も読み取ります。タップは不要です。画像は端末のメモリ内で処理し、保存・アップロードせずに破棄します。\n\n画面録画ではなく、個別のスクリーンショットを使用します。機密性の高い入力やロック画面を検出した場合は撮影を停止します。変化の検出やスクロールへの追従は読み取り元のアプリに依存し、アニメーションを検出できない場合があります。この設定はいつでもオフにできます。</string>
     <string name="auto_read_enable">自動読み取りを有効にする</string>
     <string name="camera_title">カメラリーダー</string>
     <string name="camera_open">カメラで読む</string>
     <string name="camera_capture">写真を撮影</string>
-    <string name="camera_result_title">写真の読み取り</string>
-    <string name="camera_result_retake">再撮影</string>
     <string name="camera_appearance">読みの見た目</string>
     <string name="camera_state_permission">カメラへのアクセスが必要です</string>
-    <string name="camera_state_permission_body">カメラで日本語の読みをライブ表示したり、写真を撮影したりします。「ふりがな付きで保存」を選ぶまでは、画像はメモリ内だけに保持します。フローティングリーダーの権限は不要です。</string>
+    <string name="camera_state_permission_body">カメラを使って日本語をライブ表示や一時的な写真で読み取ります。画像はメモリ内に留まり、保存やアップロードは行いません。フローティングリーダーのアクセス権限は不要です。</string>
     <string name="camera_allow">カメラを許可</string>
     <string name="camera_not_now">今はしない</string>
     <string name="camera_settings">アプリの設定を開く</string>
@@ -71,18 +69,11 @@
     <string name="camera_live_description">ライブカメラ。タップでピントを合わせ、ピンチでズームできます。</string>
     <string name="camera_capturing">写真を撮影中…</string>
     <string name="camera_retry">再試行</string>
-    <string name="camera_save">ふりがな付きで保存</string>
-    <string name="camera_saving">保存中…</string>
-    <string name="camera_saved">保存済み</string>
-    <string name="camera_open_saved">保存した画像</string>
     <string name="camera_share">保存した画像を共有</string>
-    <string name="camera_open_failed">保存した画像を開けませんでした。ファイルアプリから確認できます。</string>
     <string name="camera_share_failed">共有画面を開けませんでした。保存した画像はファイルアプリから確認できます。</string>
-    <string name="camera_save_failed">保存できませんでした。もう一度お試しください。</string>
-    <string name="camera_photo_ready">写真の準備完了・未保存</string>
+    <string name="camera_photo_ready">写真の準備ができました</string>
     <string name="camera_photo_missing">一時保存した写真がなくなりました。ライブカメラに戻り、もう一度撮影してください。</string>
     <string name="camera_photo_description">日本語の読みを重ねたカメラ写真</string>
-    <string name="camera_photo_hint">ピンチで拡大して読みを表示・ドラッグで移動・ダブルタップでリセット</string>
     <string name="camera_zoom_in">拡大</string>
     <string name="camera_zoom_out">縮小</string>
     <string name="camera_zoom_reset">ズームをリセット</string>
@@ -94,7 +85,6 @@
     <string name="preferences_floating_control">フローティングリーダー</string>
     <string name="preferences_system">アクセスとヘルプ</string>
     <string name="preferences_privacy">プライバシー</string>
-    <string name="preferences_touch_check">ふりがなの下のアプリを操作できます。</string>
     <string name="preferences_keyboard_check">キーボード表示中にボタンを隠します。</string>
     <string name="preferences_title">設定</string>
     <string name="home_reader_active">リーダー表示中</string>
@@ -107,7 +97,6 @@
     <string name="preferences_color">読みの色</string>
     <string name="preferences_script">読みの表記</string>
     <string name="preferences_plate">読みの背景</string>
-    <string name="preferences_touch">読みの上から操作</string>
     <string name="preferences_control_size">ボタンの大きさ</string>
     <string name="preferences_keyboard">入力中はボタンを隠す</string>
     <string name="preferences_keyboard_hint">機密性の高い入力中は常に撮影を停止します。</string>
@@ -140,7 +129,7 @@
     <string name="how_move_title">自分のペースで読み進める</string>
     <string name="how_move">読み取り元のアプリが通知するスクロールに読みが追従します。移動が不明な場合は消えます。任意の自動読み取りは、検出した変化が約0.7秒間落ち着いた後と、リーダー開始時・ロック解除時に読み取ります。追従はアプリに依存します。</string>
     <string name="how_privacy_title">画像はどう扱われますか？</string>
-    <string name="how_privacy">画面画像はメモリ内で処理し、保存・アップロードせずに破棄します。機密性の高い入力やロック画面を検出した場合は撮影を停止します。カメラ写真も「ふりがな付きで保存」を選ぶまでは一時的に保持するだけです。</string>
+    <string name="how_privacy">画面画像はメモリ内で処理され、保存やアップロードをせず破棄されます。機密性の高い入力が検出された場合やロック画面では撮影を停止します。カメラ写真も一時的なもので、保存やアップロードは行いません。</string>
     <string name="how_limits_title">読み取りの制限は？</string>
     <string name="how_limits">漢字の認識や読みは完全ではありません。似ている漢字とカタカナを取り違えたり、固有名詞や複数の読みがある言葉を読み違えたりする場合があります。小さい文字、装飾文字、ぼやけた文字、複雑なレイアウトでは認識が難しくなります。ふりがなの位置は認識結果から推定しています。保護された画面は撮影できません。</string>
     <string name="how_offline_title">オフラインでも使えますか？</string>
@@ -148,7 +137,7 @@
     <string name="how_tile_title">クイック設定</string>
     <string name="how_tile">画面上部から2回スワイプし、編集からかなこを追加してください。タップでリーダーを表示・停止できます。追加だけでは撮影しません。権限が足りない場合はホームを開きます。自動読み取りが有効な場合、リーダー開始後に読み取りも行います。</string>
     <string name="how_camera_title">カメラを使う</string>
-    <string name="how_camera">ホームからカメラを開きます。カメラの権限は画面読み取りとは別です。ライブ表示や撮影した写真で読めます。読みまたは対応する漢字をタップすると、その読みを手前に表示します。重なった読みを繰り返しタップすると順番に切り替わります。ライブ表示のほかの場所をタップするとピントを合わせます。ピンチで拡大し、写真はドラッグで移動、ダブルタップでリセットできます。「ふりがな付きで保存」は拡大率に関係なく、選んだ読みを手前にして写真全体を保存します。 Android 10以降では「ふりがな付きで保存」でPictures/Kanakoに保存されます。それ以前のバージョンでは保存先の選択画面が開きます。</string>
+    <string name="how_camera">ホームからカメラを開きます。カメラの権限は画面読み取りのアクセス権限とは別です。ライブ表示で読むか、写真を撮って静止画像で確認できます。撮影した写真では、読みがある漢字のまとまりがハイライトされます。タップするとその読みだけを表示し、もう一度タップするかハイライトの外をタップすると自動表示に戻ります。Kanakoをタップすると、拡大率を変えずにハイライトと読みを表示・非表示にできます。Kanakoをダブルタップまたは長押しすると、かな・ローマ字を切り替えられます。Kanakoはドラッグで移動できます。ライブ表示の他の場所をタップするとピントを合わせます。ピンチで拡大縮小し、写真ではドラッグで移動、ダブルタップで元に戻します。撮り直すにはカメラに戻ります。写真は保存されません。</string>
     <string name="reading_size_small">10sp</string>
     <string name="reading_size_medium">12sp</string>
     <string name="reading_size_large">14sp</string>
@@ -156,7 +145,7 @@
     <string name="reading_mode">読み取りモード</string>
     <string name="tap_to_read">タップで読む</string>
     <string name="how_preferences_title">読み取りを調整する</string>
-    <string name="how_preferences">設定でかな・ローマ字、読みの大きさ・色・背景を選べます。「読みの上から操作」がオンなら、ふりがなの下のアプリを操作できます。オフにすると、読みや対応する漢字をタップして、その読みを手前に表示できます。重なった読みを繰り返しタップすると順番に切り替わります。「入力中はボタンを隠す」はキーボード表示中にボタンを隠します。ボタンを表示していても、キーボードやパスワード欄の検出中は撮影を停止します。固定プレビューは見た目のみを示します。</string>
+    <string name="how_preferences">設定でかな・ローマ字、読みの大きさ・色・背景を選べます。大きさは最小値で、余白がある場所にだけ読みを自動表示します。読みのある漢字は、混み合った場所も語のまとまりごとに強調表示します。自動モードでは強調表示された漢字をタップして読みを確認でき、他の場所へのタップは下のアプリに届きます。選択中は自動更新を一時停止し、同じ語、その読み、または他の場所をタップすると再開します。読み取り元の内容が変わると、古い強調表示は消えることがあります。タップで読むモードでは、読みの表示中は下のアプリへのタップを遮断します。強調表示された語をタップすると、その読みだけを表示します。同じ語か何もない場所をタップすると他の読みも表示します。Kanakoをタップして読みを消すと、アプリを再び操作できます。「入力中はボタンを隠す」はキーボード表示中にボタンを隠します。ボタンを表示していても、キーボードやパスワード欄の検出中は撮影を停止します。固定プレビューは見た目のみを示します。</string>
     <string name="preview_sample_short"><annotation reading="ニホンゴ">日本語</annotation></string>
     <string name="preferences_appearance_summary">両方のリーダーに適用されます。プレビューは見た目のみを示します。</string>
     <string name="privacy_access">プライバシーと画面へのアクセス</string>
@@ -189,11 +178,9 @@
     <string name="tutorial_floating_read">サンプルのキャラクターをタップしてふりがなを表示し、もう一度タップして消してください。実際の読み取りでは、表示できない理由を赤い状態メッセージで確認できます。</string>
     <string name="tutorial_floating_controls">サンプルのキャラクターをドラッグしてください。ダブルタップか長押しで操作メニューを開き、サンプルのリーダーを停止してください。フローティングリーダーでも同じ操作を使います。</string>
     <string name="tutorial_camera_focus">サンプルをタップしてピント合わせを練習します。ピンチ操作かズームスライダーで大きさを変えてください。カメラは使用しません。</string>
-    <string name="tutorial_camera_capture">サンプルを撮影して、静止した状態で読みます。実際のカメラでは「再撮影」から撮り直せます。</string>
+    <string name="tutorial_camera_capture">サンプルを撮影して静止画像で読みを確認します。実際のカメラでは、戻ると別の写真を撮れます。</string>
     <string name="tutorial_camera_appearance">サンプルでかなとローマ字を切り替えてください。実際のリーダーでは、設定から両方のリーダーの表示を変更できます。</string>
-    <string name="tutorial_camera_save">「ふりがな付きで保存」は、ズームに関係なく写真全体を保存します。Android 10以降ではPictures/Kanakoに保存されます。それ以前のバージョンでは保存先の選択画面が開きます。</string>
     <string name="tutorial_success">練習の操作ができました</string>
-    <string name="tutorial_save_confirm">練習用の保存先です。確認すると練習が完了します。画像やファイルは作成されません。</string>
     <string name="tutorial_finished">どちらの練習も使い方から繰り返せます。実際のリーダーを開く場合は、通常のアクセス確認と同意が必要です。</string>
     <string name="tutorial_start_tool">リーダーを開く</string>
     <string name="tutorial_replay">別の練習を選ぶ</string>
@@ -215,7 +202,7 @@
     <string name="guided_camera_begin">カメラを試す</string>
     <string name="guided_camera_focus">印刷された日本語にカメラを向け、強調表示された画面をタップしてピントを合わせてください。</string>
     <string name="guided_camera_zoom">ハイライトされたプレビューを2本の指で広げて拡大します。</string>
-    <string name="guided_camera_capture">強調表示された撮影ボタンを押してください。確認用の写真を実際に撮影しますが、自動では保存されません。</string>
+    <string name="guided_camera_capture">ハイライトされた撮影ボタンをタップします。確認用の一時的な写真を撮影します。</string>
     <string name="guided_camera_review_first">カメラのガイドを始める前に、現在の写真の確認を終えてください。</string>
     <string name="guided_script">「表記」を押して、かなとローマ字を切り替えてください。メニューに現在の設定が表示されます。</string>
     <string name="guided_preferences">その他の設定は、ホーム画面で強調表示された歯車アイコンから開けます。</string>
@@ -229,9 +216,14 @@
     <string name="gallery_title">保存した画像</string>
     <string name="gallery_refresh">保存した画像を更新</string>
     <string name="gallery_load_failed">保存した画像を読み込めませんでした。もう一度お試しください。</string>
-    <string name="gallery_empty">保存したカメラ写真がここに表示されます。カメラを開き、「ふりがな付きで保存」で追加できます。</string>
+    <string name="gallery_empty">以前保存したカメラ画像はありません。</string>
     <string name="gallery_image_missing">この画像は利用できなくなりました。移動・削除されたか、アクセス権が失効した可能性があります。</string>
     <string name="gallery_image_description">保存したKanako画像：%1$s</string>
     <string name="preferences_photo_size_summary">写真では、これが読みの最小サイズになります。日本語の文字に合わせて大きくなります。表示する空間が足りない場合はズームしてください。</string>
     <string name="gallery_image_hint">ピンチでズーム・ドラッグで移動・ダブルタップでリセット</string>
+    <string name="camera_comparison_original">元の画像</string>
+    <string name="camera_comparison_readings">読み</string>
+    <string name="photo_reading_select">読みを表示</string>
+    <string name="photo_reading_clear">自動表示に戻す</string>
+    <string name="photo_reading_selected">選択中：%1$s — %2$s</string>
 </resources>

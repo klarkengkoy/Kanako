@@ -5,6 +5,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.test.platform.app.InstrumentationRegistry
+import com.smyddevstudio.kanako.R
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -80,47 +83,85 @@ class ReadingInteractionTest {
         assertEquals(120f, (ruby.bounds.left + ruby.bounds.right) / 2f, 0.5f)
     }
 
-    @Test fun photoKanjiSelectionUsesZoomedImageCoordinatesAndReachesExportStyle() {
+    @Test fun photoSelectionUsesZoomedCoordinatesAndComparisonPreservesTheReading() {
         val photo = CameraPhoto.fromOwnedBitmap(Bitmap.createBitmap(400, 400, Bitmap.Config.ARGB_8888))
-        var style: CameraExportStyle? = null
+        val showReadings = mutableStateOf(true)
         try {
             compose.setContent {
                 KanakoTheme {
                     CameraPhotoSurface(photo, listOf(line), KanakoPreferences(),
-                        Modifier.fillMaxSize().testTag("photo"), onExportStyle = { style = it })
+                        Modifier.fillMaxSize().testTag("photo"), showReadings = showReadings.value)
                 }
             }
             val image = compose.onNodeWithTag("photo")
-            compose.waitUntil(timeoutMillis = 3_000) {
-                image.fetchSemanticsNode().config[SemanticsProperties.Text].any { it.text.isNotEmpty() }
+            val context = InstrumentationRegistry.getInstrumentation().targetContext
+            val expected = context.getString(R.string.photo_reading_selected, "読", "よ")
+            compose.waitUntil(5_000) {
+                image.fetchSemanticsNode().config[SemanticsActions.CustomActions].size > 3
             }
-            val initialBounds = image.fetchSemanticsNode().boundsInRoot
-            val initialFit = fitCameraImage(400, 400, initialBounds.width.toInt(), initialBounds.height.toInt())!!
-            image.performTouchInput {
-                click(Offset(initialFit.left + 120 * initialFit.scale, initialFit.top + 220 * initialFit.scale))
+            fun tapSource(zoom: Float = 1f) {
+                val bounds = image.fetchSemanticsNode().boundsInRoot
+                val fit = fitCameraImage(400, 400, bounds.width.toInt(), bounds.height.toInt())!!
+                val scale = fit.scale * zoom
+                image.performTouchInput {
+                    advanceEventTime(500)
+                    click(Offset((bounds.width - 400 * scale) / 2 + 120 * scale,
+                        (bounds.height - 400 * scale) / 2 + 220 * scale))
+                }
             }
-            compose.waitUntil(timeoutMillis = 3_000) { style?.selected != null }
-            image.performTouchInput { click(Offset(10f, 10f)) }
-            compose.waitUntil(timeoutMillis = 3_000) { style?.selected == null }
+            fun selected() = image.fetchSemanticsNode().config[SemanticsProperties.StateDescription].contains(expected)
+            tapSource()
+            compose.waitUntil(5_000) { selected() }
+            tapSource()
+            compose.waitUntil(5_000) { !selected() }
             image.performTouchInput {
                 pinch(start0 = center - Offset(40f, 0f), end0 = center - Offset(80f, 0f),
                     start1 = center + Offset(40f, 0f), end1 = center + Offset(80f, 0f), durationMillis = 400)
             }
-            compose.waitUntil(timeoutMillis = 3_000) {
-                image.fetchSemanticsNode().config[SemanticsProperties.Text].any { it.text.isNotEmpty() }
-            }
-            val bounds = image.fetchSemanticsNode().boundsInRoot
-            val fit = fitCameraImage(400, 400, bounds.width.toInt(), bounds.height.toInt())!!
-            val ruby = layoutCameraAnnotations(listOf(line), 400, 400,
-                requireNotNull(style).fontPixels, ScriptType.KANA).labels.single()
-            val zoomPercent = image.fetchSemanticsNode().config[SemanticsProperties.StateDescription]
+            val zoom = image.fetchSemanticsNode().config[SemanticsProperties.StateDescription]
                 .filter { it.isDigit() }.toFloat() / 100f
-            val scale = fit.scale * zoomPercent
-            val target = Offset((bounds.width - 400 * scale) / 2 + 120 * scale,
-                (bounds.height - 400 * scale) / 2 + 220 * scale)
-            image.performTouchInput { click(target) }
-            compose.waitUntil(timeoutMillis = 3_000) { style?.selected != null }
-            compose.runOnIdle { assertEquals(ruby.target.key, style?.selected) }
+            tapSource(zoom)
+            compose.waitUntil(5_000) { selected() }
+            val state = image.fetchSemanticsNode().config[SemanticsProperties.StateDescription]
+            compose.runOnIdle { showReadings.value = false }
+            compose.waitUntil(5_000) { image.fetchSemanticsNode().config[SemanticsProperties.Text].all { it.text.isEmpty() } }
+            compose.runOnIdle { showReadings.value = true }
+            compose.waitUntil(5_000) {
+                image.fetchSemanticsNode().config[SemanticsProperties.StateDescription] == state
+            }
+            image.performTouchInput { advanceEventTime(500); click(Offset(10f, 10f)) }
+            compose.waitUntil(5_000) { !selected() }
+        } finally { photo.close() }
+    }
+
+    @Test fun crowdedSourcesAreSelectableEvenWhenNoAutomaticLabelsFit() {
+        val photo = CameraPhoto.fromOwnedBitmap(Bitmap.createBitmap(500, 400, Bitmap.Config.ARGB_8888))
+        val lines = listOf(
+            CameraReadingLine("日本語", CameraRect(100f, 200f, 120f, 216f), listOf(FuriganaSegment("日本語", "にほんご"))),
+            CameraReadingLine("銀行", CameraRect(124f, 200f, 144f, 216f), listOf(FuriganaSegment("銀行", "ぎんこう")))
+        )
+        try {
+            compose.setContent {
+                KanakoTheme {
+                    CameraPhotoSurface(photo, lines, KanakoPreferences(scriptType = ScriptType.ROMAJI),
+                        Modifier.fillMaxSize().testTag("photo"))
+                }
+            }
+            val image = compose.onNodeWithTag("photo")
+            compose.waitUntil(5_000) { image.fetchSemanticsNode().config[SemanticsActions.CustomActions].size == 5 }
+            val actions = image.fetchSemanticsNode().config[SemanticsActions.CustomActions]
+            compose.runOnIdle { actions[3].action() }
+            compose.waitUntil(5_000) {
+                image.fetchSemanticsNode().config[SemanticsProperties.Text].single().text == "nihongo"
+            }
+            val next = image.fetchSemanticsNode().config[SemanticsActions.CustomActions]
+            compose.runOnIdle { next[4].action() }
+            compose.waitUntil(5_000) {
+                image.fetchSemanticsNode().config[SemanticsProperties.Text].single().text == "ginkou"
+            }
+            val clear = image.fetchSemanticsNode().config[SemanticsActions.CustomActions].last()
+            compose.runOnIdle { clear.action() }
+            compose.waitUntil(5_000) { image.fetchSemanticsNode().config[SemanticsActions.CustomActions].size == 5 }
         } finally { photo.close() }
     }
 }

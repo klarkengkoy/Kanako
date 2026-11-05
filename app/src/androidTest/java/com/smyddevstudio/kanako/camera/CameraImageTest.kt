@@ -1,13 +1,11 @@
 package com.smyddevstudio.kanako.camera
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Rect
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.smyddevstudio.kanako.model.ScriptType
 import com.smyddevstudio.kanako.ui.components.FuriganaSegment
-import java.io.ByteArrayOutputStream
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -99,40 +97,7 @@ class CameraImageTest {
         assertNull(photo.acquire())
     }
 
-    @Test fun exportUsesTheSameReadingLayoutAndLeavesTheOriginalUntouched() {
-        val bitmap = Bitmap.createBitmap(400, 300, Bitmap.Config.ARGB_8888).apply { eraseColor(Color.WHITE) }
-        val photo = CameraPhoto.fromOwnedBitmap(bitmap)
-        val lines = listOf(CameraReadingLine(
-            "日本語", CameraRect(100f, 140f, 250f, 180f), listOf(FuriganaSegment("日本語", "にほんご"))
-        ))
-        val colors = CameraAnnotationColors(Color.BLACK, Color.rgb(245, 235, 215))
-        val request = CameraPhotoExport(photo.acquire()!!, lines, CameraExportStyle(24f, ScriptType.KANA, colors))
-        try {
-            val bytes = ByteArrayOutputStream().also { writeCameraPhotoExport(request, it) }.toByteArray()
-            val decoded = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-            try {
-                assertEquals(400, decoded.width)
-                assertEquals(300, decoded.height)
-                val layout = layoutCameraAnnotations(lines, 400, 300, 24f, ScriptType.KANA)
-                assertEquals(1, layout.labels.size)
-                var painted = 0
-                for (y in 0 until 300) for (x in 0 until 400) {
-                    assertEquals(Color.WHITE, bitmap.getPixel(x, y))
-                    if (decoded.getPixel(x, y) != Color.WHITE) {
-                        painted++
-                        assertTrue(layout.labels.any { x >= it.bounds.left && x < it.bounds.right && y >= it.bounds.top && y < it.bounds.bottom })
-                    }
-                }
-                assertTrue(painted > 0)
-                assertEquals(Color.WHITE, decoded.getPixel(175, 160))
-            } finally { decoded.recycle() }
-        } finally {
-            request.close()
-            photo.close()
-        }
-    }
-
-    @Test fun denseSmallDocumentKeepsReadingsLocalInLivePhotoAndExportCoordinates() {
+    @Test fun denseSmallDocumentKeepsLiveReadingsLocalAcrossImageSizes() {
         val lines = (0..10).map { row ->
             val top = 100f + row * 20
             CameraReadingLine("日本語", CameraRect(100f, top, 150f, top + 16),
@@ -146,7 +111,7 @@ class CameraImageTest {
                 assertTrue(label.bounds.bottom >= line.bounds.top - height - label.gap * 2 - 1)
                 assertTrue(label.bounds.top <= line.bounds.bottom + label.gap + 1)
             }
-            // Check locality separately at photo/export resolution. Font rounding may choose a
+            // Check locality separately at a larger input resolution. Font rounding may choose a
             // different nearby collision lane; that is independent of the image transform.
             val photoLines = lines.map { line ->
                 line.copy(bounds = CameraRect(line.bounds.left * 2, line.bounds.top * 2,

@@ -19,12 +19,14 @@ internal fun fitCameraImage(imageWidth: Int, imageHeight: Int, viewWidth: Int, v
 internal data class CameraPhotoGesture(val zoom: Float = 1f, val x: Float = 0f, val y: Float = 0f) {
     fun update(
         factor: Float, dx: Float, dy: Float, centroidX: Float, centroidY: Float,
-        imageWidth: Int, imageHeight: Int, viewWidth: Int, viewHeight: Int
+        imageWidth: Int, imageHeight: Int, viewWidth: Int, viewHeight: Int,
+        topPadding: Float = 0f, bottomPadding: Float = 0f
     ): CameraPhotoGesture {
         val fit = fitCameraImage(imageWidth, imageHeight, viewWidth, viewHeight) ?: return CameraPhotoGesture()
-        if (!listOf(factor, dx, dy, centroidX, centroidY).all { it.isFinite() } || factor <= 0) return this
+        if (!listOf(factor, dx, dy, centroidX, centroidY, topPadding, bottomPadding).all { it.isFinite() } ||
+            factor <= 0 || topPadding < 0f || bottomPadding < 0f) return this
         val next = (zoom * factor).coerceIn(1f, 6f)
-        if (next == 1f) return CameraPhotoGesture()
+        if (next == 1f && topPadding == 0f && bottomPadding == 0f) return CameraPhotoGesture()
         val ratio = next / zoom
         val limitX = max(0f, (imageWidth * fit.scale * next - viewWidth) / 2f)
         val limitY = max(0f, (imageHeight * fit.scale * next - viewHeight) / 2f)
@@ -33,7 +35,7 @@ internal data class CameraPhotoGesture(val zoom: Float = 1f, val x: Float = 0f, 
         return CameraPhotoGesture(
             next,
             (anchorX - (anchorX - x) * ratio + dx).coerceIn(-limitX, limitX),
-            (anchorY - (anchorY - y) * ratio + dy).coerceIn(-limitY, limitY)
+            (anchorY - (anchorY - y) * ratio + dy).coerceIn(-limitY - bottomPadding, limitY + topPadding)
         )
     }
 }

@@ -103,8 +103,13 @@ fun FloatingOverlayContent(
     isReading: Boolean = false,
     statusMessage: Int = R.string.reading_ready,
     controlsVisible: Boolean = true,
-    guidedStep: GuidedReaderStep = GuidedReaderStep.INACTIVE
+    guidedStep: GuidedReaderStep = GuidedReaderStep.INACTIVE,
+    showServiceActions: Boolean = true,
+    statusDescription: String? = null,
+    animateWhenReadingsShown: Boolean = false
 ) {
+    val currentOnDrag by rememberUpdatedState(onDrag)
+    val currentOnDragEnd by rememberUpdatedState(onDragEnd)
     var isExpanded by remember { mutableStateOf(false) }
     var readAttempt by remember { mutableIntStateOf(0) }
     var statusPopupMessage by remember { mutableStateOf<Int?>(null) }
@@ -114,6 +119,13 @@ fun FloatingOverlayContent(
     val animationsEnabled = rememberAnimationsEnabled()
     LaunchedEffect(isReading, controlsVisible, animationsEnabled) {
         motion = motion.update(isReading, controlsVisible, animationsEnabled)
+    }
+    LaunchedEffect(showFurigana, animateWhenReadingsShown, controlsVisible, animationsEnabled) {
+        if (showFurigana && animateWhenReadingsShown && controlsVisible && animationsEnabled) {
+            motion = motion.requestReadingAnimation()
+        } else if (animateWhenReadingsShown && !showFurigana) {
+            motion = motion.copy(readQueued = false)
+        }
     }
     val guided = guidedStep != GuidedReaderStep.INACTIVE
     fun openControls() {
@@ -163,7 +175,7 @@ fun FloatingOverlayContent(
         FabSize.LARGE -> 68.dp
     }
     val controlDescription = stringResource(R.string.floating_control_description)
-    val statusDescription = stringResource(statusMessage)
+    val currentStatusDescription = statusDescription ?: stringResource(statusMessage)
     var bubbleAbove by remember { mutableStateOf(false) }
     var bubbleTip by remember { mutableStateOf(0.5f) }
     val popupPosition = rememberFloatingMenuPosition { above, tip -> bubbleAbove = above; bubbleTip = tip }
@@ -181,7 +193,7 @@ fun FloatingOverlayContent(
                 .systemGestureExclusion()
                 .semantics {
                     contentDescription = controlDescription
-                    stateDescription = statusDescription
+                    stateDescription = currentStatusDescription
                 }
                 .combinedClickable(
                     onClick = { if (!guided || guidedStep == GuidedReaderStep.READ || guidedStep == GuidedReaderStep.CLEAR) { dismiss(); readAttempt++; onReadOrClear() } },
@@ -198,15 +210,15 @@ fun FloatingOverlayContent(
                             dismiss()
                             motion = motion.startDrag()
                         },
-                        onDragEnd = { if (!guided || guidedStep == GuidedReaderStep.DRAG) { motion = motion.endDrag(); onDragEnd() } },
-                        onDragCancel = { if (!guided || guidedStep == GuidedReaderStep.DRAG) { motion = motion.endDrag(); onDragEnd() } },
+                        onDragEnd = { if (!guided || guidedStep == GuidedReaderStep.DRAG) { motion = motion.endDrag(); currentOnDragEnd() } },
+                        onDragCancel = { if (!guided || guidedStep == GuidedReaderStep.DRAG) { motion = motion.endDrag(); currentOnDragEnd() } },
                         onDrag = { change, dragAmount ->
                             change.consume()
                             if (guided && guidedStep != GuidedReaderStep.DRAG) return@detectDragGestures
                             val bodyPosition = change.position - pickupOffset
                             val previousBodyPosition = change.position - dragAmount - pickupOffset
                             val movement = bodyPosition - previousBodyPosition
-                            onDrag(movement.x, movement.y)
+                            currentOnDrag(movement.x, movement.y)
                         }
                     )
                 },
@@ -287,18 +299,20 @@ fun FloatingOverlayContent(
                         if (isExpanded) {
                             Text(stringResource(R.string.controls_title), fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                            Text(statusDescription, style = MaterialTheme.typography.bodySmall,
+                            Text(currentStatusDescription, style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
                             FloatingMenuAction(
                                 stringResource(R.string.controls_script, stringResource(preferences.scriptType.labelRes)),
                                 Icons.Rounded.Language, onToggleScriptType,
                                 enabled = !guided || guidedStep == GuidedReaderStep.SCRIPT || guidedStep == GuidedReaderStep.CLEAR
                             )
-                            if (!guided) FloatingMenuAction(stringResource(R.string.controls_open),
-                                Icons.AutoMirrored.Rounded.OpenInNew, { dismiss(); onOpenApp() })
-                            FloatingMenuAction(stringResource(R.string.controls_stop),
-                                Icons.Rounded.PowerSettingsNew, { dismiss(); onStopService() },
-                                emphasized = true, enabled = !guided || guidedStep == GuidedReaderStep.STOP)
+                            if (showServiceActions) {
+                                if (!guided) FloatingMenuAction(stringResource(R.string.controls_open),
+                                    Icons.AutoMirrored.Rounded.OpenInNew, { dismiss(); onOpenApp() })
+                                FloatingMenuAction(stringResource(R.string.controls_stop),
+                                    Icons.Rounded.PowerSettingsNew, { dismiss(); onStopService() },
+                                    emphasized = true, enabled = !guided || guidedStep == GuidedReaderStep.STOP)
+                            }
                         } else {
                             Text(stringResource(statusPopupMessage ?: statusMessage),
                                 modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },

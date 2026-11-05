@@ -12,8 +12,6 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.filters.SdkSuppress
@@ -36,13 +34,11 @@ class CameraGalleryTest {
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
     @Test
-    fun homeGalleryEntryWorksWithoutReaderAccessOrTakingAPhoto() {
-        var opens = 0
+    fun homeDoesNotOfferSavedImages() {
         compose.setContent {
-            KanakoTheme { HomeScreen({}, {}, {}, onNavigateToGallery = { opens++ }, animationsEnabled = false) }
+            KanakoTheme { HomeScreen({}, {}, {}, animationsEnabled = false) }
         }
-        compose.onNodeWithText(context.getString(R.string.gallery_title)).performScrollTo().assertIsDisplayed().performClick()
-        compose.runOnIdle { assertEquals(1, opens) }
+        compose.onNodeWithText(context.getString(R.string.gallery_title)).assertDoesNotExist()
     }
 
     @Test
@@ -68,8 +64,9 @@ class CameraGalleryTest {
         }
         val uri = Uri.parse("content://com.smyddevstudio.kanako.missing/document")
         try {
-            SavedCameraImages(isolated).retainDocument(uri, "Kanako-test.png")
-            SavedCameraImages(isolated).retainDocument(uri, "Kanako-test.png")
+            val entry = org.json.JSONObject().put("uri", uri.toString()).put("name", "Kanako-test.png").put("savedAt", 1L)
+            isolated.getSharedPreferences("saved_camera_images", Context.MODE_PRIVATE).edit()
+                .putString("documents", org.json.JSONArray().put(entry).put(entry).toString()).commit()
             val matches = SavedCameraImages(isolated).load().filter { it.uri == uri }
             assertEquals(1, matches.size)
             assertEquals("Kanako-test.png", matches.single().name)

@@ -2,7 +2,6 @@ package com.smyddevstudio.kanako.camera
 
 import android.content.ContentUris
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.CancellationSignal
@@ -11,7 +10,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
-import org.json.JSONObject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -20,21 +18,6 @@ internal data class SavedCameraImage(val uri: Uri, val name: String, val savedAt
 internal class SavedCameraImages(context: Context) {
     private val app = context.applicationContext
     private val history = app.getSharedPreferences("saved_camera_images", Context.MODE_PRIVATE)
-
-    fun retainDocument(uri: Uri, name: String) {
-        runCatching {
-            app.contentResolver.takePersistableUriPermission(
-                uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
-            )
-        }
-        val entries = documentHistory().filterNot { it.uri == uri } +
-            SavedCameraImage(uri, name, System.currentTimeMillis())
-        val json = JSONArray()
-        entries.forEach { image ->
-            json.put(JSONObject().put("uri", image.uri.toString()).put("name", image.name).put("savedAt", image.savedAt))
-        }
-        history.edit().putString("documents", json.toString()).apply()
-    }
 
     suspend fun load(): List<SavedCameraImage> = withContext(Dispatchers.IO) {
         val documents = documentHistory()

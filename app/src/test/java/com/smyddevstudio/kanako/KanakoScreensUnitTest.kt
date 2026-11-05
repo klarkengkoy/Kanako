@@ -18,14 +18,14 @@ class KanakoScreensUnitTest {
             furiganaColor = FuriganaColor.PINE_GREEN,
             scriptType = ScriptType.ROMAJI,
             annotationPlateStyle = AnnotationPlateStyle.HIGH_CONTRAST,
-            touchPassthrough = false
+            autoReadAfterScroll = true
         )
 
         assertEquals(FuriganaSize.LARGE, updated.furiganaSize)
         assertEquals(FuriganaColor.PINE_GREEN, updated.furiganaColor)
         assertEquals(ScriptType.ROMAJI, updated.scriptType)
         assertEquals(AnnotationPlateStyle.HIGH_CONTRAST, updated.annotationPlateStyle)
-        assertEquals(false, updated.touchPassthrough)
+        assertEquals(true, updated.autoReadAfterScroll)
     }
 
     @Test

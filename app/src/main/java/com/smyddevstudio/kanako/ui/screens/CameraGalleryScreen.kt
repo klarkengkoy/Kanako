@@ -1,5 +1,10 @@
 package com.smyddevstudio.kanako.ui.screens
 
+import android.content.ActivityNotFoundException
+import android.content.ClipData
+import android.content.Context
+import android.content.Intent
+import android.widget.Toast
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -180,7 +185,7 @@ internal fun SavedCameraImageScreen(
                 navigationIcon = { IconButton(onClick = onBack) {
                     Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.navigate_back))
                 } },
-                actions = { IconButton(onClick = { shareCameraExport(context, uri) }, enabled = decoded.bitmap != null) {
+                actions = { IconButton(onClick = { shareSavedCameraImage(context, uri) }, enabled = decoded.bitmap != null) {
                     Icon(Icons.Rounded.Share, stringResource(R.string.camera_share))
                 } }
             )
@@ -218,6 +223,23 @@ internal fun SavedCameraImageThumbnail(uri: Uri, modifier: Modifier = Modifier) 
     if (decoded.bitmap != null) Image(decoded.bitmap.asImageBitmap(), null,
         modifier.fillMaxSize(), contentScale = ContentScale.Crop)
     else Icon(Icons.Rounded.BrokenImage, null, modifier, tint = Color.White)
+}
+
+internal fun shareSavedCameraImage(context: Context, uri: Uri) {
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "image/png"
+        putExtra(Intent.EXTRA_STREAM, uri)
+        clipData = ClipData.newRawUri("Kanako", uri)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+    val errorMessage = R.string.camera_share_failed
+    try {
+        context.startActivity(Intent.createChooser(intent, null))
+    } catch (_: ActivityNotFoundException) {
+        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+    } catch (_: SecurityException) {
+        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+    }
 }
 
 private data class GalleryBitmap(val bitmap: Bitmap? = null, val failed: Boolean = false)

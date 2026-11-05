@@ -34,7 +34,6 @@ class UserPreferencesRepository(
         val FURIGANA_COLOR = stringPreferencesKey("furigana_color")
         val SCRIPT_TYPE = stringPreferencesKey("script_type")
         val ANNOTATION_PLATE_STYLE = stringPreferencesKey("annotation_plate_style")
-        val TOUCH_PASSTHROUGH = booleanPreferencesKey("touch_passthrough")
         val FAB_SIZE = stringPreferencesKey("fab_size")
         val FAB_DOCKING = stringPreferencesKey("fab_docking")
         val FAB_OFFSET_X = intPreferencesKey("fab_offset_x")
@@ -85,8 +84,6 @@ class UserPreferencesRepository(
             runCatching { AnnotationPlateStyle.valueOf(name) }.getOrNull()
         } ?: AnnotationPlateStyle.WASHI_CAPSULE
 
-        val touchPassthrough = preferences[TOUCH_PASSTHROUGH] ?: true
-
         val fabSize = preferences[FAB_SIZE]?.let { name ->
             runCatching { FabSize.valueOf(name) }.getOrNull()
         } ?: FabSize.MEDIUM
@@ -102,7 +99,6 @@ class UserPreferencesRepository(
             furiganaColor = furiganaColor,
             scriptType = scriptType,
             annotationPlateStyle = annotationPlateStyle,
-            touchPassthrough = touchPassthrough,
             fabSize = fabSize,
             fabDocking = fabDocking,
             fabOffsetX = fabOffsetX,
@@ -190,12 +186,6 @@ class UserPreferencesRepository(
     suspend fun updateAnnotationPlateStyle(style: AnnotationPlateStyle) {
         dataStore.edit { preferences ->
             preferences[ANNOTATION_PLATE_STYLE] = style.name
-        }
-    }
-
-    suspend fun updateTouchPassthrough(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[TOUCH_PASSTHROUGH] = enabled
         }
     }
 

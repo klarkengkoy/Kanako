@@ -47,18 +47,16 @@
     <string name="quick_settings_guide_title">Add Kanako to Quick Settings</string>
     <string name="quick_settings_guide_body">Swipe down twice to open Quick Settings. Tap Edit, then drag the Kanako tile into your active tiles. Tap it to show or stop the floating reader. Adding the tile does not take a screenshot. Starting the reader schedules a reading if Auto-read is enabled.</string>
     <string name="auto_read_title">Auto-read</string>
-    <string name="auto_read_summary">Auto-read waits for changes to settle. Tap to read gives you control.</string>
+    <string name="auto_read_summary">Both modes let you tap highlighted kanji. Auto-read lets other touches reach the app and pauses refresh while a reading is selected. Tap to read blocks app touches until you clear readings with Kanako.</string>
     <string name="auto_read_disclosure">While the floating reader is active, Kanako will automatically take a screenshot after scrolling, app changes, or content updates settle for about 0.7 seconds. It also reads when the reader starts or the device is unlocked. No tap is needed. Images are processed locally in memory, then discarded; they are not saved or uploaded.\n\nThis uses individual screenshots, not a recording session. Capture is blocked around detected sensitive input and on the lock screen. Stability and scroll tracking depend on events from the source app; animations may not be detected. You can turn this option off at any time.</string>
     <string name="auto_read_enable">Enable auto-read</string>
 
     <string name="camera_title">Camera reader</string>
     <string name="camera_open">Read with camera</string>
     <string name="camera_capture">Capture photo</string>
-    <string name="camera_result_title">Photo reading</string>
-    <string name="camera_result_retake">Retake</string>
     <string name="camera_appearance">Reading appearance</string>
     <string name="camera_state_permission">Camera access needed</string>
-    <string name="camera_state_permission_body">Use the camera for live Japanese readings and photos. Images stay in memory unless you choose Save with furigana. Floating-reader access is not needed.</string>
+    <string name="camera_state_permission_body">Use the camera for live Japanese readings and temporary photos. Images stay in memory and are never saved or uploaded. Floating-reader access is not needed.</string>
     <string name="camera_allow">Allow camera</string>
     <string name="camera_not_now">Not now</string>
     <string name="camera_settings">Open app settings</string>
@@ -72,18 +70,11 @@
     <string name="camera_live_description">Live camera view. Tap to focus and pinch to zoom.</string>
     <string name="camera_capturing">Capturing photo…</string>
     <string name="camera_retry">Retry</string>
-    <string name="camera_save">Save with furigana</string>
-    <string name="camera_saving">Saving…</string>
-    <string name="camera_saved">Saved</string>
-    <string name="camera_open_saved">Saved images</string>
     <string name="camera_share">Share saved image</string>
-    <string name="camera_open_failed">Could not open the saved image. You can find it in Files.</string>
     <string name="camera_share_failed">Could not open sharing. You can find the saved image in Files.</string>
-    <string name="camera_save_failed">Could not save. Please try again.</string>
-    <string name="camera_photo_ready">Photo ready · Not saved</string>
+    <string name="camera_photo_ready">Photo ready</string>
     <string name="camera_photo_missing">This temporary photo is no longer available. Return to the live camera to capture another.</string>
     <string name="camera_photo_description">Captured camera photo with Japanese readings</string>
-    <string name="camera_photo_hint">Pinch to zoom and reveal readings · Drag to move · Double tap to reset</string>
     <string name="camera_zoom_in">Zoom in</string>
     <string name="camera_zoom_out">Zoom out</string>
     <string name="camera_zoom_reset">Reset zoom</string>
@@ -96,7 +87,6 @@
     <string name="preferences_system">Access and help</string>
     <string name="preferences_privacy">Privacy</string>
     <string name="preview_sample_text"><annotation reading="ニホンゴ">日本語</annotation>を<annotation reading="ヨム">読む</annotation></string>
-    <string name="preferences_touch_check">Use the app beneath the furigana.</string>
     <string name="preferences_keyboard_check">Hide the floating control while typing.</string>
     <string name="preferences_title">Preferences</string>
     <string name="home_reader_active">Floating reader on</string>
@@ -109,7 +99,6 @@
     <string name="preferences_color">Reading color</string>
     <string name="preferences_script">Script</string>
     <string name="preferences_plate">Reading background</string>
-    <string name="preferences_touch">Touch through readings</string>
     <string name="preferences_control_size">Button size</string>
     <string name="preferences_keyboard">Hide beside keyboard</string>
     <string name="preferences_keyboard_hint">Sensitive-input capture blocking stays on.</string>
@@ -142,7 +131,7 @@
     <string name="how_move_title">Move on when you are ready</string>
     <string name="how_move">Readings follow scrolling reported by the source app. Uncertain movement clears them. Optional Auto-read reads after detected changes settle for about 0.7 seconds, and after reader start or unlock. Tracking depends on the source app.</string>
     <string name="how_privacy_title">What stays private?</string>
-    <string name="how_privacy">Screen images are processed in memory, then discarded without saving or uploading. Capture is blocked around detected sensitive input and on the lock screen. Camera photos also remain temporary unless you explicitly choose Save with furigana.</string>
+    <string name="how_privacy">Screen images are processed in memory, then discarded without saving or uploading. Capture is blocked around detected sensitive input and on the lock screen. Camera photos also remain temporary and are never saved or uploaded.</string>
     <string name="how_limits_title">What are the limits?</string>
     <string name="how_limits">Kanji recognition and readings are not always correct. Similar-looking kanji and katakana can be confused; names and words with several readings can also be misread. Small, stylized, blurry text and mixed layouts make recognition harder. Furigana positions are estimated from the recognized text. Protected screens cannot be captured.</string>
     <string name="how_offline_title">Does it work offline?</string>
@@ -150,14 +139,14 @@
     <string name="how_tile_title">Quick Settings</string>
     <string name="how_tile">Swipe down twice, tap Edit, then add Kanako to your active tiles. Tap it to show or stop the floating reader. Adding the tile does not capture a screenshot. Missing access opens Home. With Auto-read enabled, starting the reader also schedules a reading.</string>
     <string name="how_camera_title">Use the camera</string>
-    <string name="how_camera">Open Camera from Home; its permission is separate from screen reading access. Read live, or capture a photo for stable reading. Tap a reading or its kanji to bring that reading in front; tap overlapping readings again to cycle through them. Tap elsewhere in the live view to focus. Pinch to zoom; on a photo, drag to move and double tap to reset. Save with furigana exports the whole photo with the selected reading in front, regardless of your current zoom. On Android 10 or later, Save with furigana saves to Pictures/Kanako. Older versions open the destination picker.</string>
+    <string name="how_camera">Open Camera from Home; its permission is separate from screen reading access. Read live, or capture a photo for stable reading. In a captured photo, each kanji group with a pronunciation is highlighted. Tap a highlight to show only its reading; tap it again or outside the highlights to restore automatic readings. Tap Kanako to hide or show highlights and readings without changing zoom. Double tap or hold Kanako for Kana/Romaji controls; drag Kanako to move it. Tap elsewhere in the live view to focus. Pinch to zoom; on a photo, drag to move and double tap to reset. Go back to the camera to take another photo. Photos are not saved.</string>
     <string name="reading_size_small">10sp</string>
     <string name="reading_size_medium">12sp</string>
     <string name="reading_size_large">14sp</string>
     <string name="reading_mode">Reading mode</string>
     <string name="tap_to_read">Tap to read</string>
     <string name="how_preferences_title">Adjust reading behavior</string>
-    <string name="how_preferences">Choose Kana or Romaji, reading size, color, and plates in Preferences. With Touch through readings on, you can use the app underneath the furigana. Turn it off to tap a reading or its kanji and bring that reading in front; tap overlapping readings again to cycle through them. Hide button while typing hides Kanako when the keyboard is visible. Capture pauses while a keyboard or password field is detected, even when Kanako stays visible. The fixed preview shows appearance only.</string>
+    <string name="how_preferences">Choose Kana or Romaji, reading size, color, and plates in Preferences. The size is a minimum; automatic readings appear only where there is room. Highlights mark kanji groups with readings, including crowded ones. In Auto-read, tap highlighted kanji to inspect their readings; touches elsewhere reach the app. Automatic refresh pauses during selection and resumes when you tap the selected group, its reading, or elsewhere. Source changes can still clear outdated highlights. In Tap to read, readings block app touches: tap a highlighted group to show only its reading, then tap it again or tap empty space to restore the other labels. Tap Kanako to clear readings and use the app again. Hide button while typing hides Kanako when the keyboard is visible. Capture pauses while a keyboard or password field is detected, even when Kanako stays visible. The fixed preview shows appearance only.</string>
     <string name="preview_sample_short"><annotation reading="ニホンゴ">日本語</annotation></string>
     <string name="preferences_appearance_summary">Applies to both readers. The preview shows appearance only.</string>
     <string name="privacy_access">Privacy and screen access</string>
@@ -190,11 +179,9 @@
     <string name="tutorial_floating_read">Tap Kanako to show furigana, then tap again to clear it. During real reading, red status messages explain when readings cannot be shown.</string>
     <string name="tutorial_floating_controls">Drag Kanako. Double tap or hold it to open controls, then stop the sample reader. These controls work the same way in the floating reader.</string>
     <string name="tutorial_camera_focus">Tap the sample to practice focusing. Pinch or use the zoom slider to change its size. This sample does not use your camera.</string>
-    <string name="tutorial_camera_capture">Capture the sample to freeze it for reading. In the real camera, Retake lets you take another photo.</string>
+    <string name="tutorial_camera_capture">Capture the sample to freeze it for reading. In the real camera, go back to take another photo.</string>
     <string name="tutorial_camera_appearance">Try Kana and Romaji on this sample. In the real reader, Preferences changes the appearance of both readers.</string>
-    <string name="tutorial_camera_save">Save with furigana saves the whole annotated photo, regardless of zoom. On Android 10 or later, it saves to Pictures/Kanako. Older versions open the destination picker.</string>
     <string name="tutorial_success">Practice action completed</string>
-    <string name="tutorial_save_confirm">This is a practice destination. Confirm to finish the exercise; no image or file will be created.</string>
     <string name="tutorial_finished">You can replay either path from How it works. Opening the real reader still uses its usual access checks and consent.</string>
     <string name="tutorial_start_tool">Open reader</string>
     <string name="tutorial_replay">Choose another path</string>
@@ -217,7 +204,7 @@
     <string name="guided_camera_begin">Try the camera</string>
     <string name="guided_camera_focus">Point the camera at printed Japanese, then tap the highlighted preview to focus.</string>
     <string name="guided_camera_zoom">Pinch the highlighted preview to zoom in.</string>
-    <string name="guided_camera_capture">Tap the highlighted capture button. This takes a real photo for review; it is not saved automatically.</string>
+    <string name="guided_camera_capture">Tap the highlighted capture button. This takes a temporary photo for review.</string>
     <string name="guided_camera_review_first">Finish reviewing your current photo before starting the camera guide.</string>
     <string name="guided_script">Tap Script to switch between Kana and Romaji. The menu label shows your current choice.</string>
     <string name="guided_preferences">For more options, tap the highlighted gear icon on Home.</string>
@@ -231,9 +218,14 @@
     <string name="gallery_title">Saved images</string>
     <string name="gallery_refresh">Refresh saved images</string>
     <string name="gallery_load_failed">Could not load saved images. Try again.</string>
-    <string name="gallery_empty">Your saved camera photos will appear here. Open the camera and choose Save with furigana to add one.</string>
+    <string name="gallery_empty">No previously saved camera images.</string>
     <string name="gallery_image_missing">This saved image is no longer available. It may have been moved, deleted, or its access may have expired.</string>
     <string name="gallery_image_description">Saved Kanako image: %1$s</string>
     <string name="preferences_photo_size_summary">In photos, this is the minimum reading size. Readings can grow with the Japanese text. Zoom in when readings need more space.</string>
     <string name="gallery_image_hint">Pinch to zoom · Drag to move · Double tap to reset</string>
+    <string name="camera_comparison_original">Original</string>
+    <string name="camera_comparison_readings">Readings</string>
+    <string name="photo_reading_select">Show reading</string>
+    <string name="photo_reading_clear">Show automatic readings</string>
+    <string name="photo_reading_selected">Selected: %1$s — %2$s</string>
 </resources>

@@ -47,18 +47,16 @@
     <string name="quick_settings_guide_title">Idagdag ang Kanako sa Quick Settings</string>
     <string name="quick_settings_guide_body">Mag-swipe pababa nang dalawang beses para buksan ang Quick Settings. I-tap ang I-edit, saka i-drag ang tile ng Kanako sa mga aktibong tile. I-tap ito para ipakita o ihinto ang lumulutang na reader. Walang screenshot na kinukuha kapag idinadagdag ang tile. Nagtatakda ng pagbasa ang pagsisimula ng reader kung naka-on ang awtomatikong pagbasa.</string>
     <string name="auto_read_title">Awtomatikong pagbasa</string>
-    <string name="auto_read_summary">Hinihintay ng awtomatikong pagbasa na humupa ang mga pagbabago. Ikaw ang may kontrol sa pagbasa sa pag-tap.</string>
+    <string name="auto_read_summary">Sa parehong mode, puwedeng i-tap ang naka-highlight na kanji. Sa awtomatikong pagbasa, napupunta sa app ang ibang tap at naka-pause ang pag-refresh habang may napiling pagbasa. Sa I-tap para magbasa, hinaharang ang mga tap sa app hanggang alisin ang mga pagbasa gamit ang Kanako.</string>
     <string name="auto_read_disclosure">Habang aktibo ang lumulutang na reader, awtomatikong kukuha ang Kanako ng screenshot kapag naging matatag nang humigit-kumulang 0.7 segundo ang view matapos mag-scroll, lumipat ng app, o magbago ang nilalaman. Nagbabasa rin ito kapag nagsimula ang reader o na-unlock ang device. Hindi kailangang mag-tap. Lokal na pinoproseso sa memory ang mga larawan at pagkatapos ay itinatapon; hindi sine-save o ina-upload ang mga ito.\n\nMga hiwalay na screenshot ang ginagamit, hindi isang session ng pagre-record. Hinaharang ang pagkuha kapag may natukoy na sensitibong input at sa lock screen. Nakadepende ang katatagan at pagsubaybay sa pag-scroll sa mga event mula sa pinagmulang app; maaaring hindi matukoy ang mga animation. Maaari mong i-off ang opsyong ito anumang oras.</string>
     <string name="auto_read_enable">I-on ang awtomatikong pagbasa</string>
 
     <string name="camera_title">Reader gamit ang camera</string>
     <string name="camera_open">Magbasa gamit ang camera</string>
     <string name="camera_capture">Kumuha ng larawan</string>
-    <string name="camera_result_title">Pagbasa ng larawan</string>
-    <string name="camera_result_retake">Ulitin</string>
     <string name="camera_appearance">Hitsura ng mga pagbasa</string>
     <string name="camera_state_permission">Kailangan ng access sa camera</string>
-    <string name="camera_state_permission_body">Gamitin ang camera para magbasa ng Japanese nang live at sa mga larawan. Nasa memory lang ang mga larawan maliban kung pipiliin mong I-save na may furigana. Hindi kailangan ng access sa lumulutang na reader.</string>
+    <string name="camera_state_permission_body">Gamitin ang camera para sa live na pagbasa ng Japanese at mga pansamantalang larawan. Nananatili sa memorya ang mga larawan at hindi kailanman sine-save o ina-upload. Hindi kailangan ang access sa floating reader.</string>
     <string name="camera_allow">Payagan ang camera</string>
     <string name="camera_not_now">Huwag muna</string>
     <string name="camera_settings">Buksan ang mga setting ng app</string>
@@ -72,18 +70,11 @@
     <string name="camera_live_description">Live na view ng camera. I-tap para mag-focus at kurutin para mag-zoom.</string>
     <string name="camera_capturing">Kinukunan ng larawan…</string>
     <string name="camera_retry">Subukan ulit</string>
-    <string name="camera_save">I-save na may furigana</string>
-    <string name="camera_saving">Sine-save…</string>
-    <string name="camera_saved">Na-save</string>
-    <string name="camera_open_saved">Mga na-save na larawan</string>
     <string name="camera_share">Ibahagi ang na-save na larawan</string>
-    <string name="camera_open_failed">Hindi mabuksan ang na-save na larawan. Mahahanap mo ito sa Files.</string>
     <string name="camera_share_failed">Hindi mabuksan ang pagbabahagi. Mahahanap mo ang na-save na larawan sa Files.</string>
-    <string name="camera_save_failed">Hindi ma-save. Subukan ulit.</string>
-    <string name="camera_photo_ready">Handa ang larawan · Hindi pa na-save</string>
+    <string name="camera_photo_ready">Handa na ang larawan</string>
     <string name="camera_photo_missing">Hindi na magagamit ang pansamantalang larawang ito. Bumalik sa live na camera para kumuha ng bago.</string>
     <string name="camera_photo_description">Larawang kuha sa camera na may mga pagbasa sa Japanese</string>
-    <string name="camera_photo_hint">Kurutin para mag-zoom at ipakita ang mga pagbasa · I-drag para ilipat · I-double tap para i-reset</string>
     <string name="camera_zoom_in">Palakihin</string>
     <string name="camera_zoom_out">Paliitin</string>
     <string name="camera_zoom_reset">I-reset ang zoom</string>
@@ -96,7 +87,6 @@
     <string name="preferences_system">Access at tulong</string>
     <string name="preferences_privacy">Pagkapribado</string>
     <string name="preview_sample_text"><annotation reading="ニホンゴ">日本語</annotation>を<annotation reading="ヨム">読む</annotation></string>
-    <string name="preferences_touch_check">Gamitin ang app sa ilalim ng furigana.</string>
     <string name="preferences_keyboard_check">Itago ang lumulutang na button habang nagta-type.</string>
     <string name="preferences_title">Mga kagustuhan</string>
     <string name="home_reader_active">Naka-on ang lumulutang na reader</string>
@@ -109,7 +99,6 @@
     <string name="preferences_color">Kulay ng pagbasa</string>
     <string name="preferences_script">Sistema ng pagsulat</string>
     <string name="preferences_plate">Background ng pagbasa</string>
-    <string name="preferences_touch">Pindutin ang app sa ilalim ng mga pagbasa</string>
     <string name="preferences_control_size">Laki ng button</string>
     <string name="preferences_keyboard">Itago kapag may keyboard</string>
     <string name="preferences_keyboard_hint">Nananatiling naka-on ang pagharang sa pagkuha ng sensitibong input.</string>
@@ -142,7 +131,7 @@
     <string name="how_move_title">Magpatuloy kapag handa ka na</string>
     <string name="how_move">Sumusunod ang mga pagbasa sa pag-scroll na iniulat ng pinagmulang app. Binubura ang mga ito kapag hindi tiyak ang paggalaw. Ang opsyonal na awtomatikong pagbasa ay nagbabasa kapag humupa nang humigit-kumulang 0.7 segundo ang mga natukoy na pagbabago, at kapag nagsimula ang reader o na-unlock ang device. Nakadepende sa pinagmulang app ang pagsubaybay.</string>
     <string name="how_privacy_title">Ano ang nananatiling pribado?</string>
-    <string name="how_privacy">Pinoproseso sa memory ang mga larawan ng screen at pagkatapos ay itinatapon nang hindi sine-save o ina-upload. Hinaharang ang pagkuha kapag may natukoy na sensitibong input at sa lock screen. Pansamantala rin ang mga larawan ng camera maliban kung tahasan mong piliin ang I-save na may furigana.</string>
+    <string name="how_privacy">Pinoproseso sa memorya ang mga larawan ng screen, pagkatapos ay inaalis nang hindi sine-save o ina-upload. Hinaharangan ang pagkuha kapag may natukoy na sensitibong input at sa lock screen. Pansamantala rin ang mga larawan ng camera at hindi kailanman sine-save o ina-upload.</string>
     <string name="how_limits_title">Ano ang mga limitasyon?</string>
     <string name="how_limits">Hindi palaging tama ang pagkilala at pagbasa ng kanji. Maaaring mapagpalit ang magkahawig na kanji at katakana; maaari ring mali ang pagbasa sa mga pangalan at salitang may higit sa isang pagbasa. Mas mahirap kilalanin ang maliit, estilizado, malabo, at halo-halong ayos ng teksto. Tinatantiya ang posisyon ng furigana mula sa nakilalang teksto. Hindi makukunan ang mga protektadong screen.</string>
     <string name="how_offline_title">Gumagana ba nang offline?</string>
@@ -150,14 +139,14 @@
     <string name="how_tile_title">Quick Settings</string>
     <string name="how_tile">Mag-swipe pababa nang dalawang beses, i-tap ang I-edit, saka idagdag ang Kanako sa mga aktibong tile. I-tap ito para ipakita o ihinto ang lumulutang na reader. Walang screenshot na kinukuha kapag idinadagdag ito. Bubukas ang Home kapag kulang ang access. Kapag naka-on ang awtomatikong pagbasa, nagtatakda rin ng pagbasa ang pagsisimula ng reader.</string>
     <string name="how_camera_title">Gamitin ang camera</string>
-    <string name="how_camera">Buksan ang Camera mula sa Home; hiwalay ang pahintulot nito sa access sa pagbasa ng screen. Magbasa nang live o kumuha ng larawan para sa matatag na pagbasa. I-tap ang isang pagbasa o ang kanji nito para ilagay ito sa harap; i-tap ulit ang magkakapatong na pagbasa para magpalit-palit sa mga ito. I-tap ang ibang bahagi ng live na view para mag-focus. Kurutin para mag-zoom; sa larawan, i-drag para ilipat at i-double tap para i-reset. Ini-export ng I-save na may furigana ang buong larawan na nasa harap ang napiling pagbasa, anuman ang kasalukuyang zoom. Sa Android 10 o mas bago, sine-save ng I-save na may furigana ang larawan sa Pictures/Kanako. Sa mas lumang bersyon, magbubukas ang pagpili ng destinasyon.</string>
+    <string name="how_camera">Buksan ang Camera mula sa Home; hiwalay ang pahintulot nito sa access sa pagbabasa ng screen. Magbasa nang live o kumuha ng larawan para sa matatag na pagbabasa. Sa nakuhang larawan, naka-highlight ang bawat pangkat ng kanji na may bigkas. I-tap ang isang pangkat para ipakita lamang ang pagbasa nito; i-tap muli o sa labas ng mga highlight para ibalik ang awtomatikong pagbasa. I-tap ang Kanako para itago o ipakita ang mga highlight at pagbasa nang hindi binabago ang zoom. I-double tap o pindutin nang matagal ang Kanako para pumili ng Kana o Romaji; i-drag ang Kanako para ilipat ito. I-tap ang ibang bahagi ng live view para mag-focus. Kurutin para mag-zoom; sa larawan, i-drag para ilipat at mag-double tap para i-reset. Bumalik sa camera para kumuha ng isa pang larawan. Hindi sine-save ang mga larawan.</string>
     <string name="reading_size_small">10sp</string>
     <string name="reading_size_medium">12sp</string>
     <string name="reading_size_large">14sp</string>
     <string name="reading_mode">Paraan ng pagbasa</string>
     <string name="tap_to_read">I-tap para magbasa</string>
     <string name="how_preferences_title">Ayusin ang paraan ng pagbasa</string>
-    <string name="how_preferences">Pumili ng Kana o Romaji, laki, kulay, at background sa Mga kagustuhan. Kapag naka-on ang pagpindot sa app sa ilalim ng mga pagbasa, magagamit mo ang app sa ilalim ng furigana. I-off ito para ma-tap ang isang pagbasa o kanji at mailagay sa harap; i-tap ulit ang magkakapatong na pagbasa para magpalit-palit. Itinatago ng Itago kapag may keyboard ang karakter habang nakikita ang keyboard. Naka-pause ang pagkuha kapag may natukoy na keyboard o password field, kahit nakikita pa ang karakter. Hitsura lang ang ipinapakita ng nakapirming preview.</string>
+    <string name="how_preferences">Pumili ng Kana o Romaji, laki, kulay, at background sa Mga kagustuhan. Minimum ang laki; awtomatikong lumalabas ang mga pagbasa kung may sapat na espasyo. Naka-highlight ang mga grupo ng kanji na may pagbasa, kahit siksikan. Sa awtomatikong pagbasa, i-tap ang naka-highlight na kanji para tingnan ang pagbasa nito; napupunta sa app ang mga tap sa ibang lugar. Naka-pause ang awtomatikong pag-refresh habang may napiling pagbasa at nagpapatuloy kapag na-tap ang napiling grupo, ang pagbasa nito, o ibang lugar. Kapag nagbago ang pinagmulang nilalaman, maaari pa ring alisin ang mga lumang highlight. Sa I-tap para magbasa, hinaharang ng mga pagbasa ang mga tap papunta sa app: i-tap ang naka-highlight na grupo para ipakita ang pagbasa nito lamang, pagkatapos ay i-tap itong muli o ang bakanteng lugar para ibalik ang ibang pagbasa. I-tap ang Kanako para alisin ang mga pagbasa at magamit muli ang app. Itinatago ng Itago kapag may keyboard ang karakter habang nakikita ang keyboard. Naka-pause ang pagkuha kapag may natukoy na keyboard o password field, kahit nakikita pa ang karakter. Hitsura lang ang ipinapakita ng nakapirming preview.</string>
     <string name="preview_sample_short"><annotation reading="ニホンゴ">日本語</annotation></string>
     <string name="preferences_appearance_summary">Para sa parehong reader. Hitsura lang ang ipinapakita ng preview.</string>
     <string name="privacy_access">Pagkapribado at access sa screen</string>
@@ -190,11 +179,9 @@
     <string name="tutorial_floating_read">I-tap ang sample na karakter para ipakita ang furigana, saka i-tap ulit para burahin. Sa tunay na pagbasa, ipinapaliwanag ng mga pulang mensahe kung bakit hindi maipakita ang mga pagbasa.</string>
     <string name="tutorial_floating_controls">I-drag ang sample na karakter. I-double tap o pindutin nang matagal para buksan ang mga kontrol, saka ihinto ang sample na reader. Ganoon din ang mga kontrol ng lumulutang na reader.</string>
     <string name="tutorial_camera_focus">I-tap ang sample para magsanay sa pag-focus. Kurutin o gamitin ang zoom slider para baguhin ang laki. Hindi ginagamit ng sample ang iyong camera.</string>
-    <string name="tutorial_camera_capture">Kunan ng larawan ang sample para hindi gumalaw habang nagbabasa. Sa tunay na camera, makakakuha ka ng panibago sa Ulitin.</string>
+    <string name="tutorial_camera_capture">Kunan ang sample para maging nakapirmi ito habang binabasa. Sa tunay na camera, bumalik para kumuha ng isa pang larawan.</string>
     <string name="tutorial_camera_appearance">Subukan ang Kana at Romaji sa sample. Sa tunay na reader, binabago ng Mga kagustuhan ang hitsura ng parehong reader.</string>
-    <string name="tutorial_camera_save">Sine-save ng I-save na may furigana ang buong larawang may anotasyon, anuman ang zoom. Sa Android 10 o mas bago, sine-save ito sa Pictures/Kanako. Sa mas lumang bersyon, magbubukas ang pagpili ng destinasyon.</string>
     <string name="tutorial_success">Nagawa na ang pagsasanay</string>
-    <string name="tutorial_save_confirm">Destinasyon ito para sa pagsasanay. Kumpirmahin para tapusin ang ehersisyo; walang larawan o file na gagawin.</string>
     <string name="tutorial_finished">Maaari mong ulitin ang alinmang pagsasanay mula sa Paano ito gumagana. Gagamitin pa rin ang karaniwang pagsusuri sa access at pahintulot kapag binuksan ang tunay na reader.</string>
     <string name="tutorial_start_tool">Buksan ang reader</string>
     <string name="tutorial_replay">Pumili ng ibang pagsasanay</string>
@@ -216,7 +203,7 @@
     <string name="guided_camera_begin">Subukan ang camera</string>
     <string name="guided_camera_focus">Itutok ang camera sa nakalimbag na Japanese, saka i-tap ang naka-highlight na preview para mag-focus.</string>
     <string name="guided_camera_zoom">Kurutin palabas ang naka-highlight na preview para mag-zoom in.</string>
-    <string name="guided_camera_capture">Pindutin ang naka-highlight na capture button. Kukuha ito ng tunay na larawang masusuri ngunit hindi awtomatikong ise-save.</string>
+    <string name="guided_camera_capture">I-tap ang naka-highlight na capture button para kumuha ng pansamantalang larawang susuriin.</string>
     <string name="guided_camera_review_first">Tapusin munang suriin ang kasalukuyang larawan bago simulan ang gabay sa camera.</string>
     <string name="guided_script">Pindutin ang Sistema ng pagsulat para lumipat sa Kana o Romaji. Makikita sa menu ang kasalukuyang pinili.</string>
     <string name="guided_preferences">Para sa iba pang opsyon, pindutin ang naka-highlight na gear icon sa Home.</string>
@@ -230,9 +217,14 @@
     <string name="gallery_title">Mga na-save na larawan</string>
     <string name="gallery_refresh">I-refresh ang mga na-save na larawan</string>
     <string name="gallery_load_failed">Hindi ma-load ang mga na-save na larawan. Subukan muli.</string>
-    <string name="gallery_empty">Lalabas dito ang mga na-save mong larawan sa camera. Buksan ang camera at piliin ang I-save na may furigana para magdagdag.</string>
+    <string name="gallery_empty">Walang dating na-save na larawan ng camera.</string>
     <string name="gallery_image_missing">Hindi na available ang larawang ito. Maaaring nailipat, nabura, o nag-expire ang pahintulot sa pag-access.</string>
     <string name="gallery_image_description">Na-save na larawan ng Kanako: %1$s</string>
     <string name="preferences_photo_size_summary">Sa mga larawan, ito ang pinakamaliit na laki ng pagbasa. Maaari itong lumaki kasabay ng tekstong Hapon. Mag-zoom in kung kailangan ng dagdag na espasyo.</string>
     <string name="gallery_image_hint">Kurutin para mag-zoom · I-drag para ilipat · I-double tap para i-reset</string>
+    <string name="camera_comparison_original">Orihinal</string>
+    <string name="camera_comparison_readings">Mga pagbasa</string>
+    <string name="photo_reading_select">Ipakita ang pagbasa</string>
+    <string name="photo_reading_clear">Ipakita ang awtomatikong mga pagbasa</string>
+    <string name="photo_reading_selected">Napili: %1$s — %2$s</string>
 </resources>

@@ -255,7 +255,7 @@ class CameraHardwareTest {
             compose.waitUntil(timeoutMillis = 30_000) { shutterReady() }
             compose.onNodeWithContentDescription(context.getString(R.string.camera_capture)).performClick()
             compose.waitUntil(timeoutMillis = 30_000) { viewModel.state.value.photo != null }
-            compose.onNodeWithText(context.getString(R.string.camera_result_title)).assertIsDisplayed()
+            compose.onNodeWithContentDescription(context.getString(R.string.floating_control_description)).assertIsDisplayed()
             compose.waitUntil(timeoutMillis = 30_000) { viewModel.state.value.status != CameraReadingStatus.PROCESSING }
             assertTrue(viewModel.state.value.status in listOf(
                 CameraReadingStatus.PHOTO, CameraReadingStatus.NO_TEXT, CameraReadingStatus.MODEL_NEEDED
@@ -270,8 +270,8 @@ class CameraHardwareTest {
                 assertSame(viewModel, retainedModel)
                 assertSame(retainedPhoto, retainedModel.state.value.photo)
             }
-            compose.onNodeWithText(context.getString(R.string.camera_result_title)).assertIsDisplayed()
-            compose.onNodeWithText(context.getString(R.string.camera_result_retake)).performClick()
+            compose.onNodeWithContentDescription(context.getString(R.string.floating_control_description)).assertIsDisplayed()
+            compose.onNodeWithContentDescription(context.getString(R.string.navigate_back)).performClick()
             compose.waitUntil(timeoutMillis = 30_000) { shutterReady() }
             assertNull(viewModel.state.value.photo)
             compose.onNodeWithContentDescription(context.getString(R.string.navigate_back)).performClick()

@@ -13,7 +13,6 @@ import android.view.Surface
 import android.view.WindowManager
 import androidx.compose.ui.platform.LocalView
 import androidx.core.net.toUri
-import androidx.core.view.WindowCompat
 import com.smyddevstudio.kanako.camera.SavedCameraImage
 import com.smyddevstudio.kanako.camera.SavedCameraImages
 import androidx.compose.material.icons.Icons
@@ -129,20 +128,13 @@ internal fun CameraReaderScreen(
     DisposableEffect(activity, granted) {
         val window = activity?.window
         val previousAnimation = window?.attributes?.rotationAnimation
-        val systemBars = window?.let { WindowCompat.getInsetsController(it, hostView) }
-        val previousLightStatus = systemBars?.isAppearanceLightStatusBars
-        val previousLightNavigation = systemBars?.isAppearanceLightNavigationBars
         if (granted && window != null) {
-            systemBars?.isAppearanceLightStatusBars = false
-            systemBars?.isAppearanceLightNavigationBars = false
             window.attributes = window.attributes.apply {
                 rotationAnimation = WindowManager.LayoutParams.ROTATION_ANIMATION_SEAMLESS
             }
         }
         onDispose {
             if (granted && window != null && previousAnimation != null) {
-                previousLightStatus?.let { systemBars.isAppearanceLightStatusBars = it }
-                previousLightNavigation?.let { systemBars.isAppearanceLightNavigationBars = it }
                 window.attributes = window.attributes.apply { rotationAnimation = previousAnimation }
             }
         }
@@ -332,7 +324,7 @@ internal fun CameraReaderScreen(
 private fun hasCameraPermission(context: Context) =
     ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
 
-private fun Context.cameraActivity(): Activity? = when (this) {
+internal fun Context.cameraActivity(): Activity? = when (this) {
     is Activity -> this
     is ContextWrapper -> baseContext.cameraActivity()
     else -> null

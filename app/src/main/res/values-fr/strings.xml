@@ -47,18 +47,16 @@
     <string name="quick_settings_guide_title">Ajouter Kanako aux réglages rapides</string>
     <string name="quick_settings_guide_body">Balayez deux fois vers le bas pour ouvrir les réglages rapides. Touchez Modifier, puis faites glisser la tuile Kanako parmi les tuiles actives. Touchez-la pour afficher ou arrêter le lecteur flottant. Son ajout ne prend aucune capture. Le démarrage du lecteur programme une lecture si la lecture automatique est activée.</string>
     <string name="auto_read_title">Lecture automatique</string>
-    <string name="auto_read_summary">La lecture automatique attend la fin des changements. La lecture au toucher vous laisse le contrôle.</string>
+    <string name="auto_read_summary">Les deux modes permettent de toucher les kanji surlignés. La lecture automatique laisse les autres gestes atteindre l’application et suspend les mises à jour pendant la sélection. La lecture au toucher bloque les gestes vers l’application jusqu’à ce que vous effaciez les lectures avec Kanako.</string>
     <string name="auto_read_disclosure">Lorsque le lecteur flottant est actif, Kanako prend automatiquement une capture après environ 0,7 seconde de stabilité suivant un défilement, un changement d’application ou de contenu. Il lit aussi au démarrage du lecteur et au déverrouillage de l’appareil. Aucun toucher n’est nécessaire. Les images sont traitées localement en mémoire, puis supprimées ; elles ne sont ni enregistrées ni envoyées.\n\nIl s’agit de captures individuelles, pas d’une session d’enregistrement. La capture est bloquée lors d’une saisie sensible détectée et sur l’écran verrouillé. La stabilité et le suivi du défilement dépendent des événements de l’application source ; les animations peuvent ne pas être détectées. Vous pouvez désactiver cette option à tout moment.</string>
     <string name="auto_read_enable">Activer la lecture automatique</string>
 
     <string name="camera_title">Lecteur par appareil photo</string>
     <string name="camera_open">Lire avec l’appareil photo</string>
     <string name="camera_capture">Prendre une photo</string>
-    <string name="camera_result_title">Lecture de la photo</string>
-    <string name="camera_result_retake">Reprendre</string>
     <string name="camera_appearance">Apparence des lectures</string>
     <string name="camera_state_permission">Accès à l’appareil photo requis</string>
-    <string name="camera_state_permission_body">Utilisez l’appareil photo pour lire le japonais en direct ou sur des photos. Les images restent en mémoire, sauf si vous choisissez Enregistrer avec les furigana. L’accès au lecteur flottant n’est pas nécessaire.</string>
+    <string name="camera_state_permission_body">Utilisez l’appareil photo pour lire le japonais en direct et sur des photos temporaires. Les images restent en mémoire et ne sont jamais enregistrées ni envoyées. L’accès au lecteur flottant n’est pas nécessaire.</string>
     <string name="camera_allow">Autoriser l’appareil photo</string>
     <string name="camera_not_now">Plus tard</string>
     <string name="camera_settings">Paramètres de l’application</string>
@@ -72,18 +70,11 @@
     <string name="camera_live_description">Vue de l’appareil photo en direct. Touchez pour la mise au point et pincez pour zoomer.</string>
     <string name="camera_capturing">Prise de la photo…</string>
     <string name="camera_retry">Réessayer</string>
-    <string name="camera_save">Enregistrer avec les furigana</string>
-    <string name="camera_saving">Enregistrement…</string>
-    <string name="camera_saved">Enregistré</string>
-    <string name="camera_open_saved">Images enregistrées</string>
     <string name="camera_share">Partager l’image enregistrée</string>
-    <string name="camera_open_failed">Impossible d’ouvrir l’image enregistrée. Retrouvez-la dans Fichiers.</string>
     <string name="camera_share_failed">Impossible d’ouvrir le partage. Retrouvez l’image enregistrée dans Fichiers.</string>
-    <string name="camera_save_failed">Enregistrement impossible. Réessayez.</string>
-    <string name="camera_photo_ready">Photo prête · Non enregistrée</string>
+    <string name="camera_photo_ready">Photo prête</string>
     <string name="camera_photo_missing">Cette photo temporaire n’est plus disponible. Revenez à l’appareil photo pour en prendre une autre.</string>
     <string name="camera_photo_description">Photo prise avec les lectures japonaises</string>
-    <string name="camera_photo_hint">Pincez pour zoomer et afficher les lectures · Glissez pour déplacer · Touchez deux fois pour réinitialiser</string>
     <string name="camera_zoom_in">Zoom avant</string>
     <string name="camera_zoom_out">Zoom arrière</string>
     <string name="camera_zoom_reset">Réinitialiser le zoom</string>
@@ -96,7 +87,6 @@
     <string name="preferences_system">Accès et aide</string>
     <string name="preferences_privacy">Confidentialité</string>
     <string name="preview_sample_text"><annotation reading="ニホンゴ">日本語</annotation>を<annotation reading="ヨム">読む</annotation></string>
-    <string name="preferences_touch_check">Utiliser l’application sous les furigana.</string>
     <string name="preferences_keyboard_check">Masquer le bouton flottant pendant la saisie.</string>
     <string name="preferences_title">Préférences</string>
     <string name="home_reader_active">Lecteur flottant activé</string>
@@ -109,7 +99,6 @@
     <string name="preferences_color">Couleur des lectures</string>
     <string name="preferences_script">Écriture</string>
     <string name="preferences_plate">Fond des lectures</string>
-    <string name="preferences_touch">Toucher à travers les lectures</string>
     <string name="preferences_control_size">Taille du bouton</string>
     <string name="preferences_keyboard">Masquer avec le clavier</string>
     <string name="preferences_keyboard_hint">Le blocage des captures lors de saisies sensibles reste actif.</string>
@@ -142,7 +131,7 @@
     <string name="how_move_title">Continuez à votre rythme</string>
     <string name="how_move">Les lectures suivent le défilement signalé par l’application source. Tout mouvement incertain les efface. La lecture automatique facultative lit après environ 0,7 seconde de stabilité, au démarrage du lecteur ou au déverrouillage. Le suivi dépend de l’application source.</string>
     <string name="how_privacy_title">Que reste-t-il privé ?</string>
-    <string name="how_privacy">Les captures sont traitées en mémoire, puis supprimées sans être enregistrées ni envoyées. La capture est bloquée lors d’une saisie sensible détectée et sur l’écran verrouillé. Les photos restent également temporaires, sauf si vous choisissez explicitement Enregistrer avec les furigana.</string>
+    <string name="how_privacy">Les images de l’écran sont traitées en mémoire, puis supprimées sans enregistrement ni envoi. La capture est bloquée lorsqu’une saisie sensible est détectée et sur l’écran verrouillé. Les photos de l’appareil restent aussi temporaires et ne sont jamais enregistrées ni envoyées.</string>
     <string name="how_limits_title">Quelles sont les limites ?</string>
     <string name="how_limits">La reconnaissance et la lecture des kanji peuvent être incorrectes. Des kanji et katakana visuellement proches peuvent être confondus ; les noms et les mots à plusieurs lectures peuvent aussi être mal lus. Les petits caractères, les styles particuliers, le flou et les mises en page mixtes compliquent la reconnaissance. La position des furigana est estimée à partir du texte reconnu. Les écrans protégés ne peuvent pas être capturés.</string>
     <string name="how_offline_title">Fonctionne-t-il hors connexion ?</string>
@@ -150,14 +139,14 @@
     <string name="how_tile_title">Réglages rapides</string>
     <string name="how_tile">Balayez deux fois vers le bas, touchez Modifier et ajoutez Kanako aux tuiles actives. Touchez la tuile pour afficher ou arrêter le lecteur flottant. Son ajout ne prend aucune capture. Si un accès manque, l’accueil s’ouvre. Si la lecture automatique est activée, le démarrage du lecteur programme aussi une lecture.</string>
     <string name="how_camera_title">Utiliser l’appareil photo</string>
-    <string name="how_camera">Ouvrez l’appareil photo depuis l’accueil ; son autorisation est distincte de l’accès à la lecture d’écran. Lisez en direct ou prenez une photo pour une lecture stable. Touchez une lecture ou son kanji pour la placer devant les autres ; touchez à nouveau les lectures superposées pour les parcourir. Touchez ailleurs dans la vue en direct pour la mise au point. Pincez pour zoomer ; sur une photo, faites glisser pour déplacer et touchez deux fois pour réinitialiser. Enregistrer avec les furigana exporte toute la photo avec la lecture sélectionnée devant, quel que soit le zoom actuel. Sous Android 10 ou version ultérieure, Enregistrer avec les furigana sauvegarde la photo dans Pictures/Kanako. Les versions antérieures ouvrent le sélecteur de destination.</string>
+    <string name="how_camera">Ouvrez l’appareil photo depuis l’accueil ; son autorisation est distincte de l’accès à la lecture de l’écran. Lisez en direct ou prenez une photo pour une lecture stable. Dans une photo, chaque groupe de kanji ayant une prononciation est surligné. Touchez un groupe pour afficher uniquement sa lecture ; touchez-le à nouveau ou ailleurs pour rétablir les lectures automatiques. Touchez Kanako pour masquer ou afficher les surlignages et les lectures sans modifier le zoom. Touchez Kanako deux fois ou maintenez l’appui pour choisir kana ou romaji ; faites glisser Kanako pour le déplacer. Touchez ailleurs dans la vue en direct pour faire la mise au point. Pincez pour zoomer ; sur une photo, faites glisser pour déplacer et touchez deux fois pour réinitialiser. Revenez à l’appareil photo pour reprendre une photo. Les photos ne sont pas enregistrées.</string>
     <string name="reading_size_small">10sp</string>
     <string name="reading_size_medium">12sp</string>
     <string name="reading_size_large">14sp</string>
     <string name="reading_mode">Mode de lecture</string>
     <string name="tap_to_read">Toucher pour lire</string>
     <string name="how_preferences_title">Régler le comportement de lecture</string>
-    <string name="how_preferences">Choisissez les kana ou les romaji, la taille, la couleur et le fond dans les préférences. Avec Toucher à travers les lectures, vous pouvez utiliser l’application sous les furigana. Désactivez cette option pour toucher une lecture ou son kanji et la placer devant ; touchez à nouveau les lectures superposées pour les parcourir. Masquer avec le clavier masque le personnage lorsque le clavier est visible. La capture est suspendue si un clavier ou un champ de mot de passe est détecté, même si le personnage reste visible. L’aperçu fixe montre uniquement l’apparence.</string>
+    <string name="how_preferences">Choisissez les kana ou les romaji, la taille, la couleur et le fond dans les préférences. La taille est un minimum ; les lectures automatiques apparaissent seulement là où il y a assez de place. Les groupes de kanji ayant une lecture sont surlignés, même dans les zones denses. En lecture automatique, touchez les kanji surlignés pour consulter leur lecture ; les gestes ailleurs atteignent l’application. Les mises à jour automatiques sont suspendues pendant la sélection et reprennent quand vous touchez le groupe sélectionné, sa lecture ou ailleurs. Un changement du contenu source peut toujours effacer les surlignages périmés. En lecture au toucher, les lectures bloquent les gestes vers l’application : touchez un groupe surligné pour afficher uniquement sa lecture, puis touchez-le à nouveau ou touchez une zone vide pour rétablir les autres lectures. Touchez Kanako pour effacer les lectures et utiliser à nouveau l’application. Masquer avec le clavier masque le personnage lorsque le clavier est visible. La capture est suspendue si un clavier ou un champ de mot de passe est détecté, même si le personnage reste visible. L’aperçu fixe montre uniquement l’apparence.</string>
     <string name="preview_sample_short"><annotation reading="ニホンゴ">日本語</annotation></string>
     <string name="preferences_appearance_summary">S’applique aux deux lecteurs. L’aperçu montre uniquement l’apparence.</string>
     <string name="privacy_access">Confidentialité et accès à l’écran</string>
@@ -190,11 +179,9 @@
     <string name="tutorial_floating_read">Touchez le personnage pour afficher les furigana, puis touchez à nouveau pour les effacer. En lecture réelle, les messages rouges expliquent pourquoi les lectures ne peuvent pas s’afficher.</string>
     <string name="tutorial_floating_controls">Faites glisser le personnage. Touchez deux fois ou maintenez pour ouvrir les commandes, puis arrêtez le lecteur d’exemple. Le lecteur flottant utilise les mêmes gestes.</string>
     <string name="tutorial_camera_focus">Touchez l’exemple pour simuler la mise au point. Pincez ou utilisez le curseur pour zoomer. Cet exemple n’utilise pas votre appareil photo.</string>
-    <string name="tutorial_camera_capture">Prenez une photo de l’exemple pour figer la lecture. Avec le véritable appareil photo, Reprendre permet de reprendre une photo.</string>
+    <string name="tutorial_camera_capture">Capturez le modèle pour le figer et lire. Dans le véritable appareil photo, revenez en arrière pour prendre une autre photo.</string>
     <string name="tutorial_camera_appearance">Essayez les kana et les romaji sur cet exemple. Les préférences modifient l’apparence des deux véritables lecteurs.</string>
-    <string name="tutorial_camera_save">Enregistrer avec les furigana sauvegarde toute la photo annotée, quel que soit le zoom. Sous Android 10 ou version ultérieure, elle est enregistrée dans Pictures/Kanako. Les versions antérieures ouvrent le sélecteur de destination.</string>
     <string name="tutorial_success">Action d’entraînement effectuée</string>
-    <string name="tutorial_save_confirm">Destination d’entraînement. Confirmez pour terminer l’exercice ; aucune image ni aucun fichier ne sera créé.</string>
     <string name="tutorial_finished">Vous pouvez refaire chaque parcours depuis le mode d’emploi. L’ouverture du véritable lecteur conserve les vérifications d’accès et le consentement habituels.</string>
     <string name="tutorial_start_tool">Ouvrir le lecteur</string>
     <string name="tutorial_replay">Choisir un autre parcours</string>
@@ -216,7 +203,7 @@
     <string name="guided_camera_begin">Essayer la caméra</string>
     <string name="guided_camera_focus">Visez du japonais imprimé, puis touchez l’aperçu encadré pour faire le point.</string>
     <string name="guided_camera_zoom">Écartez deux doigts sur l’aperçu encadré pour zoomer.</string>
-    <string name="guided_camera_capture">Touchez le bouton de capture encadré. Une vraie photo sera prise pour consultation, sans enregistrement automatique.</string>
+    <string name="guided_camera_capture">Touchez le bouton de capture encadré pour prendre une photo temporaire à examiner.</string>
     <string name="guided_camera_review_first">Terminez la consultation de votre photo avant de commencer le guide caméra.</string>
     <string name="guided_script">Touchez Écriture pour passer entre kana et romaji. Le menu indique votre choix actuel.</string>
     <string name="guided_preferences">Pour plus d’options, touchez la roue dentée encadrée sur l’accueil.</string>
@@ -230,9 +217,14 @@
     <string name="gallery_title">Images enregistrées</string>
     <string name="gallery_refresh">Actualiser les images enregistrées</string>
     <string name="gallery_load_failed">Impossible de charger les images enregistrées. Réessayez.</string>
-    <string name="gallery_empty">Vos photos enregistrées apparaîtront ici. Ouvrez l’appareil photo et choisissez Enregistrer avec furigana pour en ajouter une.</string>
+    <string name="gallery_empty">Aucune photo précédemment enregistrée.</string>
     <string name="gallery_image_missing">Cette image n’est plus disponible. Elle a peut-être été déplacée ou supprimée, ou son autorisation d’accès a expiré.</string>
     <string name="gallery_image_description">Image Kanako enregistrée : %1$s</string>
     <string name="preferences_photo_size_summary">Dans les photos, il s’agit de la taille minimale des lectures. Elles peuvent grandir avec le texte japonais. Zoomez si elles ont besoin de plus de place.</string>
     <string name="gallery_image_hint">Pincez pour zoomer · Glissez pour déplacer · Touchez deux fois pour réinitialiser</string>
+    <string name="camera_comparison_original">Original</string>
+    <string name="camera_comparison_readings">Lectures</string>
+    <string name="photo_reading_select">Afficher la lecture</string>
+    <string name="photo_reading_clear">Afficher les lectures automatiques</string>
+    <string name="photo_reading_selected">Sélection : %1$s — %2$s</string>
 </resources>

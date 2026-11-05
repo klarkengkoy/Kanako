@@ -77,13 +77,13 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
 
     private var windowManager: WindowManager? = null
     private var overlayView: ComposeView? = null
-    private var annotationOverlayView: ComposeView? = null
+    private var annotationOverlayView: ReadingOverlayHost? = null
+    private var annotationInput: ReadingOverlayInput? = null
     private var screenCaptureEngine: ScreenCaptureEngine? = null
     private val recognizedTextLines = mutableStateOf<List<RecognizedTextLine>>(emptyList())
     private val hasVisibleReadings = mutableStateOf(false)
     private val mainHandler = Handler(Looper.getMainLooper())
     private var layoutParams: WindowManager.LayoutParams? = null
-    private var annotationLayoutParams: WindowManager.LayoutParams? = null
     private val annotationOrigin = mutableStateOf(IntOffset.Zero)
     private var floatingAnchor: FloatingPoint? = null
     private var floatingContentSize = androidx.compose.ui.unit.IntSize.Zero
@@ -98,6 +98,8 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
     private var automaticReadPending = false
     private var activeRequestIsAutomatic = false
     private var autoReadPausedUntilMovement = false
+    private var inspectingReading = false
+    private var refreshAfterInspection = false
     private val autoReader = AutoReadDebouncer(serviceScope, { requestReading(automatic = true) })
     private var tutorialMoved = false
     private var inputHidden = false
@@ -156,11 +158,12 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
     }
 
     private fun setOverlayHidden(requestedHidden: Boolean) {
-        val hidden = requestedHidden || GuidedReaderSession.step.value in listOf(GuidedReaderStep.PREFERENCES, GuidedReaderStep.RETURN)
+        val hidden = requestedHidden || KanakoOverlaySession.photoReaderVisible.value || GuidedReaderSession.step.value in listOf(GuidedReaderStep.PREFERENCES, GuidedReaderStep.RETURN)
         floatingControlsVisible.value = !hidden
         val visibility = if (hidden) View.INVISIBLE else View.VISIBLE
         overlayView?.visibility = visibility
         annotationOverlayView?.visibility = visibility
+        annotationInput?.setHidden(hidden)
     }
 
     override fun onCreate() {
@@ -219,6 +222,12 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
             }.collect { hidden ->
                 inputHidden = hidden
                 setOverlayHidden(hidden || screenCapturePaused)
+            }
+        }
+        serviceScope.launch {
+            KanakoOverlaySession.photoReaderVisible.collect { visible ->
+                if (visible) clearReading()
+                setOverlayHidden(inputHidden || screenCapturePaused)
             }
         }
         lastScreenRevision = KanakoScreenContext.revision.value
@@ -280,6 +289,9 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
         autoReader.cancel()
         automaticReadPending = false
         requestGate.invalidate()
+        inspectingReading = false
+        refreshAfterInspection = false
+        annotationInput?.clear()
         recognizedTextLines.value = emptyList()
         hasVisibleReadings.value = false
         isReading.value = false
@@ -298,11 +310,33 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
         }
     }
 
+    private fun setReadingInspection(selected: Boolean) {
+        if (inspectingReading == selected) return
+        inspectingReading = selected
+        if (selected) {
+            autoReader.cancel()
+            refreshAfterInspection = autoReader.enabled
+            automaticReadPending = false
+            requestGate.invalidate()
+            isReading.value = false
+            if (hasVisibleReadings.value) readingStatus.intValue = R.string.reading_shown
+            setOverlayHidden(inputHidden || screenCapturePaused)
+        } else if (refreshAfterInspection) {
+            refreshAfterInspection = false
+            scheduleAutomaticRead()
+        }
+    }
+
     private fun scheduleAutomaticRead() {
+        if (inspectingReading) {
+            refreshAfterInspection = autoReader.enabled
+            autoReader.cancel()
+            return
+        }
         if (GuidedReaderSession.active) { autoReader.cancel(); return }
         autoReader.onMovement(
             !autoReadPausedUntilMovement && !screenCapturePaused &&
-                !KanakoInputVisibility.hidden.value && KanakoOverlaySession.isActive.value &&
+                !KanakoOverlaySession.photoReaderVisible.value && !KanakoInputVisibility.hidden.value && KanakoOverlaySession.isActive.value &&
                 KanakoAccessibilityService.connected.value
         )
     }
@@ -324,6 +358,7 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
             return
         }
         val movement = update.movement
+        annotationInput?.clear()
         recognizedTextLines.value = if (
             update.kind == ScreenUpdate.Kind.SCROLL && movement != null && !skippedEvents
         ) {
@@ -353,6 +388,11 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
     }
 
     private fun requestReading(automatic: Boolean) {
+        if (KanakoOverlaySession.photoReaderVisible.value) return
+        if (automatic && inspectingReading) {
+            refreshAfterInspection = autoReader.enabled
+            return
+        }
         if (GuidedReaderSession.active && (automatic || !GuidedReaderSession.sampleVisible ||
                 GuidedReaderSession.step.value != GuidedReaderStep.READ)) return
         if (!canDrawOverlays(this) || !KanakoAccessibilityService.connected.value) {
@@ -374,7 +414,8 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
         val hideForCapture = Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE
         if (hideForCapture) setOverlayHidden(true)
         mainHandler.postDelayed({
-            if (!requestGate.isCurrent(token) || revision != KanakoScreenContext.revision.value) {
+            if (!requestGate.isCurrent(token) || revision != KanakoScreenContext.revision.value ||
+                KanakoOverlaySession.photoReaderVisible.value) {
                 setOverlayHidden(inputHidden || screenCapturePaused)
                 return@postDelayed
             }
@@ -382,7 +423,8 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
                 shouldProcess = {
                     requestGate.isCurrent(token) &&
                         revision == KanakoScreenContext.revision.value &&
-                        !KanakoInputVisibility.hidden.value && !screenCapturePaused
+                        !KanakoInputVisibility.hidden.value && !screenCapturePaused &&
+                        !KanakoOverlaySession.photoReaderVisible.value
                 },
                 onCaptured = { setOverlayHidden(inputHidden || screenCapturePaused) },
                 onFinished = {
@@ -395,17 +437,20 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
                 setOverlayHidden(inputHidden || screenCapturePaused)
                 if (!requestGate.isCurrent(token) ||
                     revision != KanakoScreenContext.revision.value ||
-                    KanakoInputVisibility.hidden.value || screenCapturePaused
+                    KanakoInputVisibility.hidden.value || screenCapturePaused ||
+                    KanakoOverlaySession.photoReaderVisible.value
                 ) return@readOnce
                 isReading.value = false
                 result.fold(
                     onSuccess = { lines ->
+                        annotationInput?.clear()
                         recognizedTextLines.value = lines
                         hasVisibleReadings.value = false
                         readingStatus.intValue = if (lines.isEmpty()) R.string.reading_no_text
                             else R.string.reading_working
                     },
                     onFailure = { error ->
+                        annotationInput?.clear()
                         recognizedTextLines.value = emptyList()
                         hasVisibleReadings.value = false
                         readingStatus.intValue = when ((error as? SnapshotFailure)?.reason) {
@@ -446,6 +491,8 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                     WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                    WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
                     WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
             PixelFormat.TRANSLUCENT
         ).apply {
@@ -453,7 +500,13 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
             alpha = 0.8f
         }
 
-        annotationLayoutParams = params
+        val host = ReadingOverlayHost(this).apply {
+            setViewTreeLifecycleOwner(this@KanakoOverlayService)
+            setViewTreeSavedStateRegistryOwner(this@KanakoOverlayService)
+            setViewTreeViewModelStoreOwner(this@KanakoOverlayService)
+        }
+        val input = ReadingOverlayInput(this, windowManager ?: return, host, params)
+        annotationInput = input
         val view = ComposeView(this).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setViewTreeLifecycleOwner(this@KanakoOverlayService)
@@ -466,22 +519,18 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
                     val lines = recognizedTextLines.value
                     val readingInProgress = isReading.value
                     val status = readingStatus.intValue
-                    val hasAnnotations = hasVisibleReadings.value
-                    LaunchedEffect(preferences.touchPassthrough, hasAnnotations) {
-                        val currentParams = annotationLayoutParams ?: return@LaunchedEffect
-                        currentParams.flags = if (preferences.touchPassthrough || !hasAnnotations) {
-                            currentParams.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-                        } else {
-                            currentParams.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()
-                        }
-                        runCatching { windowManager?.updateViewLayout(this@apply, currentParams) }
-                    }
                     val tutorialStep by GuidedReaderSession.step.collectAsStateWithLifecycle()
                     RecognizedTextOverlayContent(
                         tutorialContrast = tutorialStep != GuidedReaderStep.INACTIVE,
                         lines = lines,
                         preferences = preferences,
                         origin = annotationOrigin.value,
+                        onInteractionChanged = { interaction ->
+                            if (recognizedTextLines.value === lines) input.update(interaction)
+                        },
+                        onInspectionChanged = { selected ->
+                            if (recognizedTextLines.value === lines) setReadingInspection(selected)
+                        },
                         onReadingsVisibleChanged = { visible ->
                             if (recognizedTextLines.value === lines && isReading.value == readingInProgress &&
                                 readingStatus.intValue == status
@@ -500,13 +549,15 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
             }
         }
 
-        view.addOnLayoutChangeListener { current, _, _, _, _, _, _, _, _ ->
+        host.addView(view, android.widget.FrameLayout.LayoutParams(
+            android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.MATCH_PARENT))
+        host.addOnLayoutChangeListener { current, _, _, _, _, _, _, _, _ ->
             val location = IntArray(2)
             current.getLocationOnScreen(location)
             annotationOrigin.value = IntOffset(location[0], location[1])
         }
-        annotationOverlayView = view
-        windowManager?.addView(view, params)
+        annotationOverlayView = host
+        windowManager?.addView(host, params)
     }
 
     private fun createNotificationChannel() {
@@ -697,6 +748,8 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
         floatingOnLeft.value = frame.onLeft
         params.x = frame.origin.x
         params.y = frame.origin.y
+        annotationInput?.setExclusion(ReadingBounds(params.x, params.y,
+            params.x + floatingContentSize.width, params.y + floatingContentSize.height))
         runCatching { windowManager?.updateViewLayout(view, params) }
         setOverlayHidden(inputHidden || screenCapturePaused)
     }
@@ -718,11 +771,12 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
         mainHandler.removeCallbacksAndMessages(null)
         screenCaptureEngine?.close()
         screenCaptureEngine = null
+        annotationInput?.close()
+        annotationInput = null
         annotationOverlayView?.let { view ->
             runCatching { windowManager?.removeView(view) }
         }
         annotationOverlayView = null
-        annotationLayoutParams = null
         overlayView?.let { view ->
             runCatching { windowManager?.removeView(view) }
         }

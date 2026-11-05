@@ -27,7 +27,7 @@ class KanakoModelsTest {
         assertEquals(FabDocking.FLOATING, prefs.fabDocking)
         assertFalse(prefs.isAutoTranslateEnabled)
         assertFalse(prefs.isDarkMode)
-        assertTrue(prefs.touchPassthrough)
+        assertFalse(prefs.autoReadAfterScroll)
         assertTrue(prefs.autoHideOnKeyboard)
     }
 

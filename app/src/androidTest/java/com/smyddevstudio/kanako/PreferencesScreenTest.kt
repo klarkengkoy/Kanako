@@ -132,20 +132,20 @@ class PreferencesScreenTest {
         compose.onNodeWithText("日本語").assertIsDisplayed()
     }
     @Test fun settingsUseLabelledSingleChoiceAndWholeRowToggles() {
-        val preferences = mutableStateOf(KanakoPreferences(touchPassthrough = false))
+        val preferences = mutableStateOf(KanakoPreferences(autoHideOnKeyboard = false))
         compose.setContent {
             KanakoTheme {
                 PreferencesScreen(onBack = {}, preferences = preferences.value,
-                    onUpdateTouchPassthrough = { preferences.value = preferences.value.copy(touchPassthrough = it) })
+                    onUpdateAutoHideOnKeyboard = { preferences.value = preferences.value.copy(autoHideOnKeyboard = it) })
             }
         }
         compose.onNodeWithText(context.getString(R.string.script_kana))
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
             .assertIsSelected()
         compose.onNode(hasScrollToNodeAction())
-            .performScrollToNode(hasText(context.getString(R.string.preferences_touch)))
-        compose.onNodeWithText(context.getString(R.string.preferences_touch)).performClick().assertIsOn()
-        compose.runOnIdle { assertEquals(true, preferences.value.touchPassthrough) }
+            .performScrollToNode(hasText(context.getString(R.string.preferences_keyboard)))
+        compose.onNodeWithText(context.getString(R.string.preferences_keyboard)).performClick().assertIsOn()
+        compose.runOnIdle { assertEquals(true, preferences.value.autoHideOnKeyboard) }
     }
 
     @Test fun privacyLinkRemainsWithoutADuplicateGeneralHelpEntry() {
@@ -170,7 +170,7 @@ class PreferencesScreenTest {
                 .performScrollToNode(hasText(context.getString(label)))
             compose.onNodeWithText(context.getString(label)).assertIsSelected()
         }
-        for (label in listOf(R.string.preferences_touch, R.string.preferences_keyboard)) {
+        for (label in listOf(R.string.preferences_keyboard)) {
             compose.onNode(hasScrollToNodeAction())
                 .performScrollToNode(hasText(context.getString(label)))
             compose.onNodeWithText(context.getString(label)).assertIsOn()

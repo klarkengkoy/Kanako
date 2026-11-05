@@ -88,7 +88,6 @@ fun PreferencesScreen(
     onUpdateFuriganaColor: (FuriganaColor) -> Unit = {},
     onUpdateScriptType: (ScriptType) -> Unit = {},
     onUpdateAnnotationPlateStyle: (AnnotationPlateStyle) -> Unit = {},
-    onUpdateTouchPassthrough: (Boolean) -> Unit = {},
     onUpdateFabSize: (FabSize) -> Unit = {},
     onUpdateAutoHideOnKeyboard: (Boolean) -> Unit = {},
     onUpdateAutoReadAfterScroll: (Boolean) -> Unit = {},
@@ -235,15 +234,6 @@ fun PreferencesScreen(
 
                     item(key = "floating_header") {
                         PreferenceSectionHeader(title = stringResource(R.string.preferences_floating_control), icon = Icons.Rounded.Layers)
-                    }
-
-                    item(key = "touch_passthrough") {
-                        PreferenceToggleCard(
-                            title = stringResource(R.string.preferences_touch),
-                            subtitle = stringResource(R.string.preferences_touch_check),
-                            checked = preferences.touchPassthrough,
-                            onCheckedChange = { onUpdateTouchPassthrough(it) }
-                        )
                     }
 
                     item(key = "fab_size") {

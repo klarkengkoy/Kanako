@@ -168,7 +168,7 @@ class UserPreferencesRepositoryTest {
         assertEquals(FuriganaColor.MUSHROOM_CRIMSON, prefs.furiganaColor)
         assertEquals(ScriptType.KANA, prefs.scriptType)
         assertEquals(AnnotationPlateStyle.WASHI_CAPSULE, prefs.annotationPlateStyle)
-        assertTrue(prefs.touchPassthrough)
+        assertFalse(prefs.autoReadAfterScroll)
         assertEquals(FabSize.MEDIUM, prefs.fabSize)
         assertEquals(FabDocking.FLOATING, prefs.fabDocking)
         assertTrue(prefs.autoHideOnKeyboard)
@@ -232,10 +232,15 @@ class UserPreferencesRepositoryTest {
     }
 
     @Test
-    fun testUpdateTouchPassthrough() = runTest(testDispatcher) {
-        repository.updateTouchPassthrough(false)
-        val prefs = repository.userPreferencesFlow.first()
-        assertFalse(prefs.touchPassthrough)
+    fun legacyTouchChoiceDoesNotOverrideTheReadingMode() = runTest(testDispatcher) {
+        val legacyKey = booleanPreferencesKey("touch_passthrough")
+        for (legacyChoice in listOf(true, false)) {
+            testDataStore.edit { it[legacyKey] = legacyChoice }
+            assertFalse(repository.userPreferencesFlow.first().autoReadAfterScroll)
+            repository.updateAutoReadAfterScroll(true)
+            assertTrue(UserPreferencesRepository(testDataStore).userPreferencesFlow.first().autoReadAfterScroll)
+            repository.updateAutoReadAfterScroll(false)
+        }
     }
 
     @Test

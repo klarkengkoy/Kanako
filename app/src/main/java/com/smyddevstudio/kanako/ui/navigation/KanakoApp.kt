@@ -3,7 +3,10 @@ package com.smyddevstudio.kanako.ui.navigation
 import com.smyddevstudio.kanako.service.GuidedReaderSession
 import com.smyddevstudio.kanako.service.GuidedReaderStep
 import androidx.activity.compose.BackHandler
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 import android.net.Uri
 import com.smyddevstudio.kanako.ui.screens.CameraGalleryScreen
 import com.smyddevstudio.kanako.ui.screens.SavedCameraImageScreen
@@ -41,6 +44,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
+import com.smyddevstudio.kanako.ui.screens.cameraActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.smyddevstudio.kanako.camera.CameraReaderViewModel
@@ -49,6 +55,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.smyddevstudio.kanako.data.repository.UserPreferencesRepository
 import com.smyddevstudio.kanako.model.KanakoPreferences
+import com.smyddevstudio.kanako.model.ScriptType
 import com.smyddevstudio.kanako.service.KanakoOverlayService
 import com.smyddevstudio.kanako.service.KanakoOverlaySession
 import com.smyddevstudio.kanako.ui.screens.TutorialScreen
@@ -88,6 +95,24 @@ fun KanakoApp(
     }
     val cameraReader: CameraReaderViewModel = viewModel()
     val hasCameraEntry = Screen.Camera in backStack
+    val cameraForeground = backStack.lastOrNull() == Screen.CameraResult ||
+        (backStack.lastOrNull() == Screen.Camera && ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==
+            PackageManager.PERMISSION_GRANTED)
+    val hostView = LocalView.current
+    val cameraWindow = context.cameraActivity()?.window
+    DisposableEffect(cameraForeground, cameraWindow, hostView) {
+        if (cameraForeground && cameraWindow != null) {
+            val controller = WindowCompat.getInsetsController(cameraWindow, hostView)
+            val previousLightStatus = controller.isAppearanceLightStatusBars
+            val previousLightNavigation = controller.isAppearanceLightNavigationBars
+            controller.isAppearanceLightStatusBars = false
+            controller.isAppearanceLightNavigationBars = false
+            onDispose {
+                controller.isAppearanceLightStatusBars = previousLightStatus
+                controller.isAppearanceLightNavigationBars = previousLightNavigation
+            }
+        } else onDispose {}
+    }
     LaunchedEffect(hasCameraEntry) {
         if (!hasCameraEntry) { cameraReader.returnToLive(); cameraReader.clearCaptureThumbnail(); cameraGuide = false }
     }
@@ -325,7 +350,6 @@ fun KanakoApp(
                         if (!preferences.hasSeenCameraGuide) cameraIntroduction = true
                         else openCamera(guided = false)
                     },
-                    onNavigateToGallery = { backStack.add(Screen.Gallery) },
                     guidedSetup = guidedSetup,
                     guidePreferences = guidedReaderStep == GuidedReaderStep.PREFERENCES,
                     onSkipGuidedSetup = { exitGuide() },
@@ -404,9 +428,13 @@ fun KanakoApp(
                 CameraResultScreen(
                     viewModel = cameraReader,
                     preferences = preferences,
+                    onToggleScriptType = {
+                        coroutineScope.launch {
+                            repository.updateScriptType(if (preferences.scriptType == ScriptType.KANA)
+                                ScriptType.ROMAJI else ScriptType.KANA)
+                        }
+                    },
                     onBack = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) },
-                    onRetake = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) },
-                    onNavigateToGallery = { backStack.add(Screen.Gallery) },
                     onNavigateToPreferences = { backStack.add(Screen.Preferences) }
                 )
             }
@@ -433,9 +461,6 @@ fun KanakoApp(
                     },
                     onUpdateAnnotationPlateStyle = { style ->
                         coroutineScope.launch { repository.updateAnnotationPlateStyle(style) }
-                    },
-                    onUpdateTouchPassthrough = { enabled ->
-                        coroutineScope.launch { repository.updateTouchPassthrough(enabled) }
                     },
                     onUpdateFabSize = { size ->
                         coroutineScope.launch { repository.updateFabSize(size) }
