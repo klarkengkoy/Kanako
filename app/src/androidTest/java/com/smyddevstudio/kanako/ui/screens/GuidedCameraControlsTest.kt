@@ -1,6 +1,12 @@
 package com.smyddevstudio.kanako.ui.screens
 
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.pinch
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -31,16 +37,26 @@ class GuidedCameraControlsTest {
                     state = CameraReaderUiState(status = CameraReadingStatus.LIVE, ready = true),
                     granted = true, onBack = {}, onPreferences = {},
                     onCapture = { captures++ }, onPermission = {}, onRetry = {},
-                    onZoom = { step.intValue = 3 }, guideTarget = step.intValue
+                    onZoom = { step.intValue = 3 }, guideTarget = step.intValue,
+                    viewfinder = { modifier ->
+                        Box(modifier.testTag("viewfinder").cameraReaderGestures(
+                            onZoom = { step.intValue = 3 }, onFocus = {}, onInteraction = {}
+                        ))
+                    }
                 )
             }
         }
         compose.onNodeWithContentDescription(text(R.string.camera_capture)).assertIsNotEnabled()
-        compose.onNodeWithContentDescription(text(R.string.camera_zoom_in)).assertIsNotEnabled()
+        compose.onNodeWithContentDescription(text(R.string.camera_zoom_in)).assertDoesNotExist()
+        compose.onNodeWithContentDescription(text(R.string.gallery_title)).assertIsNotEnabled()
         compose.onNodeWithContentDescription(text(R.string.camera_appearance)).assertIsNotEnabled()
         compose.runOnIdle { step.intValue = 2 }
-        compose.onNodeWithContentDescription(text(R.string.camera_zoom_in)).assertIsEnabled().performClick()
-        compose.onNodeWithContentDescription(text(R.string.camera_zoom_in)).assertIsNotEnabled()
+        compose.onNodeWithTag("viewfinder").performTouchInput {
+            pinch(center - Offset(30f, 0f), center - Offset(90f, 0f),
+                center + Offset(30f, 0f), center + Offset(90f, 0f), 400)
+        }
+        compose.onNodeWithContentDescription(text(R.string.camera_zoom_in)).assertDoesNotExist()
+        compose.onNodeWithContentDescription(text(R.string.gallery_title)).assertIsNotEnabled()
         compose.onNodeWithContentDescription(text(R.string.camera_capture)).assertIsEnabled().performClick()
         compose.runOnIdle { assertEquals(1, captures) }
     }

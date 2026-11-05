@@ -14,11 +14,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.smyddevstudio.kanako.R
 import com.smyddevstudio.kanako.camera.CameraExportStyle
+import com.smyddevstudio.kanako.camera.SavedCameraImages
 import com.smyddevstudio.kanako.camera.CameraReaderViewModel
 import com.smyddevstudio.kanako.camera.cameraExportFileName
 import com.smyddevstudio.kanako.model.KanakoPreferences
@@ -31,19 +33,23 @@ internal fun CameraResultScreen(
     onRetake: () -> Unit,
     onNavigateToPreferences: () -> Unit,
     modifier: Modifier = Modifier,
-    preferences: KanakoPreferences = KanakoPreferences()
+    preferences: KanakoPreferences = KanakoPreferences(),
+    onNavigateToGallery: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val savedImages = remember(context) { SavedCameraImages(context) }
+    var documentName by rememberSaveable { mutableStateOf(cameraExportFileName()) }
     var style by remember(state.photo) { mutableStateOf<CameraExportStyle?>(null) }
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("image/png")) { uri ->
-        viewModel.completeExport(context.contentResolver, uri)
+        viewModel.completeExport(context.contentResolver, uri, onSaved = { savedImages.retainDocument(it, documentName) })
     }
     val saveToDocument = {
         val exportStyle = style
         if (exportStyle != null && viewModel.prepareExport(exportStyle)) {
             try {
-                picker.launch(cameraExportFileName())
+                documentName = cameraExportFileName()
+                picker.launch(documentName)
             } catch (_: RuntimeException) {
                 viewModel.completeExport(context.contentResolver, null, unavailable = true)
             }
@@ -64,30 +70,26 @@ internal fun CameraResultScreen(
         },
         modifier = modifier,
         canSave = style != null,
-        onOpen = { state.savedUri?.let { openCameraExport(context, it, share = false) } },
-        onShare = { state.savedUri?.let { openCameraExport(context, it, share = true) } },
+        onOpen = onNavigateToGallery,
+        onShare = { state.savedUri?.let { shareCameraExport(context, it) } },
         photograph = { surfaceModifier ->
             state.photo?.let { photo ->
-                CameraPhotoSurface(photo, state.lines, preferences, surfaceModifier, onExportStyle = { style = it })
+                CameraPhotoSurface(photo, state.lines, preferences, surfaceModifier, onExportStyle = { style = it; viewModel.updateExportStyle(it) })
             }
         }
     )
 }
 
-private fun openCameraExport(context: Context, uri: Uri, share: Boolean) {
-    val intent = Intent(if (share) Intent.ACTION_SEND else Intent.ACTION_VIEW).apply {
-        if (share) {
-            type = "image/png"
-            putExtra(Intent.EXTRA_STREAM, uri)
-        } else {
-            setDataAndType(uri, "image/png")
-        }
+internal fun shareCameraExport(context: Context, uri: Uri) {
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "image/png"
+        putExtra(Intent.EXTRA_STREAM, uri)
         clipData = ClipData.newRawUri("Kanako", uri)
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
-    val errorMessage = if (share) R.string.camera_share_failed else R.string.camera_open_failed
+    val errorMessage = R.string.camera_share_failed
     try {
-        context.startActivity(if (share) Intent.createChooser(intent, null) else intent)
+        context.startActivity(Intent.createChooser(intent, null))
     } catch (_: ActivityNotFoundException) {
         Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
     } catch (_: SecurityException) {

@@ -1,6 +1,7 @@
 package com.smyddevstudio.kanako.camera
 
 import android.content.ContentResolver
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.SystemClock
@@ -15,6 +16,8 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,6 +41,9 @@ internal data class CameraReaderUiState(
 internal class CameraReaderViewModel : ViewModel() {
     private val mutableState = MutableStateFlow(CameraReaderUiState())
     val state = mutableState.asStateFlow()
+    private val mutableCaptureThumbnail = MutableStateFlow<Bitmap?>(null)
+    val captureThumbnail = mutableCaptureThumbnail.asStateFlow()
+    private var thumbnail: Job? = null
     private val gate = CameraRequestGate()
     private val liveReadings = CameraLiveReadings()
     private var expiry: Job? = null
@@ -48,6 +54,8 @@ internal class CameraReaderViewModel : ViewModel() {
     private var photoRequest = 0L
     private var liveRequest = 0L
     private var exportRequest = 0L
+    private var currentExportStyle: CameraExportStyle? = null
+    private var savedExportStyle: CameraExportStyle? = null
 
     fun liveTicket() = gate.liveTicket()
 
@@ -128,6 +136,21 @@ internal class CameraReaderViewModel : ViewModel() {
                 return@captured
             }
             mutableState.value.photo?.close()
+            thumbnail?.cancel()
+            val lease = photo.acquire()
+            thumbnail = viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
+                if (lease != null) try {
+                    mutableCaptureThumbnail.value = withContext(Dispatchers.Default) {
+                        cameraCaptureThumbnail(lease.bitmap)
+                    }
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (_: Exception) {
+                    mutableCaptureThumbnail.value = null
+                } finally {
+                    lease.close()
+                }
+            }
             photoTicket = ticket
             mutableState.value = CameraReaderUiState(status = CameraReadingStatus.PROCESSING, photo = photo)
             onCaptured()
@@ -161,11 +184,20 @@ internal class CameraReaderViewModel : ViewModel() {
         }
     }
 
+    fun updateExportStyle(style: CameraExportStyle?) {
+        if (style == null || style == currentExportStyle) return
+        currentExportStyle = style
+        if (savedExportStyle != null) {
+            mutableState.value = mutableState.value.copy(saved = if (style == savedExportStyle) true else null)
+        }
+    }
+
     fun prepareExport(style: CameraExportStyle): Boolean {
         val state = mutableState.value
         if (state.status != CameraReadingStatus.PHOTO || state.saving) return false
         val lease = state.photo?.acquire() ?: return false
         pendingExport?.close()
+        currentExportStyle = style
         pendingExport = CameraPhotoExport(lease, state.lines, style)
         mutableState.value = state.copy(saving = true)
         return true
@@ -178,7 +210,12 @@ internal class CameraReaderViewModel : ViewModel() {
         startExport(request, CameraPicturesDestination(resolver))
     }
 
-    fun completeExport(resolver: ContentResolver, uri: Uri?, unavailable: Boolean = false) {
+    fun completeExport(
+        resolver: ContentResolver,
+        uri: Uri?,
+        unavailable: Boolean = false,
+        onSaved: (Uri) -> Unit = {}
+    ) {
         val request = pendingExport
         pendingExport = null
         if (uri == null) {
@@ -193,21 +230,29 @@ internal class CameraReaderViewModel : ViewModel() {
             viewModelScope.launch(Dispatchers.IO) { runCatching { resolver.delete(uri, null, null) } }
             return
         }
-        startExport(request, CameraDocumentDestination(resolver, uri))
+        startExport(request, CameraDocumentDestination(resolver, uri), onSaved)
     }
 
     private fun startExport(
         request: CameraPhotoExport,
-        destination: CameraExportDestination<Uri>
+        destination: CameraExportDestination<Uri>,
+        onSaved: (Uri) -> Unit = {}
     ) {
         mutableState.value = mutableState.value.copy(saving = true, saved = null)
         val operation = ++exportRequest
         export = viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
             try {
-                val uri = writeCameraExport(destination) { output -> writeCameraPhotoExport(request, output) }
-                if (operation == exportRequest) mutableState.value = mutableState.value.copy(
-                    saved = true, savedUri = uri
-                )
+                val operationContext = currentCoroutineContext()
+                val uri = writeCameraExport(destination) { output ->
+                    writeCameraPhotoExport(request, output, checkCancellation = { operationContext.ensureActive() })
+                }
+                onSaved(uri)
+                if (operation == exportRequest) {
+                    savedExportStyle = request.style
+                    mutableState.value = mutableState.value.copy(
+                        saved = if (currentExportStyle == request.style) true else null, savedUri = uri
+                    )
+                }
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {
@@ -230,11 +275,20 @@ internal class CameraReaderViewModel : ViewModel() {
         pendingExport?.close()
         pendingExport = null
         val photo = mutableState.value.photo
+        currentExportStyle = null
+        savedExportStyle = null
         mutableState.value = CameraReaderUiState()
         photo?.close()
     }
 
+    fun clearCaptureThumbnail() {
+        thumbnail?.cancel()
+        thumbnail = null
+        mutableCaptureThumbnail.value = null
+    }
+
     override fun onCleared() {
+        clearCaptureThumbnail()
         returnToLive()
     }
 }

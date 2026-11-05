@@ -42,6 +42,25 @@ class CameraImageTest {
         } finally { original.recycle() }
     }
 
+    @Test fun captureThumbnailIsBoundedAndSurvivesReleasingTheTemporaryPhoto() {
+        for ((width, height) in listOf(1200 to 800, 800 to 1200, 20 to 10)) {
+            val source = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).apply { eraseColor(Color.BLUE) }
+            val photo = CameraPhoto.fromOwnedBitmap(source)
+            val thumbnail = cameraCaptureThumbnail(source)
+            try {
+                photo.close()
+                assertTrue(source.isRecycled)
+                assertFalse(thumbnail.isRecycled)
+                assertTrue(thumbnail.width <= 192 && thumbnail.height <= 192)
+                assertEquals(width.toFloat() / height, thumbnail.width.toFloat() / thumbnail.height, 0.02f)
+                assertEquals(Color.BLUE, thumbnail.getPixel(0, 0))
+            } finally {
+                photo.close()
+                thumbnail.recycle()
+            }
+        }
+    }
+
     @Test fun japaneseRecognitionReadsASyntheticCameraImageLocally() {
         val bitmap = Bitmap.createBitmap(1200, 400, Bitmap.Config.ARGB_8888).apply { eraseColor(Color.WHITE) }
         android.graphics.Canvas(bitmap).drawText("日本語を読む", 80f, 220f, android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {

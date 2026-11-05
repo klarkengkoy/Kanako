@@ -20,14 +20,21 @@ internal class CameraPhotoExport(
     override fun close() = lease.close()
 }
 
-internal fun writeCameraPhotoExport(request: CameraPhotoExport, output: OutputStream) {
+internal fun writeCameraPhotoExport(
+    request: CameraPhotoExport,
+    output: OutputStream,
+    checkCancellation: () -> Unit = {}
+) {
+    checkCancellation()
     val original = request.lease.bitmap
     val rendered = original.copy(Bitmap.Config.ARGB_8888, true) ?: error("Image copy failed")
     try {
-        val layout = layoutCameraAnnotations(
-            request.lines, rendered.width, rendered.height, request.style.fontPixels, request.style.script
+        val layout = layoutCameraPhotoAnnotations(
+            request.lines, rendered.width, rendered.height, request.style.fontPixels, request.style.script, checkCancellation
         )
+        checkCancellation()
         drawCameraAnnotations(Canvas(rendered), layout, request.style.colors, request.style.selected)
+        checkCancellation()
         check(rendered.compress(Bitmap.CompressFormat.PNG, 100, output)) { "Image export failed" }
     } finally {
         rendered.recycle()

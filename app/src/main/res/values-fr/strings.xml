@@ -69,14 +69,13 @@
     <string name="camera_unavailable">Appareil photo indisponible. Vérifiez l’autorisation ou fermez les autres applications photo, puis réessayez.</string>
     <string name="camera_starting">Démarrage de l’appareil photo…</string>
     <string name="camera_live">Lecture du japonais en direct</string>
-    <string name="camera_live_hint">Touchez pour la mise au point · Pincez pour zoomer</string>
     <string name="camera_live_description">Vue de l’appareil photo en direct. Touchez pour la mise au point et pincez pour zoomer.</string>
     <string name="camera_capturing">Prise de la photo…</string>
     <string name="camera_retry">Réessayer</string>
     <string name="camera_save">Enregistrer avec les furigana</string>
     <string name="camera_saving">Enregistrement…</string>
     <string name="camera_saved">Enregistré</string>
-    <string name="camera_open_saved">Ouvrir l’image enregistrée</string>
+    <string name="camera_open_saved">Images enregistrées</string>
     <string name="camera_share">Partager l’image enregistrée</string>
     <string name="camera_open_failed">Impossible d’ouvrir l’image enregistrée. Retrouvez-la dans Fichiers.</string>
     <string name="camera_share_failed">Impossible d’ouvrir le partage. Retrouvez l’image enregistrée dans Fichiers.</string>
@@ -84,7 +83,7 @@
     <string name="camera_photo_ready">Photo prête · Non enregistrée</string>
     <string name="camera_photo_missing">Cette photo temporaire n’est plus disponible. Revenez à l’appareil photo pour en prendre une autre.</string>
     <string name="camera_photo_description">Photo prise avec les lectures japonaises</string>
-    <string name="camera_photo_hint">Pincez pour zoomer · Glissez pour déplacer · Touchez deux fois pour réinitialiser</string>
+    <string name="camera_photo_hint">Pincez pour zoomer et afficher les lectures · Glissez pour déplacer · Touchez deux fois pour réinitialiser</string>
     <string name="camera_zoom_in">Zoom avant</string>
     <string name="camera_zoom_out">Zoom arrière</string>
     <string name="camera_zoom_reset">Réinitialiser le zoom</string>
@@ -216,7 +215,7 @@
     <string name="guided_camera_intro">Voici le vrai lecteur caméra. Autorisez la caméra si nécessaire et visez du japonais imprimé. Touchez l’aperçu pour faire le point, réglez le zoom et prenez une photo. Rien n’est enregistré automatiquement.</string>
     <string name="guided_camera_begin">Essayer la caméra</string>
     <string name="guided_camera_focus">Visez du japonais imprimé, puis touchez l’aperçu encadré pour faire le point.</string>
-    <string name="guided_camera_zoom">Touchez le bouton de zoom avant encadré.</string>
+    <string name="guided_camera_zoom">Écartez deux doigts sur l’aperçu encadré pour zoomer.</string>
     <string name="guided_camera_capture">Touchez le bouton de capture encadré. Une vraie photo sera prise pour consultation, sans enregistrement automatique.</string>
     <string name="guided_camera_review_first">Terminez la consultation de votre photo avant de commencer le guide caméra.</string>
     <string name="guided_script">Touchez Écriture pour passer entre kana et romaji. Le menu indique votre choix actuel.</string>
@@ -228,4 +227,12 @@
     <string name="setup_accessibility_disconnected">Activé, déconnecté</string>
     <string name="setup_accessibility_reconnect">Kanako est activé dans Android, mais son service de lecture est déconnecté. Dans les paramètres d’accessibilité, désactivez puis réactivez Kanako et revenez ici.</string>
     <string name="setup_disclosure_needed">Lire les informations sur les captures</string>
+    <string name="gallery_title">Images enregistrées</string>
+    <string name="gallery_refresh">Actualiser les images enregistrées</string>
+    <string name="gallery_load_failed">Impossible de charger les images enregistrées. Réessayez.</string>
+    <string name="gallery_empty">Vos photos enregistrées apparaîtront ici. Ouvrez l’appareil photo et choisissez Enregistrer avec furigana pour en ajouter une.</string>
+    <string name="gallery_image_missing">Cette image n’est plus disponible. Elle a peut-être été déplacée ou supprimée, ou son autorisation d’accès a expiré.</string>
+    <string name="gallery_image_description">Image Kanako enregistrée : %1$s</string>
+    <string name="preferences_photo_size_summary">Dans les photos, il s’agit de la taille minimale des lectures. Elles peuvent grandir avec le texte japonais. Zoomez si elles ont besoin de plus de place.</string>
+    <string name="gallery_image_hint">Pincez pour zoomer · Glissez pour déplacer · Touchez deux fois pour réinitialiser</string>
 </resources>

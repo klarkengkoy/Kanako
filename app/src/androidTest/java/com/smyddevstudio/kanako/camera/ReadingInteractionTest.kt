@@ -91,6 +91,9 @@ class ReadingInteractionTest {
                 }
             }
             val image = compose.onNodeWithTag("photo")
+            compose.waitUntil(timeoutMillis = 3_000) {
+                image.fetchSemanticsNode().config[SemanticsProperties.Text].any { it.text.isNotEmpty() }
+            }
             val initialBounds = image.fetchSemanticsNode().boundsInRoot
             val initialFit = fitCameraImage(400, 400, initialBounds.width.toInt(), initialBounds.height.toInt())!!
             image.performTouchInput {
@@ -102,6 +105,9 @@ class ReadingInteractionTest {
             image.performTouchInput {
                 pinch(start0 = center - Offset(40f, 0f), end0 = center - Offset(80f, 0f),
                     start1 = center + Offset(40f, 0f), end1 = center + Offset(80f, 0f), durationMillis = 400)
+            }
+            compose.waitUntil(timeoutMillis = 3_000) {
+                image.fetchSemanticsNode().config[SemanticsProperties.Text].any { it.text.isNotEmpty() }
             }
             val bounds = image.fetchSemanticsNode().boundsInRoot
             val fit = fitCameraImage(400, 400, bounds.width.toInt(), bounds.height.toInt())!!

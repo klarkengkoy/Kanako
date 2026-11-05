@@ -6,6 +6,7 @@ import android.graphics.ImageFormat
 import android.graphics.Matrix
 import android.graphics.Rect
 import androidx.camera.core.ImageProxy
+import androidx.core.graphics.scale
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.roundToInt
 
@@ -76,6 +77,15 @@ internal class CameraPhoto private constructor(private val pixels: Bitmap) : Aut
 
         internal fun fromOwnedBitmap(bitmap: Bitmap) = CameraPhoto(bitmap)
     }
+}
+
+internal fun cameraCaptureThumbnail(bitmap: Bitmap): Bitmap {
+    val scale = minOf(1f, 192f / maxOf(bitmap.width, bitmap.height))
+    val width = (bitmap.width * scale).roundToInt().coerceAtLeast(1)
+    val height = (bitmap.height * scale).roundToInt().coerceAtLeast(1)
+    return if (width == bitmap.width && height == bitmap.height) {
+        checkNotNull(bitmap.copy(Bitmap.Config.ARGB_8888, false))
+    } else bitmap.scale(width, height, true)
 }
 
 internal fun uprightCameraBitmap(bitmap: Bitmap, crop: Rect, rotationDegrees: Int): Bitmap {

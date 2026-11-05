@@ -4,6 +4,9 @@ import com.smyddevstudio.kanako.service.GuidedReaderSession
 import com.smyddevstudio.kanako.service.GuidedReaderStep
 import androidx.activity.compose.BackHandler
 import android.content.Intent
+import android.net.Uri
+import com.smyddevstudio.kanako.ui.screens.CameraGalleryScreen
+import com.smyddevstudio.kanako.ui.screens.SavedCameraImageScreen
 import android.provider.Settings
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -86,7 +89,7 @@ fun KanakoApp(
     val cameraReader: CameraReaderViewModel = viewModel()
     val hasCameraEntry = Screen.Camera in backStack
     LaunchedEffect(hasCameraEntry) {
-        if (!hasCameraEntry) { cameraReader.returnToLive(); cameraGuide = false }
+        if (!hasCameraEntry) { cameraReader.returnToLive(); cameraReader.clearCaptureThumbnail(); cameraGuide = false }
     }
     val snackbar = remember { SnackbarHostState() }
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -322,6 +325,7 @@ fun KanakoApp(
                         if (!preferences.hasSeenCameraGuide) cameraIntroduction = true
                         else openCamera(guided = false)
                     },
+                    onNavigateToGallery = { backStack.add(Screen.Gallery) },
                     guidedSetup = guidedSetup,
                     guidePreferences = guidedReaderStep == GuidedReaderStep.PREFERENCES,
                     onSkipGuidedSetup = { exitGuide() },
@@ -392,6 +396,7 @@ fun KanakoApp(
                     },
                     onBack = { cameraGuide = false; if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) },
                     onCaptured = { if (backStack.lastOrNull() == Screen.Camera) backStack.add(Screen.CameraResult) },
+                    onNavigateToGallery = { backStack.add(Screen.Gallery) },
                     onNavigateToPreferences = { backStack.add(Screen.Preferences) }
                 )
             }
@@ -401,8 +406,18 @@ fun KanakoApp(
                     preferences = preferences,
                     onBack = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) },
                     onRetake = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) },
+                    onNavigateToGallery = { backStack.add(Screen.Gallery) },
                     onNavigateToPreferences = { backStack.add(Screen.Preferences) }
                 )
+            }
+            entry<Screen.Gallery> {
+                CameraGalleryScreen(
+                    onBack = { handleBack() },
+                    onOpen = { image -> backStack.add(Screen.SavedImage(image.uri.toString(), image.name)) }
+                )
+            }
+            entry<Screen.SavedImage> { image ->
+                SavedCameraImageScreen(Uri.parse(image.uri), image.name, onBack = { handleBack() })
             }
             entry<Screen.Preferences> {
                 PreferencesScreen(

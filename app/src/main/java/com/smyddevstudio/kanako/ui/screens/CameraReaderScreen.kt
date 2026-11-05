@@ -13,6 +13,14 @@ import android.view.Surface
 import android.view.WindowManager
 import androidx.compose.ui.platform.LocalView
 import androidx.core.net.toUri
+import androidx.core.view.WindowCompat
+import com.smyddevstudio.kanako.camera.SavedCameraImage
+import com.smyddevstudio.kanako.camera.SavedCameraImages
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Image
+import androidx.compose.material3.Icon
+import androidx.compose.ui.graphics.Color
+import kotlinx.coroutines.CancellationException
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -60,6 +68,7 @@ internal fun CameraReaderScreen(
     onNavigateToPreferences: () -> Unit,
     modifier: Modifier = Modifier,
     preferences: KanakoPreferences = KanakoPreferences(),
+    onNavigateToGallery: () -> Unit = {},
     onPermissionDenied: () -> Unit = onBack,
     guidedTutorial: Boolean = false,
     onSkipTutorial: () -> Unit = {},
@@ -87,6 +96,19 @@ internal fun CameraReaderScreen(
         onDispose { manager.unregisterDisplayListener(listener) }
     }
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val captureThumbnail by viewModel.captureThumbnail.collectAsStateWithLifecycle()
+    val savedImages = remember(context) { SavedCameraImages(context) }
+    var galleryVersion by remember { mutableIntStateOf(0) }
+    var latestSavedImage by remember { mutableStateOf<SavedCameraImage?>(null) }
+    LaunchedEffect(savedImages, galleryVersion) {
+        try {
+            latestSavedImage = savedImages.load().firstOrNull()
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            latestSavedImage = null
+        }
+    }
     var readingTargets by remember { mutableStateOf(emptyList<ReadingTarget>()) }
     var selectedReading by remember(state.lines.map { it.text }) { mutableStateOf<String?>(null) }
     var granted by remember { mutableStateOf(hasCameraPermission(context)) }
@@ -107,13 +129,20 @@ internal fun CameraReaderScreen(
     DisposableEffect(activity, granted) {
         val window = activity?.window
         val previousAnimation = window?.attributes?.rotationAnimation
+        val systemBars = window?.let { WindowCompat.getInsetsController(it, hostView) }
+        val previousLightStatus = systemBars?.isAppearanceLightStatusBars
+        val previousLightNavigation = systemBars?.isAppearanceLightNavigationBars
         if (granted && window != null) {
+            systemBars?.isAppearanceLightStatusBars = false
+            systemBars?.isAppearanceLightNavigationBars = false
             window.attributes = window.attributes.apply {
                 rotationAnimation = WindowManager.LayoutParams.ROTATION_ANIMATION_SEAMLESS
             }
         }
         onDispose {
             if (granted && window != null && previousAnimation != null) {
+                previousLightStatus?.let { systemBars.isAppearanceLightStatusBars = it }
+                previousLightNavigation?.let { systemBars.isAppearanceLightNavigationBars = it }
                 window.attributes = window.attributes.apply { rotationAnimation = previousAnimation }
             }
         }
@@ -124,7 +153,10 @@ internal fun CameraReaderScreen(
 
     DisposableEffect(lifecycleOwner, context) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) granted = hasCameraPermission(context)
+            if (event == Lifecycle.Event.ON_RESUME) {
+                granted = hasCameraPermission(context)
+                galleryVersion++
+            }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
@@ -217,6 +249,13 @@ internal fun CameraReaderScreen(
         granted = granted,
         onBack = { if (!guidedTutorial) { viewModel.returnToLive(); onBack() } },
         onPreferences = { if (!guidedTutorial) onNavigateToPreferences() },
+        onGallery = { if (!guidedTutorial) onNavigateToGallery() },
+        captureThumbnail = captureThumbnail,
+        savedThumbnail = {
+            val image = latestSavedImage
+            if (image != null) SavedCameraImageThumbnail(image.uri)
+            else Icon(Icons.Rounded.Image, null, tint = Color.White)
+        },
         onCapture = { session?.let { viewModel.capture(it) { onCompleteTutorial(); onCaptured() } } },
         onPermission = {
             when {
@@ -229,15 +268,17 @@ internal fun CameraReaderScreen(
         },
         onRetry = { retry++ },
         onZoom = { factor ->
-            viewModel.invalidateGeometry()
-            session?.zoomBy(factor)
-            if (guidedTutorial && lessonStep == 2 && session != null) lessonStep = 3
+            if (!guidedTutorial || lessonStep == 2) {
+                viewModel.invalidateGeometry()
+                session?.zoomBy(factor)
+                if (guidedTutorial && session != null) lessonStep = 3
+            }
         },
         modifier = Modifier,
         permissionLabel = if (permanentlyDenied) R.string.camera_settings else R.string.camera_allow,
         displayRotation = displayRotation,
         viewfinder = { cameraModifier ->
-            Box(cameraModifier) {
+            Box(Modifier.fillMaxSize()) {
                 AndroidView(
                     factory = {
                         PreviewView(it).apply {
@@ -247,8 +288,8 @@ internal fun CameraReaderScreen(
                             preview = this
                         }
                     },
-                    modifier = Modifier.fillMaxSize().cameraReaderGestures(
-                        onZoom = { if (!guidedTutorial || lessonStep == 2) {
+                    modifier = cameraModifier.cameraReaderGestures(
+                        onZoom = { if (it != 1f && (!guidedTutorial || lessonStep == 2)) {
                             session?.zoomBy(it)
                             if (guidedTutorial && session != null) lessonStep = 3
                         } },

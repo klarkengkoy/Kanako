@@ -69,14 +69,13 @@
     <string name="camera_unavailable">Fotocamera non disponibile. Controlla il permesso o chiudi altre app della fotocamera, poi riprova.</string>
     <string name="camera_starting">Avvio della fotocamera…</string>
     <string name="camera_live">Lettura del giapponese dal vivo</string>
-    <string name="camera_live_hint">Tocca per mettere a fuoco · Pizzica per lo zoom</string>
     <string name="camera_live_description">Vista dal vivo della fotocamera. Tocca per mettere a fuoco e pizzica per lo zoom.</string>
     <string name="camera_capturing">Scatto della foto…</string>
     <string name="camera_retry">Riprova</string>
     <string name="camera_save">Salva con furigana</string>
     <string name="camera_saving">Salvataggio…</string>
     <string name="camera_saved">Salvato</string>
-    <string name="camera_open_saved">Apri l’immagine salvata</string>
+    <string name="camera_open_saved">Immagini salvate</string>
     <string name="camera_share">Condividi l’immagine salvata</string>
     <string name="camera_open_failed">Impossibile aprire l’immagine salvata. Puoi trovarla in File.</string>
     <string name="camera_share_failed">Impossibile aprire la condivisione. Puoi trovare l’immagine salvata in File.</string>
@@ -84,7 +83,7 @@
     <string name="camera_photo_ready">Foto pronta · Non salvata</string>
     <string name="camera_photo_missing">Questa foto temporanea non è più disponibile. Torna alla fotocamera per scattarne un’altra.</string>
     <string name="camera_photo_description">Foto acquisita con letture giapponesi</string>
-    <string name="camera_photo_hint">Pizzica per lo zoom · Trascina per spostare · Tocca due volte per ripristinare</string>
+    <string name="camera_photo_hint">Pizzica per ingrandire e mostrare le letture · Trascina per spostare · Tocca due volte per ripristinare</string>
     <string name="camera_zoom_in">Aumenta zoom</string>
     <string name="camera_zoom_out">Riduci zoom</string>
     <string name="camera_zoom_reset">Ripristina zoom</string>
@@ -216,7 +215,7 @@
     <string name="guided_camera_intro">Questo è il lettore fotocamera reale. Consenti l’accesso se richiesto e inquadra del giapponese stampato. Tocca l’anteprima per mettere a fuoco, regola lo zoom e scatta una foto. Nulla viene salvato automaticamente.</string>
     <string name="guided_camera_begin">Prova la fotocamera</string>
     <string name="guided_camera_focus">Inquadra del giapponese stampato, poi tocca l’anteprima evidenziata per mettere a fuoco.</string>
-    <string name="guided_camera_zoom">Tocca il pulsante evidenziato per aumentare lo zoom.</string>
+    <string name="guided_camera_zoom">Allarga due dita sull’anteprima evidenziata per aumentare lo zoom.</string>
     <string name="guided_camera_capture">Tocca il pulsante di scatto evidenziato. Verrà scattata una foto reale da esaminare, senza salvarla automaticamente.</string>
     <string name="guided_camera_review_first">Termina di esaminare la foto attuale prima di avviare la guida della fotocamera.</string>
     <string name="guided_script">Tocca Scrittura per passare tra kana e romaji. Il menu mostra la scelta attuale.</string>
@@ -228,4 +227,12 @@
     <string name="setup_accessibility_disconnected">Attivo, disconnesso</string>
     <string name="setup_accessibility_reconnect">Kanako è attivo nelle impostazioni Android, ma il servizio di lettura è disconnesso. Nelle impostazioni di accessibilità, disattiva e riattiva Kanako, poi torna qui.</string>
     <string name="setup_disclosure_needed">Leggi le informazioni sulle acquisizioni</string>
+    <string name="gallery_title">Immagini salvate</string>
+    <string name="gallery_refresh">Aggiorna immagini salvate</string>
+    <string name="gallery_load_failed">Impossibile caricare le immagini salvate. Riprova.</string>
+    <string name="gallery_empty">Le foto salvate appariranno qui. Apri la fotocamera e scegli Salva con furigana per aggiungerne una.</string>
+    <string name="gallery_image_missing">Questa immagine non è più disponibile. Potrebbe essere stata spostata o eliminata, oppure il permesso di accesso è scaduto.</string>
+    <string name="gallery_image_description">Immagine Kanako salvata: %1$s</string>
+    <string name="preferences_photo_size_summary">Nelle foto, questa è la dimensione minima delle letture. Possono crescere con il testo giapponese. Aumenta lo zoom quando serve più spazio.</string>
+    <string name="gallery_image_hint">Pizzica per lo zoom · Trascina per spostare · Tocca due volte per ripristinare</string>
 </resources>

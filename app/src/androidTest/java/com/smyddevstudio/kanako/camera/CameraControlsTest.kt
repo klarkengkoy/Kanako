@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
@@ -133,17 +134,26 @@ class CameraControlsTest {
         var captures = 0
         var backs = 0
         var preferences = 0
+        var galleries = 0
         val zooms = mutableListOf<Float>()
         compose.setContent {
             KanakoTheme {
                 CameraReaderContent(
                     CameraReaderUiState(status = CameraReadingStatus.LIVE, ready = true), true,
-                    { backs++ }, { preferences++ }, { captures++ }, {}, {}, { zooms.add(it) }
+                    { backs++ }, { preferences++ }, { captures++ }, {}, {}, { zooms.add(it) },
+                    onGallery = { galleries++ }
                 )
             }
         }
-        compose.onNodeWithContentDescription(string(R.string.camera_zoom_in)).performClick()
-        compose.onNodeWithContentDescription(string(R.string.camera_zoom_out)).performClick()
+        compose.onNodeWithContentDescription(string(R.string.camera_zoom_in)).assertDoesNotExist()
+        compose.onNodeWithContentDescription(string(R.string.camera_zoom_out)).assertDoesNotExist()
+        compose.onNodeWithContentDescription(string(R.string.gallery_title)).performClick()
+        val actions = compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsActions.CustomActions))
+            .fetchSemanticsNode().config[SemanticsActions.CustomActions]
+        compose.runOnIdle {
+            actions.single { it.label == string(R.string.camera_zoom_in) }.action()
+            actions.single { it.label == string(R.string.camera_zoom_out) }.action()
+        }
         compose.onNodeWithContentDescription(string(R.string.camera_capture)).performClick()
         compose.onNodeWithContentDescription(string(R.string.camera_appearance)).performClick()
         compose.onNodeWithContentDescription(string(R.string.navigate_back)).performClick()
@@ -151,6 +161,7 @@ class CameraControlsTest {
             assertEquals(1, captures)
             assertEquals(1, backs)
             assertEquals(1, preferences)
+            assertEquals(1, galleries)
             assertEquals(listOf(1.5f, 1 / 1.5f), zooms)
         }
     }
@@ -158,52 +169,46 @@ class CameraControlsTest {
     @Test fun landscapeControlsFollowThePhysicalEdgeInBothDirections() {
         val rotation = mutableIntStateOf(Surface.ROTATION_90)
         var captures = 0
-        val zooms = mutableListOf<Float>()
+        var galleries = 0
         compose.setContent {
             KanakoTheme {
                 Box(Modifier.requiredSize(640.dp, 360.dp)) {
                     CameraReaderContent(
                         CameraReaderUiState(status = CameraReadingStatus.LIVE, ready = true), true,
-                        {}, {}, { captures++ }, {}, {}, { zooms.add(it) },
-                        displayRotation = rotation.intValue
+                        {}, {}, { captures++ }, {}, {}, {},
+                        onGallery = { galleries++ }, displayRotation = rotation.intValue
                     )
                 }
             }
         }
         val capture = compose.onNodeWithContentDescription(string(R.string.camera_capture))
-        val zoomIn = compose.onNodeWithContentDescription(string(R.string.camera_zoom_in))
-        val zoomOut = compose.onNodeWithContentDescription(string(R.string.camera_zoom_out))
+        val gallery = compose.onNodeWithContentDescription(string(R.string.gallery_title))
         val back = compose.onNodeWithContentDescription(string(R.string.navigate_back))
         fun assertRail(right: Boolean) {
             capture.assertIsDisplayed()
-            zoomIn.assertIsDisplayed()
-            zoomOut.assertIsDisplayed()
+            gallery.assertIsDisplayed()
             val shutter = capture.fetchSemanticsNode().boundsInRoot
-            val plus = zoomIn.fetchSemanticsNode().boundsInRoot
-            val minus = zoomOut.fetchSemanticsNode().boundsInRoot
+            val thumbnail = gallery.fetchSemanticsNode().boundsInRoot
             val header = back.fetchSemanticsNode().boundsInRoot
-            assertEquals(shutter.center.x, plus.center.x, 1f)
-            assertEquals(shutter.center.x, minus.center.x, 1f)
+            assertEquals(shutter.center.x, thumbnail.center.x, 1f)
             if (right) {
                 assertTrue(shutter.left > header.right)
-                assertTrue(plus.bottom < shutter.top)
-                assertTrue(shutter.bottom < minus.top)
+                assertTrue(shutter.bottom < thumbnail.top)
             } else {
                 assertTrue(shutter.right < header.left)
-                assertTrue(minus.bottom < shutter.top)
-                assertTrue(shutter.bottom < plus.top)
+                assertTrue(thumbnail.bottom < shutter.top)
             }
         }
         assertRail(right = true)
-        zoomIn.performClick()
+        gallery.performClick()
         capture.performClick()
         compose.runOnIdle { rotation.intValue = Surface.ROTATION_270 }
         assertRail(right = false)
-        zoomOut.performClick()
+        gallery.performClick()
         capture.performClick()
         compose.runOnIdle {
             assertEquals(2, captures)
-            assertEquals(listOf(1.5f, 1 / 1.5f), zooms)
+            assertEquals(2, galleries)
         }
     }
 
@@ -222,7 +227,7 @@ class CameraControlsTest {
                 }
             }
         }
-        val labels = listOf(R.string.camera_zoom_out, R.string.camera_capture, R.string.camera_zoom_in)
+        val labels = listOf(R.string.gallery_title, R.string.camera_capture)
         val portraitBounds = compose.onNodeWithTag("camera").fetchSemanticsNode().boundsInRoot
         val originals = labels.map {
             val node = compose.onNodeWithContentDescription(string(it)).fetchSemanticsNode()

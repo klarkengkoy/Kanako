@@ -23,6 +23,12 @@ sealed interface Screen : NavKey {
     @Serializable
     data object CameraResult : Screen
 
+    @Serializable
+    data object Gallery : Screen
+
+    @Serializable
+    data class SavedImage(val uri: String, val name: String) : Screen
+
     @Deprecated("Restored legacy stacks return to Home")
     @Serializable
     data object SetupPermissions : Screen

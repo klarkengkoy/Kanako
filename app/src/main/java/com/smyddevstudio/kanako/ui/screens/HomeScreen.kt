@@ -20,6 +20,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.CameraAlt
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.HourglassTop
@@ -82,6 +83,7 @@ fun HomeScreen(
     onNavigateToPreferences: () -> Unit,
     modifier: Modifier = Modifier,
     preferences: KanakoPreferences = KanakoPreferences(),
+    onNavigateToGallery: () -> Unit = {},
     onUpdateOverlayActive: (Boolean) -> Unit = {},
     supported: Boolean = true,
     overlayGranted: Boolean = false,
@@ -344,6 +346,14 @@ fun HomeScreen(
                             )
                         }
                     }
+                }
+                OutlinedButton(
+                    onClick = { if (!guidedSetup) onNavigateToGallery() },
+                    enabled = !guidedSetup,
+                    modifier = Modifier.align(Alignment.CenterHorizontally).then(readingActionModifier)
+                ) {
+                    Icon(Icons.Rounded.Image, contentDescription = null, modifier = Modifier.size(24.dp))
+                    Text(stringResource(R.string.gallery_title), Modifier.padding(start = 8.dp))
                 }
                 if (showTutorialInvitation) {
                     TutorialInvitation(onStart = onNavigateToTutorial, onDismiss = onDismissTutorialInvitation)

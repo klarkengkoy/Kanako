@@ -5,6 +5,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,6 +36,8 @@ import com.smyddevstudio.kanako.R
 import com.smyddevstudio.kanako.service.ReadingTarget
 import com.smyddevstudio.kanako.service.selectReading
 import com.smyddevstudio.kanako.camera.CameraAnnotationColors
+import com.smyddevstudio.kanako.camera.CameraAnnotationLayout
+import com.smyddevstudio.kanako.camera.layoutCameraPhotoAnnotations
 import com.smyddevstudio.kanako.camera.CameraExportStyle
 import com.smyddevstudio.kanako.camera.CameraPhoto
 import com.smyddevstudio.kanako.camera.CameraPhotoGesture
@@ -46,6 +49,10 @@ import com.smyddevstudio.kanako.model.AnnotationPlateStyle
 import com.smyddevstudio.kanako.model.KanakoPreferences
 import com.smyddevstudio.kanako.ui.theme.CreamBackgroundDark
 import kotlin.math.roundToInt
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.withContext
 
 @Composable
 private fun annotationColors(preferences: KanakoPreferences): CameraAnnotationColors {
@@ -102,10 +109,18 @@ internal fun CameraPhotoSurface(
     var size by remember { mutableStateOf(IntSize.Zero) }
     var gesture by remember(photo, size) { mutableStateOf(CameraPhotoGesture()) }
     val fit = fitCameraImage(photo.width, photo.height, size.width, size.height)
-    val fontPixels = with(LocalDensity.current) { preferences.furiganaSize.sizeSp.sp.toPx() } / (fit?.scale ?: 1f)
-    val layout = remember(lines, photo, fontPixels, preferences.scriptType) {
-        layoutCameraAnnotations(lines, photo.width, photo.height, fontPixels, preferences.scriptType)
+    val fontPixels = with(LocalDensity.current) { preferences.furiganaSize.sizeSp.sp.toPx() } /
+        ((fit?.scale ?: 1f) * gesture.zoom)
+    val layoutKey = remember(lines, photo, fontPixels, preferences.scriptType) { Any() }
+    val result by produceState<Pair<Any, CameraAnnotationLayout>?>(null, layoutKey) {
+        val computed = if (fit == null) CameraAnnotationLayout(emptyList()) else withContext(Dispatchers.Default) {
+            val operation = currentCoroutineContext()
+            layoutCameraPhotoAnnotations(lines, photo.width, photo.height, fontPixels, preferences.scriptType,
+                checkCancellation = { operation.ensureActive() })
+        }
+        value = layoutKey to computed
     }
+    val layout = result?.takeIf { it.first === layoutKey }?.second ?: CameraAnnotationLayout(emptyList())
     val colors = annotationColors(preferences)
     var selected by remember(photo, lines.map { it.text }) { mutableStateOf<String?>(null) }
     val currentLayout by rememberUpdatedState(layout)
@@ -115,7 +130,7 @@ internal fun CameraPhotoSurface(
     val zoomOut = stringResource(R.string.camera_zoom_out)
     val zoomReset = stringResource(R.string.camera_zoom_reset)
     val description = stringResource(R.string.camera_photo_description)
-    val exportStyle = fit?.let { CameraExportStyle(fontPixels, preferences.scriptType, colors, selected) }
+    val exportStyle = fit?.let { CameraExportStyle(preferences.furiganaSize.sizeSp.toFloat(), preferences.scriptType, colors, selected) }
     SideEffect { onExportStyle(exportStyle) }
     fun zoom(factor: Float): Boolean {
         gesture = gesture.update(factor, 0f, 0f, size.width / 2f, size.height / 2f,

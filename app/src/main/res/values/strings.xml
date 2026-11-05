@@ -69,14 +69,13 @@
     <string name="camera_unavailable">Camera unavailable. Check camera access or close other camera apps, then retry.</string>
     <string name="camera_starting">Starting camera…</string>
     <string name="camera_live">Live Japanese reading</string>
-    <string name="camera_live_hint">Tap to focus · Pinch to zoom</string>
     <string name="camera_live_description">Live camera view. Tap to focus and pinch to zoom.</string>
     <string name="camera_capturing">Capturing photo…</string>
     <string name="camera_retry">Retry</string>
     <string name="camera_save">Save with furigana</string>
     <string name="camera_saving">Saving…</string>
     <string name="camera_saved">Saved</string>
-    <string name="camera_open_saved">Open saved image</string>
+    <string name="camera_open_saved">Saved images</string>
     <string name="camera_share">Share saved image</string>
     <string name="camera_open_failed">Could not open the saved image. You can find it in Files.</string>
     <string name="camera_share_failed">Could not open sharing. You can find the saved image in Files.</string>
@@ -84,7 +83,7 @@
     <string name="camera_photo_ready">Photo ready · Not saved</string>
     <string name="camera_photo_missing">This temporary photo is no longer available. Return to the live camera to capture another.</string>
     <string name="camera_photo_description">Captured camera photo with Japanese readings</string>
-    <string name="camera_photo_hint">Pinch to zoom · Drag to move · Double tap to reset</string>
+    <string name="camera_photo_hint">Pinch to zoom and reveal readings · Drag to move · Double tap to reset</string>
     <string name="camera_zoom_in">Zoom in</string>
     <string name="camera_zoom_out">Zoom out</string>
     <string name="camera_zoom_reset">Reset zoom</string>
@@ -217,7 +216,7 @@
     <string name="guided_camera_intro">This is the real camera reader. Allow camera access if requested, then point it at printed Japanese. Tap the preview to focus, adjust zoom, and capture a photo to inspect the readings. Nothing is saved automatically.</string>
     <string name="guided_camera_begin">Try the camera</string>
     <string name="guided_camera_focus">Point the camera at printed Japanese, then tap the highlighted preview to focus.</string>
-    <string name="guided_camera_zoom">Tap the highlighted zoom-in button.</string>
+    <string name="guided_camera_zoom">Pinch the highlighted preview to zoom in.</string>
     <string name="guided_camera_capture">Tap the highlighted capture button. This takes a real photo for review; it is not saved automatically.</string>
     <string name="guided_camera_review_first">Finish reviewing your current photo before starting the camera guide.</string>
     <string name="guided_script">Tap Script to switch between Kana and Romaji. The menu label shows your current choice.</string>
@@ -229,4 +228,12 @@
     <string name="setup_accessibility_disconnected">Enabled, disconnected</string>
     <string name="setup_accessibility_reconnect">Kanako is enabled in Android settings, but its screen-reading service is disconnected. Open accessibility settings, turn Kanako off and on, then return here.</string>
     <string name="setup_disclosure_needed">Review screen-reading disclosure</string>
+    <string name="gallery_title">Saved images</string>
+    <string name="gallery_refresh">Refresh saved images</string>
+    <string name="gallery_load_failed">Could not load saved images. Try again.</string>
+    <string name="gallery_empty">Your saved camera photos will appear here. Open the camera and choose Save with furigana to add one.</string>
+    <string name="gallery_image_missing">This saved image is no longer available. It may have been moved, deleted, or its access may have expired.</string>
+    <string name="gallery_image_description">Saved Kanako image: %1$s</string>
+    <string name="preferences_photo_size_summary">In photos, this is the minimum reading size. Readings can grow with the Japanese text. Zoom in when readings need more space.</string>
+    <string name="gallery_image_hint">Pinch to zoom · Drag to move · Double tap to reset</string>
 </resources>

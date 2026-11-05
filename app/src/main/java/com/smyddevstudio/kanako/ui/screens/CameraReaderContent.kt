@@ -1,10 +1,13 @@
 package com.smyddevstudio.kanako.ui.screens
 
+import android.graphics.Bitmap
 import android.view.Surface as DisplaySurface
 import androidx.compose.animation.animateBounds
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.absolutePadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -20,8 +23,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.windowInsetsTopHeight
-import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -31,10 +32,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.CameraAlt
+import androidx.compose.material.icons.rounded.DocumentScanner
+import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material.icons.rounded.ZoomIn
-import androidx.compose.material.icons.rounded.ZoomOut
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -55,7 +55,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.Constraints
@@ -85,12 +94,17 @@ internal fun CameraReaderContent(
     onRetry: () -> Unit,
     onZoom: (Float) -> Unit,
     modifier: Modifier = Modifier,
+    onGallery: () -> Unit = {},
+    captureThumbnail: Bitmap? = null,
+    savedThumbnail: @Composable () -> Unit = { Icon(Icons.Rounded.Image, null, tint = Color.White) },
     guideTarget: Int = -1,
     onGuideBounds: (Rect) -> Unit = {},
     permissionLabel: Int = R.string.camera_allow,
     displayRotation: Int = DisplaySurface.ROTATION_0,
     viewfinder: @Composable (Modifier) -> Unit = { Box(it.background(MaterialTheme.colorScheme.surfaceVariant)) }
 ) {
+    val zoomInLabel = stringResource(R.string.camera_zoom_in)
+    val zoomOutLabel = stringResource(R.string.camera_zoom_out)
     BoxWithConstraints(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         val density = LocalDensity.current
         val landscape = maxWidth > maxHeight
@@ -103,17 +117,24 @@ internal fun CameraReaderContent(
             maxOf(insets.getLeft(this, direction), insets.getTop(this),
                 insets.getRight(this, direction), insets.getBottom(this)).toDp()
         } + 16.dp)
-        val controlsGutter = if (granted && landscape) 72.dp + edgePadding else 0.dp
+        val controlsGutter = if (granted && landscape) 88.dp + edgePadding else 0.dp
         val controlRotation = rememberCameraControlRotation(displayRotation)
-        if (granted) viewfinder(Modifier.fillMaxSize().then(if (guideTarget == 1) Modifier.onGloballyPositioned {
+        if (granted) viewfinder(Modifier.fillMaxSize().semantics {
+            customActions = if (state.ready && (guideTarget < 0 || guideTarget == 2)) listOf(
+                CustomAccessibilityAction(zoomInLabel) { onZoom(1.5f); true },
+                CustomAccessibilityAction(zoomOutLabel) { onZoom(1 / 1.5f); true }
+            ) else emptyList()
+        }.then(if (guideTarget == 1 || guideTarget == 2) Modifier.onGloballyPositioned {
             val bounds = it.boundsInRoot()
             onGuideBounds(Rect(bounds.left + bounds.width * 0.1f, bounds.top + bounds.height * 0.4f,
                 bounds.right - bounds.width * 0.1f, bounds.bottom - bounds.height * 0.4f))
         } else Modifier))
-        Spacer(Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.safeDrawing)
-            .background(MaterialTheme.colorScheme.background).align(Alignment.TopCenter))
-        Spacer(Modifier.fillMaxWidth().windowInsetsBottomHeight(WindowInsets.safeDrawing)
-            .background(MaterialTheme.colorScheme.background).align(Alignment.BottomCenter))
+        if (granted) {
+            Spacer(Modifier.fillMaxWidth().height(with(density) { insets.getTop(this).toDp() } + 96.dp)
+                .background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.7f), Color.Transparent))))
+            Spacer(Modifier.fillMaxWidth().height(edgePadding + 176.dp).align(Alignment.BottomCenter)
+                .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f)))))
+        }
         LookaheadScope {
             val motion = Modifier.animateBounds(this, boundsTransform = { _, _ -> tween(250) })
             Column(Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = 16.dp)
@@ -122,15 +143,11 @@ internal fun CameraReaderContent(
                 horizontalAlignment = Alignment.CenterHorizontally) {
                 if (granted) {
                     Row(modifier = motion.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)) {
-                            IconButton(onClick = onBack, enabled = guideTarget < 0, modifier = Modifier.size(48.dp)) {
-                                Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.navigate_back))
-                            }
+                        IconButton(onClick = onBack, enabled = guideTarget < 0, modifier = Modifier.size(48.dp)) {
+                            Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.navigate_back), tint = Color.White)
                         }
-                        Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)) {
-                            IconButton(onClick = onPreferences, enabled = guideTarget < 0, modifier = Modifier.size(48.dp)) {
-                                Icon(Icons.Rounded.Settings, stringResource(R.string.camera_appearance))
-                            }
+                        IconButton(onClick = onPreferences, enabled = guideTarget < 0, modifier = Modifier.size(48.dp)) {
+                            Icon(Icons.Rounded.Settings, stringResource(R.string.camera_appearance), tint = Color.White)
                         }
                     }
                 } else {
@@ -178,22 +195,19 @@ internal fun CameraReaderContent(
                         Button(onClick = onRetry, modifier = Modifier.padding(top = 8.dp).then(
                             if (guideTarget == 4) Modifier.onGloballyPositioned { onGuideBounds(it.boundsInRoot()) } else Modifier)) { Text(stringResource(R.string.camera_retry)) }
                     }
-                    Spacer(Modifier.height(if (landscape) 8.dp else 84.dp + edgePadding))
+                    Spacer(Modifier.height(if (landscape) 8.dp else 104.dp + edgePadding))
                 }
             }
         }
         if (granted) {
-            CameraCaptureControls(state, onCapture, onZoom, controlRotation,
+            CameraCaptureControls(state, onCapture, onGallery, controlRotation,
                 modifier = Modifier.fillMaxSize(), displayRotation = displayRotation,
-                edgePadding = edgePadding, guideTarget = guideTarget, onGuideBounds = onGuideBounds)
-            if (!compact) Box(Modifier.fillMaxSize().safeDrawingPadding(),
-                contentAlignment = Alignment.BottomCenter) {
-                Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
-                    contentColor = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(bottom = 8.dp)) {
-                    Text(stringResource(R.string.camera_live_hint), Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        style = MaterialTheme.typography.bodySmall)
-                }
-            }
+                edgePadding = edgePadding, guideTarget = guideTarget, onGuideBounds = onGuideBounds,
+                thumbnail = {
+                    if (captureThumbnail != null) Image(captureThumbnail.asImageBitmap(), null,
+                        Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                    else savedThumbnail()
+                })
         }
     }
 }
@@ -202,37 +216,34 @@ internal fun CameraReaderContent(
 private fun CameraCaptureControls(
     state: CameraReaderUiState,
     onCapture: () -> Unit,
-    onZoom: (Float) -> Unit,
+    onGallery: () -> Unit,
     iconRotation: State<Float>,
     modifier: Modifier = Modifier,
     displayRotation: Int = DisplaySurface.ROTATION_0,
     edgePadding: androidx.compose.ui.unit.Dp = 16.dp,
     guideTarget: Int = -1,
-    onGuideBounds: (Rect) -> Unit = {}
+    onGuideBounds: (Rect) -> Unit = {},
+    thumbnail: @Composable () -> Unit = {}
 ) {
+    val galleryLabel = stringResource(R.string.gallery_title)
     Layout(modifier = modifier, content = {
-        for (control in listOf(-1, 0, 1)) {
-            if (control == 0) {
-                Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary) {
-                    IconButton(onClick = onCapture,
-                        enabled = state.ready && state.status != CameraReadingStatus.CAPTURING && (guideTarget < 0 || guideTarget == 3),
-                        modifier = Modifier.size(72.dp).then(if (guideTarget == 3) Modifier.onGloballyPositioned { onGuideBounds(it.boundsInRoot()) } else Modifier)) {
-                        Icon(Icons.Rounded.CameraAlt, stringResource(R.string.camera_capture),
-                            Modifier.size(32.dp).graphicsLayer { rotationZ = iconRotation.value },
-                            tint = MaterialTheme.colorScheme.onPrimary)
-                    }
-                }
-            } else {
-                Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
-                    contentColor = MaterialTheme.colorScheme.onSurface) {
-                    IconButton(onClick = { onZoom(if (control > 0) 1.5f else 1 / 1.5f) },
-                        enabled = state.ready && (guideTarget < 0 || guideTarget == 2), modifier = Modifier.size(48.dp).then(
-                            if (guideTarget == 2 && control > 0) Modifier.onGloballyPositioned { onGuideBounds(it.boundsInRoot()) } else Modifier)) {
-                        Icon(if (control > 0) Icons.Rounded.ZoomIn else Icons.Rounded.ZoomOut,
-                            stringResource(if (control > 0) R.string.camera_zoom_in else R.string.camera_zoom_out),
-                            Modifier.graphicsLayer { rotationZ = iconRotation.value })
-                    }
-                }
+        IconButton(onClick = onGallery, enabled = guideTarget < 0,
+            modifier = Modifier.size(52.dp).semantics { contentDescription = galleryLabel }.clip(CircleShape).border(1.dp, Color.White.copy(alpha = 0.7f), CircleShape)) {
+            Box(Modifier.fillMaxSize().graphicsLayer { rotationZ = iconRotation.value },
+                contentAlignment = Alignment.Center) {
+                thumbnail()
+            }
+        }
+        val enabled = state.ready && state.status != CameraReadingStatus.CAPTURING &&
+            (guideTarget < 0 || guideTarget == 3)
+        IconButton(onClick = onCapture, enabled = enabled,
+            modifier = Modifier.size(88.dp).border(2.dp, Color.White.copy(alpha = if (enabled) 0.9f else 0.4f), CircleShape)
+                .then(if (guideTarget == 3) Modifier.onGloballyPositioned { onGuideBounds(it.boundsInRoot()) } else Modifier)) {
+            Box(Modifier.padding(7.dp).fillMaxSize().background(
+                Color.White.copy(alpha = if (enabled) 1f else 0.4f), CircleShape),
+                contentAlignment = Alignment.Center) {
+                Icon(Icons.Rounded.DocumentScanner, stringResource(R.string.camera_capture),
+                    Modifier.size(32.dp).graphicsLayer { rotationZ = iconRotation.value }, tint = Color.Black)
             }
         }
     }) { measurables, constraints ->
@@ -241,8 +252,8 @@ private fun CameraCaptureControls(
         val height = constraints.maxHeight
         val naturalLandscape = (width > height) == (displayRotation % 2 == 0)
         val rotation = (displayRotation + if (naturalLandscape) 1 else 0) % 4
-        val edge = edgePadding.toPx() + 36.dp.toPx()
-        val spacing = 84.dp.toPx()
+        val edge = edgePadding.toPx() + 44.dp.toPx()
+        val spacing = 100.dp.toPx()
         layout(width, height) {
             buttons.forEachIndexed { index, button ->
                 val offset = (index - 1) * spacing

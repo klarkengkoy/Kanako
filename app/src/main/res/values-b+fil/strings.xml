@@ -69,14 +69,13 @@
     <string name="camera_unavailable">Hindi magamit ang camera. Suriin ang pahintulot o isara ang ibang camera app, saka subukan ulit.</string>
     <string name="camera_starting">Sinisimulan ang camera…</string>
     <string name="camera_live">Live na pagbasa ng Japanese</string>
-    <string name="camera_live_hint">I-tap para mag-focus · Kurutin para mag-zoom</string>
     <string name="camera_live_description">Live na view ng camera. I-tap para mag-focus at kurutin para mag-zoom.</string>
     <string name="camera_capturing">Kinukunan ng larawan…</string>
     <string name="camera_retry">Subukan ulit</string>
     <string name="camera_save">I-save na may furigana</string>
     <string name="camera_saving">Sine-save…</string>
     <string name="camera_saved">Na-save</string>
-    <string name="camera_open_saved">Buksan ang na-save na larawan</string>
+    <string name="camera_open_saved">Mga na-save na larawan</string>
     <string name="camera_share">Ibahagi ang na-save na larawan</string>
     <string name="camera_open_failed">Hindi mabuksan ang na-save na larawan. Mahahanap mo ito sa Files.</string>
     <string name="camera_share_failed">Hindi mabuksan ang pagbabahagi. Mahahanap mo ang na-save na larawan sa Files.</string>
@@ -84,7 +83,7 @@
     <string name="camera_photo_ready">Handa ang larawan · Hindi pa na-save</string>
     <string name="camera_photo_missing">Hindi na magagamit ang pansamantalang larawang ito. Bumalik sa live na camera para kumuha ng bago.</string>
     <string name="camera_photo_description">Larawang kuha sa camera na may mga pagbasa sa Japanese</string>
-    <string name="camera_photo_hint">Kurutin para mag-zoom · I-drag para ilipat · I-double tap para i-reset</string>
+    <string name="camera_photo_hint">Kurutin para mag-zoom at ipakita ang mga pagbasa · I-drag para ilipat · I-double tap para i-reset</string>
     <string name="camera_zoom_in">Palakihin</string>
     <string name="camera_zoom_out">Paliitin</string>
     <string name="camera_zoom_reset">I-reset ang zoom</string>
@@ -216,7 +215,7 @@
     <string name="guided_camera_intro">Ito ang tunay na camera reader. Payagan ang camera kung hihilingin, at itutok sa nakalimbag na Japanese. I-tap ang preview para mag-focus, mag-zoom at kumuha ng larawan. Walang awtomatikong ise-save.</string>
     <string name="guided_camera_begin">Subukan ang camera</string>
     <string name="guided_camera_focus">Itutok ang camera sa nakalimbag na Japanese, saka i-tap ang naka-highlight na preview para mag-focus.</string>
-    <string name="guided_camera_zoom">Pindutin ang naka-highlight na zoom-in button.</string>
+    <string name="guided_camera_zoom">Kurutin palabas ang naka-highlight na preview para mag-zoom in.</string>
     <string name="guided_camera_capture">Pindutin ang naka-highlight na capture button. Kukuha ito ng tunay na larawang masusuri ngunit hindi awtomatikong ise-save.</string>
     <string name="guided_camera_review_first">Tapusin munang suriin ang kasalukuyang larawan bago simulan ang gabay sa camera.</string>
     <string name="guided_script">Pindutin ang Sistema ng pagsulat para lumipat sa Kana o Romaji. Makikita sa menu ang kasalukuyang pinili.</string>
@@ -228,4 +227,12 @@
     <string name="setup_accessibility_disconnected">Naka-on, hindi nakakonekta</string>
     <string name="setup_accessibility_reconnect">Naka-on ang Kanako sa Android settings pero hindi nakakonekta ang serbisyo sa pagbasa ng screen. Sa accessibility settings, i-off at i-on muli ang Kanako, saka bumalik dito.</string>
     <string name="setup_disclosure_needed">Basahin ang paliwanag sa screen reading</string>
+    <string name="gallery_title">Mga na-save na larawan</string>
+    <string name="gallery_refresh">I-refresh ang mga na-save na larawan</string>
+    <string name="gallery_load_failed">Hindi ma-load ang mga na-save na larawan. Subukan muli.</string>
+    <string name="gallery_empty">Lalabas dito ang mga na-save mong larawan sa camera. Buksan ang camera at piliin ang I-save na may furigana para magdagdag.</string>
+    <string name="gallery_image_missing">Hindi na available ang larawang ito. Maaaring nailipat, nabura, o nag-expire ang pahintulot sa pag-access.</string>
+    <string name="gallery_image_description">Na-save na larawan ng Kanako: %1$s</string>
+    <string name="preferences_photo_size_summary">Sa mga larawan, ito ang pinakamaliit na laki ng pagbasa. Maaari itong lumaki kasabay ng tekstong Hapon. Mag-zoom in kung kailangan ng dagdag na espasyo.</string>
+    <string name="gallery_image_hint">Kurutin para mag-zoom · I-drag para ilipat · I-double tap para i-reset</string>
 </resources>
