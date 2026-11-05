@@ -1,6 +1,7 @@
 package com.smyddevstudio.kanako.camera
 
 import android.graphics.Bitmap
+import android.net.Uri
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.requiredSize
@@ -9,9 +10,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.unit.Density
@@ -47,6 +50,75 @@ class CameraResultControlsTest {
         compose.onNodeWithText(context.getString(R.string.camera_result_retake))
             .performScrollTo().assertIsDisplayed().performClick()
         compose.runOnIdle { assertEquals(1, returns) }
+    }
+
+    @Test fun savedImageReplacesSaveWithConfirmationAndOffersOpenAndShareAtLargeTextInAShortWindow() {
+        val photo = CameraPhoto.fromOwnedBitmap(Bitmap.createBitmap(40, 30, Bitmap.Config.ARGB_8888))
+        var opens = 0
+        var shares = 0
+        try {
+            compose.setContent {
+                CompositionLocalProvider(LocalDensity provides Density(LocalDensity.current.density, 2f)) {
+                    KanakoTheme {
+                        CameraResultContent(
+                            CameraReaderUiState(status = CameraReadingStatus.PHOTO, photo = photo, saved = true,
+                                savedUri = Uri.parse("content://media/external_primary/images/media/1")),
+                            {}, {}, {}, {}, {},
+                            modifier = Modifier.requiredSize(320.dp, 480.dp), canSave = true,
+                            onOpen = { opens++ }, onShare = { shares++ },
+                            photograph = { Box(it.fillMaxSize()) }
+                        )
+                    }
+                }
+            }
+            compose.onNodeWithText(context.getString(R.string.camera_saved))
+                .performScrollTo().assertIsDisplayed().assertIsNotEnabled()
+            compose.onNodeWithText(context.getString(R.string.camera_save)).assertDoesNotExist()
+            compose.onNodeWithContentDescription(context.getString(R.string.camera_share))
+                .performScrollTo().assertIsDisplayed().performClick()
+            compose.onNodeWithContentDescription(context.getString(R.string.camera_open_saved))
+                .performScrollTo().assertIsDisplayed().performClick()
+            compose.runOnIdle { assertEquals(1, opens); assertEquals(1, shares) }
+        } finally { photo.close() }
+    }
+
+    @Test fun savingBlocksSaveAndHidesSavedImageActions() {
+        val photo = CameraPhoto.fromOwnedBitmap(Bitmap.createBitmap(40, 30, Bitmap.Config.ARGB_8888))
+        try {
+            compose.setContent {
+                KanakoTheme {
+                    CameraResultContent(
+                        CameraReaderUiState(status = CameraReadingStatus.PHOTO, photo = photo, saving = true),
+                        {}, {}, {}, {}, {}, canSave = true, photograph = { Box(it.fillMaxSize()) }
+                    )
+                }
+            }
+            compose.onNodeWithText(context.getString(R.string.camera_saving)).assertIsNotEnabled()
+            compose.onNodeWithText(context.getString(R.string.camera_saved)).assertDoesNotExist()
+            compose.onNodeWithContentDescription(context.getString(R.string.camera_open_saved)).assertDoesNotExist()
+            compose.onNodeWithContentDescription(context.getString(R.string.camera_share)).assertDoesNotExist()
+        } finally { photo.close() }
+    }
+
+    @Test fun failedSaveCanBeRetriedWithoutOfferingSavedImageActions() {
+        val photo = CameraPhoto.fromOwnedBitmap(Bitmap.createBitmap(40, 30, Bitmap.Config.ARGB_8888))
+        var saves = 0
+        try {
+            compose.setContent {
+                KanakoTheme {
+                    CameraResultContent(
+                        CameraReaderUiState(status = CameraReadingStatus.PHOTO, photo = photo, saved = false),
+                        {}, {}, {}, {}, { saves++ }, canSave = true, photograph = { Box(it.fillMaxSize()) }
+                    )
+                }
+            }
+            compose.onNodeWithText(context.getString(R.string.camera_save_failed)).assertIsDisplayed()
+            compose.onNodeWithText(context.getString(R.string.camera_saved)).assertDoesNotExist()
+            compose.onNodeWithContentDescription(context.getString(R.string.camera_open_saved)).assertDoesNotExist()
+            compose.onNodeWithContentDescription(context.getString(R.string.camera_share)).assertDoesNotExist()
+            compose.onNodeWithText(context.getString(R.string.camera_save)).performClick()
+            compose.runOnIdle { assertEquals(1, saves) }
+        } finally { photo.close() }
     }
 
     @Test fun photoActionsRemainReachableAtLargeTextInAShortWindow() {

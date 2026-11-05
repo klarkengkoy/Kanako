@@ -2,6 +2,7 @@ package com.smyddevstudio.kanako.camera
 
 import android.content.ContentResolver
 import android.net.Uri
+import android.os.Build
 import android.os.SystemClock
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -16,7 +17,6 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -31,7 +31,8 @@ internal data class CameraReaderUiState(
     val photo: CameraPhoto? = null,
     val ready: Boolean = false,
     val saving: Boolean = false,
-    val saved: Boolean? = null
+    val saved: Boolean? = null,
+    val savedUri: Uri? = null
 )
 
 internal class CameraReaderViewModel : ViewModel() {
@@ -139,7 +140,8 @@ internal class CameraReaderViewModel : ViewModel() {
         val ticket = photoTicket
         val request = ++photoRequest
         recognition?.cancel()
-        mutableState.value = mutableState.value.copy(status = CameraReadingStatus.PROCESSING, lines = emptyList(), saved = null)
+        mutableState.value = mutableState.value.copy(status = CameraReadingStatus.PROCESSING, lines = emptyList(), saved = null,
+            savedUri = null)
         recognition = viewModelScope.launch {
             try {
                 val lines = withContext(Dispatchers.Default) { cameraReadingLines(recognizeCameraPhoto(photo)) }
@@ -165,7 +167,15 @@ internal class CameraReaderViewModel : ViewModel() {
         val lease = state.photo?.acquire() ?: return false
         pendingExport?.close()
         pendingExport = CameraPhotoExport(lease, state.lines, style)
+        mutableState.value = state.copy(saving = true)
         return true
+    }
+
+    fun saveToPictures(resolver: ContentResolver, style: CameraExportStyle) {
+        if (Build.VERSION.SDK_INT < 29 || !prepareExport(style)) return
+        val request = pendingExport ?: return
+        pendingExport = null
+        startExport(request, CameraPicturesDestination(resolver))
     }
 
     fun completeExport(resolver: ContentResolver, uri: Uri?, unavailable: Boolean = false) {
@@ -173,35 +183,36 @@ internal class CameraReaderViewModel : ViewModel() {
         pendingExport = null
         if (uri == null) {
             request?.close()
-            if (unavailable) mutableState.value = mutableState.value.copy(saved = false)
+            if (request != null) mutableState.value = mutableState.value.copy(
+                saving = false,
+                saved = if (unavailable) false else mutableState.value.saved
+            )
             return
         }
         if (request == null) {
             viewModelScope.launch(Dispatchers.IO) { runCatching { resolver.delete(uri, null, null) } }
-            mutableState.value = mutableState.value.copy(saved = false)
             return
         }
+        startExport(request, CameraDocumentDestination(resolver, uri))
+    }
+
+    private fun startExport(
+        request: CameraPhotoExport,
+        destination: CameraExportDestination<Uri>
+    ) {
         mutableState.value = mutableState.value.copy(saving = true, saved = null)
         val operation = ++exportRequest
         export = viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
-            var complete = false
             try {
-                withContext(Dispatchers.IO) {
-                    resolver.openOutputStream(uri, "w")?.use { output ->
-                        writeCameraPhotoExport(request, output)
-                    } ?: error("Cannot open export destination")
-                    coroutineContext.ensureActive()
-                }
-                complete = true
-                if (operation == exportRequest) mutableState.value = mutableState.value.copy(saved = true)
+                val uri = writeCameraExport(destination) { output -> writeCameraPhotoExport(request, output) }
+                if (operation == exportRequest) mutableState.value = mutableState.value.copy(
+                    saved = true, savedUri = uri
+                )
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {
                 if (operation == exportRequest) mutableState.value = mutableState.value.copy(saved = false)
             } finally {
-                if (!complete) withContext(kotlinx.coroutines.NonCancellable + Dispatchers.IO) {
-                    runCatching { resolver.delete(uri, null, null) }
-                }
                 request.close()
                 if (operation == exportRequest) mutableState.value = mutableState.value.copy(saving = false)
             }

@@ -54,7 +54,7 @@
     <string name="camera_open">カメラで読む</string>
     <string name="camera_capture">写真を撮影</string>
     <string name="camera_result_title">写真の読み取り</string>
-    <string name="camera_result_retake">カメラに戻る</string>
+    <string name="camera_result_retake">再撮影</string>
     <string name="camera_appearance">読みの見た目</string>
     <string name="camera_state_permission">カメラへのアクセスが必要です</string>
     <string name="camera_state_permission_body">カメラで日本語の読みをライブ表示したり、写真を撮影したりします。「ふりがな付きで保存」を選ぶまでは、画像はメモリ内だけに保持します。フローティングリーダーの権限は不要です。</string>
@@ -74,8 +74,12 @@
     <string name="camera_retry">再試行</string>
     <string name="camera_save">ふりがな付きで保存</string>
     <string name="camera_saving">保存中…</string>
-    <string name="camera_saved">ふりがな付きで保存しました</string>
-    <string name="camera_save_failed">保存できませんでした。保存先を選んで再度お試しください。</string>
+    <string name="camera_saved">保存済み</string>
+    <string name="camera_open_saved">保存した画像を開く</string>
+    <string name="camera_share">保存した画像を共有</string>
+    <string name="camera_open_failed">保存した画像を開けませんでした。ファイルアプリから確認できます。</string>
+    <string name="camera_share_failed">共有画面を開けませんでした。保存した画像はファイルアプリから確認できます。</string>
+    <string name="camera_save_failed">保存できませんでした。もう一度お試しください。</string>
     <string name="camera_photo_ready">写真の準備完了・未保存</string>
     <string name="camera_photo_missing">一時保存した写真がなくなりました。ライブカメラに戻り、もう一度撮影してください。</string>
     <string name="camera_photo_description">日本語の読みを重ねたカメラ写真</string>
@@ -145,7 +149,7 @@
     <string name="how_tile_title">クイック設定</string>
     <string name="how_tile">画面上部から2回スワイプし、編集からかなこを追加してください。タップでリーダーを表示・停止できます。追加だけでは撮影しません。権限が足りない場合はホームを開きます。自動読み取りが有効な場合、リーダー開始後に読み取りも行います。</string>
     <string name="how_camera_title">カメラを使う</string>
-    <string name="how_camera">ホームからカメラを開きます。カメラの権限は画面読み取りとは別です。ライブ表示や撮影した写真で読めます。読みまたは対応する漢字をタップすると、その読みを手前に表示します。重なった読みを繰り返しタップすると順番に切り替わります。ライブ表示のほかの場所をタップするとピントを合わせます。ピンチで拡大し、写真はドラッグで移動、ダブルタップでリセットできます。「ふりがな付きで保存」は拡大率に関係なく、選んだ読みを手前にして写真全体を保存します。</string>
+    <string name="how_camera">ホームからカメラを開きます。カメラの権限は画面読み取りとは別です。ライブ表示や撮影した写真で読めます。読みまたは対応する漢字をタップすると、その読みを手前に表示します。重なった読みを繰り返しタップすると順番に切り替わります。ライブ表示のほかの場所をタップするとピントを合わせます。ピンチで拡大し、写真はドラッグで移動、ダブルタップでリセットできます。「ふりがな付きで保存」は拡大率に関係なく、選んだ読みを手前にして写真全体を保存します。 Android 10以降では「ふりがな付きで保存」でPictures/Kanakoに保存されます。それ以前のバージョンでは保存先の選択画面が開きます。</string>
     <string name="reading_size_small">10sp</string>
     <string name="reading_size_medium">12sp</string>
     <string name="reading_size_large">14sp</string>
@@ -186,9 +190,9 @@
     <string name="tutorial_floating_read">サンプルのキャラクターをタップしてふりがなを表示し、もう一度タップして消してください。実際の読み取りでは、表示できない理由を赤い状態メッセージで確認できます。</string>
     <string name="tutorial_floating_controls">サンプルのキャラクターをドラッグしてください。ダブルタップか長押しで操作メニューを開き、サンプルのリーダーを停止してください。フローティングリーダーでも同じ操作を使います。</string>
     <string name="tutorial_camera_focus">サンプルをタップしてピント合わせを練習します。ピンチ操作かズームスライダーで大きさを変えてください。カメラは使用しません。</string>
-    <string name="tutorial_camera_capture">サンプルを撮影して、静止した状態で読みます。実際のカメラでは「カメラに戻る」から撮り直せます。</string>
+    <string name="tutorial_camera_capture">サンプルを撮影して、静止した状態で読みます。実際のカメラでは「再撮影」から撮り直せます。</string>
     <string name="tutorial_camera_appearance">サンプルでかなとローマ字を切り替えてください。実際のリーダーでは、設定から両方のリーダーの表示を変更できます。</string>
-    <string name="tutorial_camera_save">サンプルの保存ボタンを試してください。実際の「ふりがな付きで保存」ではAndroidの保存先選択画面が開き、ズームに関係なく、ふりがな付きの写真全体を保存します。</string>
+    <string name="tutorial_camera_save">「ふりがな付きで保存」は、ズームに関係なく写真全体を保存します。Android 10以降ではPictures/Kanakoに保存されます。それ以前のバージョンでは保存先の選択画面が開きます。</string>
     <string name="tutorial_success">練習の操作ができました</string>
     <string name="tutorial_save_confirm">練習用の保存先です。確認すると練習が完了します。画像やファイルは作成されません。</string>
     <string name="tutorial_finished">どちらの練習も使い方から繰り返せます。実際のリーダーを開く場合は、通常のアクセス確認と同意が必要です。</string>

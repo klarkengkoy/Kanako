@@ -55,7 +55,7 @@
     <string name="camera_open">Read with camera</string>
     <string name="camera_capture">Capture photo</string>
     <string name="camera_result_title">Photo reading</string>
-    <string name="camera_result_retake">Return to camera</string>
+    <string name="camera_result_retake">Retake</string>
     <string name="camera_appearance">Reading appearance</string>
     <string name="camera_state_permission">Camera access needed</string>
     <string name="camera_state_permission_body">Use the camera for live Japanese readings and photos. Images stay in memory unless you choose Save with furigana. Floating-reader access is not needed.</string>
@@ -75,8 +75,12 @@
     <string name="camera_retry">Retry</string>
     <string name="camera_save">Save with furigana</string>
     <string name="camera_saving">Saving…</string>
-    <string name="camera_saved">Saved with furigana</string>
-    <string name="camera_save_failed">Could not save. Choose a destination and try again.</string>
+    <string name="camera_saved">Saved</string>
+    <string name="camera_open_saved">Open saved image</string>
+    <string name="camera_share">Share saved image</string>
+    <string name="camera_open_failed">Could not open the saved image. You can find it in Files.</string>
+    <string name="camera_share_failed">Could not open sharing. You can find the saved image in Files.</string>
+    <string name="camera_save_failed">Could not save. Please try again.</string>
     <string name="camera_photo_ready">Photo ready · Not saved</string>
     <string name="camera_photo_missing">This temporary photo is no longer available. Return to the live camera to capture another.</string>
     <string name="camera_photo_description">Captured camera photo with Japanese readings</string>
@@ -147,7 +151,7 @@
     <string name="how_tile_title">Quick Settings</string>
     <string name="how_tile">Swipe down twice, tap Edit, then add Kanako to your active tiles. Tap it to show or stop the floating reader. Adding the tile does not capture a screenshot. Missing access opens Home. With Auto-read enabled, starting the reader also schedules a reading.</string>
     <string name="how_camera_title">Use the camera</string>
-    <string name="how_camera">Open Camera from Home; its permission is separate from screen reading access. Read live, or capture a photo for stable reading. Tap a reading or its kanji to bring that reading in front; tap overlapping readings again to cycle through them. Tap elsewhere in the live view to focus. Pinch to zoom; on a photo, drag to move and double tap to reset. Save with furigana exports the whole photo with the selected reading in front, regardless of your current zoom.</string>
+    <string name="how_camera">Open Camera from Home; its permission is separate from screen reading access. Read live, or capture a photo for stable reading. Tap a reading or its kanji to bring that reading in front; tap overlapping readings again to cycle through them. Tap elsewhere in the live view to focus. Pinch to zoom; on a photo, drag to move and double tap to reset. Save with furigana exports the whole photo with the selected reading in front, regardless of your current zoom. On Android 10 or later, Save with furigana saves to Pictures/Kanako. Older versions open the destination picker.</string>
     <string name="reading_size_small">10sp</string>
     <string name="reading_size_medium">12sp</string>
     <string name="reading_size_large">14sp</string>
@@ -187,9 +191,9 @@
     <string name="tutorial_floating_read">Tap Kanako to show furigana, then tap again to clear it. During real reading, red status messages explain when readings cannot be shown.</string>
     <string name="tutorial_floating_controls">Drag Kanako. Double tap or hold it to open controls, then stop the sample reader. These controls work the same way in the floating reader.</string>
     <string name="tutorial_camera_focus">Tap the sample to practice focusing. Pinch or use the zoom slider to change its size. This sample does not use your camera.</string>
-    <string name="tutorial_camera_capture">Capture the sample to freeze it for reading. In the real camera, Return to camera lets you take another photo.</string>
+    <string name="tutorial_camera_capture">Capture the sample to freeze it for reading. In the real camera, Retake lets you take another photo.</string>
     <string name="tutorial_camera_appearance">Try Kana and Romaji on this sample. In the real reader, Preferences changes the appearance of both readers.</string>
-    <string name="tutorial_camera_save">Try the sample save button. In the real reader, Save with furigana opens Android’s destination picker and saves the whole annotated photo, regardless of zoom.</string>
+    <string name="tutorial_camera_save">Save with furigana saves the whole annotated photo, regardless of zoom. On Android 10 or later, it saves to Pictures/Kanako. Older versions open the destination picker.</string>
     <string name="tutorial_success">Practice action completed</string>
     <string name="tutorial_save_confirm">This is a practice destination. Confirm to finish the exercise; no image or file will be created.</string>
     <string name="tutorial_finished">You can replay either path from How it works. Opening the real reader still uses its usual access checks and consent.</string>

@@ -55,7 +55,7 @@
     <string name="camera_open">Leggi con la fotocamera</string>
     <string name="camera_capture">Scatta foto</string>
     <string name="camera_result_title">Lettura della foto</string>
-    <string name="camera_result_retake">Torna alla fotocamera</string>
+    <string name="camera_result_retake">Ripeti</string>
     <string name="camera_appearance">Aspetto delle letture</string>
     <string name="camera_state_permission">Accesso alla fotocamera necessario</string>
     <string name="camera_state_permission_body">Usa la fotocamera per leggere il giapponese dal vivo e nelle foto. Le immagini restano in memoria, a meno che tu non scelga Salva con furigana. Non serve l’accesso al lettore mobile.</string>
@@ -75,8 +75,12 @@
     <string name="camera_retry">Riprova</string>
     <string name="camera_save">Salva con furigana</string>
     <string name="camera_saving">Salvataggio…</string>
-    <string name="camera_saved">Salvato con furigana</string>
-    <string name="camera_save_failed">Impossibile salvare. Scegli una destinazione e riprova.</string>
+    <string name="camera_saved">Salvato</string>
+    <string name="camera_open_saved">Apri l’immagine salvata</string>
+    <string name="camera_share">Condividi l’immagine salvata</string>
+    <string name="camera_open_failed">Impossibile aprire l’immagine salvata. Puoi trovarla in File.</string>
+    <string name="camera_share_failed">Impossibile aprire la condivisione. Puoi trovare l’immagine salvata in File.</string>
+    <string name="camera_save_failed">Impossibile salvare. Riprova.</string>
     <string name="camera_photo_ready">Foto pronta · Non salvata</string>
     <string name="camera_photo_missing">Questa foto temporanea non è più disponibile. Torna alla fotocamera per scattarne un’altra.</string>
     <string name="camera_photo_description">Foto acquisita con letture giapponesi</string>
@@ -147,7 +151,7 @@
     <string name="how_tile_title">Impostazioni rapide</string>
     <string name="how_tile">Scorri due volte verso il basso, tocca Modifica e aggiungi Kanako ai riquadri attivi. Toccalo per mostrare o fermare il lettore mobile. Aggiungerlo non acquisisce screenshot. Se manca un accesso si apre la Home. Con la lettura automatica attiva, l’avvio del lettore programma anche una lettura.</string>
     <string name="how_camera_title">Usa la fotocamera</string>
-    <string name="how_camera">Apri la fotocamera dalla Home; il suo permesso è separato dall’accesso alla lettura dello schermo. Leggi dal vivo o scatta una foto per una lettura stabile. Tocca una lettura o il suo kanji per portarla davanti alle altre; tocca di nuovo le letture sovrapposte per scorrerle. Tocca altrove nella vista dal vivo per mettere a fuoco. Pizzica per lo zoom; su una foto, trascina per spostare e tocca due volte per ripristinare. Salva con furigana esporta l’intera foto con la lettura selezionata davanti, indipendentemente dallo zoom attuale.</string>
+    <string name="how_camera">Apri la fotocamera dalla Home; il suo permesso è separato dall’accesso alla lettura dello schermo. Leggi dal vivo o scatta una foto per una lettura stabile. Tocca una lettura o il suo kanji per portarla davanti alle altre; tocca di nuovo le letture sovrapposte per scorrerle. Tocca altrove nella vista dal vivo per mettere a fuoco. Pizzica per lo zoom; su una foto, trascina per spostare e tocca due volte per ripristinare. Salva con furigana esporta l’intera foto con la lettura selezionata davanti, indipendentemente dallo zoom attuale. Su Android 10 o versioni successive, Salva con furigana salva in Pictures/Kanako. Le versioni precedenti aprono il selettore di destinazione.</string>
     <string name="reading_size_small">10sp</string>
     <string name="reading_size_medium">12sp</string>
     <string name="reading_size_large">14sp</string>
@@ -187,9 +191,9 @@
     <string name="tutorial_floating_read">Tocca il personaggio per mostrare i furigana, poi tocca di nuovo per cancellarli. Nella lettura reale, i messaggi rossi spiegano perché non è possibile mostrare le letture.</string>
     <string name="tutorial_floating_controls">Trascina il personaggio. Tocca due volte o tieni premuto per aprire i comandi, poi ferma il lettore di esempio. Il lettore mobile usa gli stessi gesti.</string>
     <string name="tutorial_camera_focus">Tocca l’esempio per simulare la messa a fuoco. Pizzica o usa il cursore per lo zoom. Questo esempio non usa la fotocamera.</string>
-    <string name="tutorial_camera_capture">Scatta una foto dell’esempio per bloccare la lettura. Nella fotocamera reale, Torna alla fotocamera permette di scattarne un’altra.</string>
+    <string name="tutorial_camera_capture">Scatta una foto dell’esempio per bloccare la lettura. Nella fotocamera reale, Ripeti permette di scattarne un’altra.</string>
     <string name="tutorial_camera_appearance">Prova Kana e Romaji sull’esempio. Nei lettori reali, le preferenze modificano l’aspetto di entrambi.</string>
-    <string name="tutorial_camera_save">Prova il pulsante di salvataggio. Nel lettore reale, Salva con furigana apre il selettore di destinazione Android e salva l’intera foto annotata, indipendentemente dallo zoom.</string>
+    <string name="tutorial_camera_save">Salva con furigana salva l’intera foto annotata, indipendentemente dallo zoom. Su Android 10 o versioni successive viene salvata in Pictures/Kanako. Le versioni precedenti aprono il selettore di destinazione.</string>
     <string name="tutorial_success">Azione di pratica completata</string>
     <string name="tutorial_save_confirm">Destinazione di pratica. Conferma per terminare l’esercizio; non verranno creati immagini o file.</string>
     <string name="tutorial_finished">Puoi ripetere entrambi i percorsi da Come funziona. L’apertura del lettore reale mantiene i normali controlli di accesso e consenso.</string>

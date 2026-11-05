@@ -55,7 +55,7 @@
     <string name="camera_open">Magbasa gamit ang camera</string>
     <string name="camera_capture">Kumuha ng larawan</string>
     <string name="camera_result_title">Pagbasa ng larawan</string>
-    <string name="camera_result_retake">Bumalik sa camera</string>
+    <string name="camera_result_retake">Ulitin</string>
     <string name="camera_appearance">Hitsura ng mga pagbasa</string>
     <string name="camera_state_permission">Kailangan ng access sa camera</string>
     <string name="camera_state_permission_body">Gamitin ang camera para magbasa ng Japanese nang live at sa mga larawan. Nasa memory lang ang mga larawan maliban kung pipiliin mong I-save na may furigana. Hindi kailangan ng access sa lumulutang na reader.</string>
@@ -75,8 +75,12 @@
     <string name="camera_retry">Subukan ulit</string>
     <string name="camera_save">I-save na may furigana</string>
     <string name="camera_saving">Sine-save…</string>
-    <string name="camera_saved">Na-save na may furigana</string>
-    <string name="camera_save_failed">Hindi ma-save. Pumili ng destinasyon at subukan ulit.</string>
+    <string name="camera_saved">Na-save</string>
+    <string name="camera_open_saved">Buksan ang na-save na larawan</string>
+    <string name="camera_share">Ibahagi ang na-save na larawan</string>
+    <string name="camera_open_failed">Hindi mabuksan ang na-save na larawan. Mahahanap mo ito sa Files.</string>
+    <string name="camera_share_failed">Hindi mabuksan ang pagbabahagi. Mahahanap mo ang na-save na larawan sa Files.</string>
+    <string name="camera_save_failed">Hindi ma-save. Subukan ulit.</string>
     <string name="camera_photo_ready">Handa ang larawan · Hindi pa na-save</string>
     <string name="camera_photo_missing">Hindi na magagamit ang pansamantalang larawang ito. Bumalik sa live na camera para kumuha ng bago.</string>
     <string name="camera_photo_description">Larawang kuha sa camera na may mga pagbasa sa Japanese</string>
@@ -147,7 +151,7 @@
     <string name="how_tile_title">Quick Settings</string>
     <string name="how_tile">Mag-swipe pababa nang dalawang beses, i-tap ang I-edit, saka idagdag ang Kanako sa mga aktibong tile. I-tap ito para ipakita o ihinto ang lumulutang na reader. Walang screenshot na kinukuha kapag idinadagdag ito. Bubukas ang Home kapag kulang ang access. Kapag naka-on ang awtomatikong pagbasa, nagtatakda rin ng pagbasa ang pagsisimula ng reader.</string>
     <string name="how_camera_title">Gamitin ang camera</string>
-    <string name="how_camera">Buksan ang Camera mula sa Home; hiwalay ang pahintulot nito sa access sa pagbasa ng screen. Magbasa nang live o kumuha ng larawan para sa matatag na pagbasa. I-tap ang isang pagbasa o ang kanji nito para ilagay ito sa harap; i-tap ulit ang magkakapatong na pagbasa para magpalit-palit sa mga ito. I-tap ang ibang bahagi ng live na view para mag-focus. Kurutin para mag-zoom; sa larawan, i-drag para ilipat at i-double tap para i-reset. Ini-export ng I-save na may furigana ang buong larawan na nasa harap ang napiling pagbasa, anuman ang kasalukuyang zoom.</string>
+    <string name="how_camera">Buksan ang Camera mula sa Home; hiwalay ang pahintulot nito sa access sa pagbasa ng screen. Magbasa nang live o kumuha ng larawan para sa matatag na pagbasa. I-tap ang isang pagbasa o ang kanji nito para ilagay ito sa harap; i-tap ulit ang magkakapatong na pagbasa para magpalit-palit sa mga ito. I-tap ang ibang bahagi ng live na view para mag-focus. Kurutin para mag-zoom; sa larawan, i-drag para ilipat at i-double tap para i-reset. Ini-export ng I-save na may furigana ang buong larawan na nasa harap ang napiling pagbasa, anuman ang kasalukuyang zoom. Sa Android 10 o mas bago, sine-save ng I-save na may furigana ang larawan sa Pictures/Kanako. Sa mas lumang bersyon, magbubukas ang pagpili ng destinasyon.</string>
     <string name="reading_size_small">10sp</string>
     <string name="reading_size_medium">12sp</string>
     <string name="reading_size_large">14sp</string>
@@ -187,9 +191,9 @@
     <string name="tutorial_floating_read">I-tap ang sample na karakter para ipakita ang furigana, saka i-tap ulit para burahin. Sa tunay na pagbasa, ipinapaliwanag ng mga pulang mensahe kung bakit hindi maipakita ang mga pagbasa.</string>
     <string name="tutorial_floating_controls">I-drag ang sample na karakter. I-double tap o pindutin nang matagal para buksan ang mga kontrol, saka ihinto ang sample na reader. Ganoon din ang mga kontrol ng lumulutang na reader.</string>
     <string name="tutorial_camera_focus">I-tap ang sample para magsanay sa pag-focus. Kurutin o gamitin ang zoom slider para baguhin ang laki. Hindi ginagamit ng sample ang iyong camera.</string>
-    <string name="tutorial_camera_capture">Kunan ng larawan ang sample para hindi gumalaw habang nagbabasa. Sa tunay na camera, makakakuha ka ng panibago sa Bumalik sa camera.</string>
+    <string name="tutorial_camera_capture">Kunan ng larawan ang sample para hindi gumalaw habang nagbabasa. Sa tunay na camera, makakakuha ka ng panibago sa Ulitin.</string>
     <string name="tutorial_camera_appearance">Subukan ang Kana at Romaji sa sample. Sa tunay na reader, binabago ng Mga kagustuhan ang hitsura ng parehong reader.</string>
-    <string name="tutorial_camera_save">Subukan ang sample na save button. Sa tunay na reader, binubuksan ng I-save na may furigana ang pagpili ng destinasyon ng Android at sine-save ang buong larawang may anotasyon, anuman ang zoom.</string>
+    <string name="tutorial_camera_save">Sine-save ng I-save na may furigana ang buong larawang may anotasyon, anuman ang zoom. Sa Android 10 o mas bago, sine-save ito sa Pictures/Kanako. Sa mas lumang bersyon, magbubukas ang pagpili ng destinasyon.</string>
     <string name="tutorial_success">Nagawa na ang pagsasanay</string>
     <string name="tutorial_save_confirm">Destinasyon ito para sa pagsasanay. Kumpirmahin para tapusin ang ehersisyo; walang larawan o file na gagawin.</string>
     <string name="tutorial_finished">Maaari mong ulitin ang alinmang pagsasanay mula sa Paano ito gumagana. Gagamitin pa rin ang karaniwang pagsusuri sa access at pahintulot kapag binuksan ang tunay na reader.</string>
