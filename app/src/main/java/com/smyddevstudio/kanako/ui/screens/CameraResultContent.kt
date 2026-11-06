@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -68,41 +69,48 @@ internal fun CameraResultContent(
     showReadings: Boolean = true,
     onShowReadingsChange: (Boolean) -> Unit = {},
     onControlsHeight: (Int) -> Unit = {},
-    photograph: @Composable (Modifier) -> Unit = {}
+    photograph: @Composable (Modifier) -> Unit = {},
+    guide: @Composable () -> Unit = {}
 ) {
     BoxWithConstraints(modifier.fillMaxSize().background(Color.Black)) {
-        val density = LocalDensity.current
-        if (state.photo != null) photograph(Modifier.fillMaxSize())
-        Spacer(Modifier.fillMaxWidth()
-            .height(with(density) { WindowInsets.safeDrawing.getTop(this).toDp() } + 96.dp)
-            .background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.7f), Color.Transparent))))
-        Column(Modifier.fillMaxWidth().safeDrawingPadding().padding(horizontal = 16.dp)
-            .onSizeChanged { onControlsHeight(it.height) },
-            horizontalAlignment = Alignment.CenterHorizontally) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                IconButton(onClick = onBack, modifier = Modifier.size(48.dp)) {
-                    Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.navigate_back), tint = Color.White)
+        val guideMaxHeight = maxHeight / 2
+        Column(Modifier.fillMaxSize()) {
+            BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
+                val density = LocalDensity.current
+                if (state.photo != null) photograph(Modifier.fillMaxSize())
+                Spacer(Modifier.fillMaxWidth()
+                    .height(with(density) { WindowInsets.safeDrawing.getTop(this).toDp() } + 96.dp)
+                    .background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.7f), Color.Transparent))))
+                Column(Modifier.fillMaxWidth().safeDrawingPadding().padding(horizontal = 16.dp)
+                    .onSizeChanged { onControlsHeight(it.height) },
+                    horizontalAlignment = Alignment.CenterHorizontally) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        IconButton(onClick = onBack, modifier = Modifier.size(48.dp)) {
+                            Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.navigate_back), tint = Color.White)
+                        }
+                        IconButton(onClick = onPreferences, modifier = Modifier.size(48.dp)) {
+                            Icon(Icons.Rounded.Settings, stringResource(R.string.camera_appearance), tint = Color.White)
+                        }
+                    }
                 }
-                IconButton(onClick = onPreferences, modifier = Modifier.size(48.dp)) {
-                    Icon(Icons.Rounded.Settings, stringResource(R.string.camera_appearance), tint = Color.White)
+                if (state.status == CameraReadingStatus.PROCESSING) {
+                    CircularProgressIndicator(Modifier.align(Alignment.Center), color = Color.White)
+                } else if (state.photo == null) {
+                    Text(stringResource(if (state.status == CameraReadingStatus.READ_ERROR) R.string.gallery_image_missing
+                        else R.string.camera_photo_missing),
+                        Modifier.align(Alignment.Center).safeDrawingPadding().padding(24.dp), color = Color.White)
+                } else if (state.status != CameraReadingStatus.PHOTO) {
+                    Surface(Modifier.align(Alignment.BottomCenter).safeDrawingPadding().padding(16.dp),
+                        shape = CircleShape, color = Color.Black.copy(alpha = 0.8f), contentColor = Color.White) {
+                        Text(stringResource(cameraStatusString(state.status)), Modifier.padding(16.dp)
+                            .semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.bodyMedium)
+                    }
                 }
+                if (state.photo != null) CameraPhotoKanako(state, showReadings, onShowReadingsChange,
+                    preferences, onToggleScriptType, Modifier.fillMaxSize())
             }
+            Box(Modifier.heightIn(max = guideMaxHeight)) { guide() }
         }
-        if (state.status == CameraReadingStatus.PROCESSING) {
-            CircularProgressIndicator(Modifier.align(Alignment.Center), color = Color.White)
-        } else if (state.photo == null) {
-            Text(stringResource(if (state.status == CameraReadingStatus.READ_ERROR) R.string.gallery_image_missing
-                else R.string.camera_photo_missing),
-                Modifier.align(Alignment.Center).safeDrawingPadding().padding(24.dp), color = Color.White)
-        } else if (state.status != CameraReadingStatus.PHOTO) {
-            Surface(Modifier.align(Alignment.BottomCenter).safeDrawingPadding().padding(16.dp),
-                shape = CircleShape, color = Color.Black.copy(alpha = 0.8f), contentColor = Color.White) {
-                Text(stringResource(cameraStatusString(state.status)), Modifier.padding(16.dp)
-                    .semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.bodyMedium)
-            }
-        }
-        if (state.photo != null) CameraPhotoKanako(state, showReadings, onShowReadingsChange,
-            preferences, onToggleScriptType, Modifier.fillMaxSize())
     }
 }
 

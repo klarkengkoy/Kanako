@@ -422,10 +422,6 @@ fun KanakoApp(
                     preferences = preferences,
                     guidedTutorial = cameraGuide,
                     onSkipTutorial = { cameraGuide = false },
-                    onCompleteTutorial = {
-                        if (cameraGuide) coroutineScope.launch { repository.completeTutorial(TutorialPath.CAMERA) }
-                        cameraGuide = false
-                    },
                     onPermissionDenied = {
                         coroutineScope.launch {
                             repository.recordCameraPermissionDenial()
@@ -446,13 +442,19 @@ fun KanakoApp(
                 CameraResultScreen(
                     viewModel = cameraReader,
                     preferences = preferences,
+                    guidedTutorial = cameraGuide,
+                    onSkipTutorial = { cameraGuide = false },
+                    onCompleteTutorial = {
+                        if (cameraGuide) coroutineScope.launch { repository.completeTutorial(TutorialPath.CAMERA) }
+                        cameraGuide = false
+                    },
                     onToggleScriptType = {
                         coroutineScope.launch {
                             repository.updateScriptType(if (preferences.scriptType == ScriptType.KANA)
                                 ScriptType.ROMAJI else ScriptType.KANA)
                         }
                     },
-                    onBack = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) },
+                    onBack = { cameraGuide = false; if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) },
                     onNavigateToPreferences = { backStack.add(Screen.Preferences) }
                 )
             }

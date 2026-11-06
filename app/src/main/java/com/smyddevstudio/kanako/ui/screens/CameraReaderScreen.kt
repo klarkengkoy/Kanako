@@ -70,8 +70,7 @@ internal fun CameraReaderScreen(
     onNavigateToGallery: () -> Unit = {},
     onPermissionDenied: () -> Unit = onBack,
     guidedTutorial: Boolean = false,
-    onSkipTutorial: () -> Unit = {},
-    onCompleteTutorial: () -> Unit = {}
+    onSkipTutorial: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -248,7 +247,7 @@ internal fun CameraReaderScreen(
             if (image != null) SavedCameraImageThumbnail(image.uri)
             else Icon(Icons.Rounded.Image, null, tint = Color.White)
         },
-        onCapture = { session?.let { viewModel.capture(it) { onCompleteTutorial(); onCaptured() } } },
+        onCapture = { session?.let { viewModel.capture(it, onCaptured) } },
         onPermission = {
             when {
                 permanentlyDenied -> context.startActivity(Intent(

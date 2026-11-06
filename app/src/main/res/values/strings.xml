@@ -200,12 +200,15 @@
     <string name="guided_stop">Double-tap or hold Kanako to open the controls, then tap “Stop reader” to stop the floating reader.</string>
     <string name="guided_complete">You’re ready! Outside this lesson, open another app and tap Kanako to read Japanese. Auto-read is optional and requires a separate agreement.</string>
     <string name="guided_sample" translatable="false">日本語を読みます。\n今日は本を三冊読みました。</string>
-    <string name="guided_camera_intro">This is the real camera reader. Allow camera access if requested, then point it at printed Japanese. Tap the preview to focus, adjust zoom, and capture a photo to inspect the readings. Nothing is saved automatically.</string>
+    <string name="guided_camera_intro">This guide uses the real camera. Allow camera access if requested, then focus, zoom and capture printed Japanese. Keep the camera steady. Next, try the photo controls and learn how to choose an existing photo. Nothing is saved automatically.</string>
     <string name="guided_camera_begin">Try the camera</string>
-    <string name="guided_camera_focus">Point the camera at printed Japanese, then tap the highlighted preview to focus.</string>
+    <string name="guided_camera_focus">Point the camera at printed Japanese and keep it steady. Tap the highlighted preview to focus.</string>
     <string name="guided_camera_zoom">Pinch the highlighted preview to zoom in.</string>
-    <string name="guided_camera_capture">Tap the highlighted capture button. This takes a temporary photo for review.</string>
+    <string name="guided_camera_capture">Tap the highlighted capture button to take a temporary photo. The guide continues in photo review.</string>
     <string name="guided_camera_review_first">Finish reviewing your current photo before starting the camera guide.</string>
+    <string name="guided_photo_inspect">When Japanese text is recognized, tap highlighted kanji to show its reading; tap again to clear the selection. Pinch to zoom, drag to move, and double-tap empty space to reset. Recognition and highlights can be imperfect.</string>
+    <string name="guided_photo_kanako">Tap Kanako to hide or show readings. Double-tap or hold Kanako to open its Kana/Romaji controls. Drag Kanako if it covers text. You can try these controls while this guide is open.</string>
+    <string name="guided_photo_library">To read an existing photo, go back to the camera and tap the thumbnail beside the capture button. Choose one photo to use the same reading controls. Nothing is saved automatically. Tap Done to finish this guide.</string>
     <string name="guided_script">Tap Script to switch between Kana and Romaji. The menu label shows your current choice.</string>
     <string name="guided_preferences">For more options, tap the highlighted gear icon on Home.</string>
     <string name="guided_preferences_visit">Here you can change reading size, color, background and floating-reader options. You do not need to change anything now. Return to the tutorial, then reopen Kanako’s controls to stop the reader.</string>
