@@ -161,7 +161,7 @@ class AnimatedMascotTest {
         }
     }
 
-    @Test fun leavingTheScreenDoesNotCompleteTheButtonHandoff() {
+    @Test fun interruptedButtonHandoffCompletesOnceOnReturnWithoutReplaying() {
         lateinit var owner: TestOwner
         var completions = 0
         compose.runOnIdle {
@@ -171,16 +171,26 @@ class AnimatedMascotTest {
         compose.setContent {
             CompositionLocalProvider(LocalLifecycleOwner provides owner) {
                 AnimatedMascot(R.drawable.kanako_peek_button, 56.dp,
-                    animationsEnabled = true, holdLastFrame = true,
+                    animationsEnabled = true, holdLastFrame = true, durationMillis = 4_000,
                     onFinished = { completions++ })
             }
         }
         val animation = awaitAnimation()
+        val view = imageView()
         compose.runOnIdle { owner.registry.currentState = Lifecycle.State.CREATED }
         compose.runOnIdle {
             assertFalse(animation.isRunning)
             assertEquals(0, completions)
         }
+        compose.runOnIdle { owner.registry.currentState = Lifecycle.State.STARTED }
+        compose.runOnIdle {
+            assertEquals(1, completions)
+            assertFalse(animation.isRunning)
+            assertSame(animation, view.drawable)
+            owner.registry.currentState = Lifecycle.State.CREATED
+        }
+        compose.runOnIdle { owner.registry.currentState = Lifecycle.State.STARTED }
+        compose.runOnIdle { assertEquals(1, completions) }
     }
 
     @Test fun reducedMotionCompletesARequestedHandoffOnceWithoutPlaying() {

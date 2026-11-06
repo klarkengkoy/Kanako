@@ -137,6 +137,8 @@ private fun MascotPlayer(
         fun updatePlayback() {
             if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
                 player?.setLoop(latestLoop)
+                // An interrupted one-shot stays stopped, but its parent can advance once visible.
+                if (finished && !latestLoop) complete()
                 if (!finished && animationsEnabled) player?.start()
                 if (animationRes != null && !latestLoop &&
                     (!animationsEnabled || (current != null && player == null))) complete()
