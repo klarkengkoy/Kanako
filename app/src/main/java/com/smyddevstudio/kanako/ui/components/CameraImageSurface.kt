@@ -147,16 +147,17 @@ internal fun CameraPhotoSurface(
         lines.map { ReadingBounds(it.bounds.left.roundToInt(), it.bounds.top.roundToInt(),
             it.bounds.right.roundToInt(), it.bounds.bottom.roundToInt()) }
     }
-    val layoutKey = remember(readings, photo, fontPixels, focused?.key, if (focused != null) visibleClip else null) { Any() }
+    val layoutSource = remember(sourceKey, focused?.key, if (focused != null) visibleClip else null) { Any() }
+    val layoutKey = remember(readings, layoutSource, fontPixels) { Any() }
     val result by produceState<Pair<Any, CameraAnnotationLayout>?>(null, layoutKey) {
         val computed = if (fit == null) CameraAnnotationLayout(emptyList()) else withContext(Dispatchers.Default) {
             val operation = currentCoroutineContext()
             layoutCameraPhotoReadings(readings, obstacles, photo.width, photo.height, fontPixels,
                 selected = focused?.key, selectionClip = visibleClip, checkCancellation = { operation.ensureActive() })
         }
-        value = layoutKey to computed
+        value = layoutSource to computed
     }
-    val layout = result?.takeIf { it.first === layoutKey }?.second ?: CameraAnnotationLayout(emptyList())
+    val layout = result?.takeIf { it.first === layoutSource }?.second ?: CameraAnnotationLayout(emptyList())
     val colors = annotationColors(preferences)
     val calloutColors = CameraAnnotationColors(MaterialTheme.colorScheme.inverseOnSurface.toArgb(),
         MaterialTheme.colorScheme.inverseSurface.toArgb())

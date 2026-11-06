@@ -42,19 +42,7 @@ internal data class CameraPhotoGesture(val zoom: Float = 1f, val x: Float = 0f, 
 
 // Use the actual OCR character/element span when available. Equal line advances are only a fallback.
 internal fun cameraTokenBounds(line: CameraReadingLine, start: Int, end: Int): CameraRect {
-    val vertical = line.bounds.height > line.bounds.width
-    fun slice(bounds: CameraRect, from: Float, to: Float) = if (vertical)
-        CameraRect(bounds.left, bounds.top + bounds.height * from, bounds.right, bounds.top + bounds.height * to)
-    else CameraRect(bounds.left + bounds.width * from, bounds.top, bounds.left + bounds.width * to, bounds.bottom)
-    val spans = line.spans.filter { it.start < end && it.end > start }
-    if (spans.isEmpty()) {
-        val length = line.text.length.coerceAtLeast(1).toFloat()
-        return slice(line.bounds, start / length, end / length)
-    }
-    val boxes = spans.map { span ->
-        val length = (span.end - span.start).coerceAtLeast(1).toFloat()
-        slice(span.bounds, (maxOf(start, span.start) - span.start) / length, (minOf(end, span.end) - span.start) / length)
-    }
+    val boxes = cameraTokenPolygons(line, start, end).map { it.bounds }
     return CameraRect(boxes.minOf { it.left }, boxes.minOf { it.top }, boxes.maxOf { it.right }, boxes.maxOf { it.bottom })
 }
 

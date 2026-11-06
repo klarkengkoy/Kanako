@@ -2,6 +2,10 @@ package com.smyddevstudio.kanako.camera
 
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.Color
+import androidx.core.graphics.withClip
+import androidx.core.graphics.withSave
 import android.graphics.Typeface
 import android.text.Layout
 import android.text.StaticLayout
@@ -44,7 +48,8 @@ internal fun cameraPhotoReadings(
                 val anchor = clip.intersection(ReadingBounds(token.left.roundToInt(), token.top.roundToInt(),
                     token.right.roundToInt(), token.bottom.roundToInt())) ?: return@forEach
                 add(CameraPhotoReading(anchor, vertical, reading, "$lineIndex:$start:${segment.text}",
-                    segment.text.substring(annotation.start, annotation.end)))
+                    segment.text.substring(annotation.start, annotation.end)).copy(
+                        outlines = cameraTokenPolygons(line, start + annotation.start, start + annotation.end)))
             }
         }
     }
@@ -123,5 +128,32 @@ internal fun layoutCameraPhotoReadings(
 internal fun drawCameraPhotoHighlights(
     canvas: Canvas, readings: List<CameraPhotoReading>, selected: String?, strokeWidth: Float
 ) {
-    readings.forEach { drawReadingHighlight(canvas, it.anchor, it.key == selected, strokeWidth) }
+    if (!strokeWidth.isFinite() || strokeWidth <= 0f) return
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { strokeJoin = Paint.Join.ROUND }
+    readings.forEach { item ->
+        if (item.outlines.isEmpty()) {
+            drawReadingHighlight(canvas, item.anchor, item.key == selected, strokeWidth)
+        } else canvas.withClip(item.anchor.left, item.anchor.top, item.anchor.right, item.anchor.bottom) {
+            item.outlines.forEach { polygon ->
+                val path = Path().apply {
+                    moveTo(polygon.points.first().x, polygon.points.first().y)
+                    polygon.points.drop(1).forEach { lineTo(it.x, it.y) }
+                    close()
+                }
+                canvas.withSave {
+                    clipPath(path)
+                    paint.style = Paint.Style.FILL
+                    paint.color = Color.argb(if (item.key == selected) 48 else 20, 255, 255, 255)
+                    drawPath(path, paint)
+                    paint.style = Paint.Style.STROKE
+                    paint.strokeWidth = strokeWidth * if (item.key == selected) 4f else 3f
+                    paint.color = Color.argb(230, 20, 20, 20)
+                    drawPath(path, paint)
+                    paint.strokeWidth = strokeWidth * if (item.key == selected) 2f else 1f
+                    paint.color = Color.WHITE
+                    drawPath(path, paint)
+                }
+            }
+        }
+    }
 }

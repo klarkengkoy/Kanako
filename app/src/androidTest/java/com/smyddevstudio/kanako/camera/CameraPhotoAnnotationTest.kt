@@ -71,6 +71,34 @@ class CameraPhotoAnnotationTest {
         assertEquals(140, group.anchor.right)
     }
 
+    @Test fun tiltedHighlightsStayInsideTheCharacterShape() {
+        val bitmap = android.graphics.Bitmap.createBitmap(100, 100, android.graphics.Bitmap.Config.ARGB_8888)
+        try {
+            val line = CameraReadingLine("日", CameraRect(10f, 20f, 60f, 60f),
+                listOf(FuriganaSegment("日", "ひ")), listOf(CameraTextSpan(0, 1, CameraRect(10f, 20f, 60f, 60f),
+                    listOf(CameraPoint(20f, 20f), CameraPoint(60f, 40f), CameraPoint(50f, 60f), CameraPoint(10f, 40f)))))
+            val readings = cameraPhotoReadings(listOf(line), 100, 100, ScriptType.KANA)
+            drawCameraPhotoHighlights(android.graphics.Canvas(bitmap), readings, null, 1f)
+            assertEquals(0, android.graphics.Color.alpha(bitmap.getPixel(12, 22)))
+            assertTrue(android.graphics.Color.alpha(bitmap.getPixel(35, 40)) > 0)
+        } finally { bitmap.recycle() }
+    }
+
+    @Test fun groupedHighlightsDoNotFillTheGapBetweenMeasuredCharacters() {
+        val bitmap = android.graphics.Bitmap.createBitmap(100, 100, android.graphics.Bitmap.Config.ARGB_8888)
+        try {
+            val line = CameraReadingLine("日本", CameraRect(10f, 20f, 80f, 40f),
+                listOf(FuriganaSegment("日本", "にほん")), listOf(
+                    CameraTextSpan(0, 1, CameraRect(10f, 20f, 30f, 40f)),
+                    CameraTextSpan(1, 2, CameraRect(60f, 20f, 80f, 40f))))
+            val readings = cameraPhotoReadings(listOf(line), 100, 100, ScriptType.KANA)
+            assertEquals(1, readings.size)
+            drawCameraPhotoHighlights(android.graphics.Canvas(bitmap), readings, readings.single().key, 1f)
+            assertEquals(0, android.graphics.Color.alpha(bitmap.getPixel(45, 30)))
+            assertTrue(android.graphics.Color.alpha(bitmap.getPixel(20, 30)) > 0)
+        } finally { bitmap.recycle() }
+    }
+
     @Test fun cancellationStopsExtractionBeforeMoreSourceGroupsAreProcessed() {
         var checks = 0
         val error = runCatching {

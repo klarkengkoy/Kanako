@@ -13,7 +13,10 @@ internal data class CameraReadingLine(
     val spans: List<CameraTextSpan> = emptyList()
 )
 
-internal data class CameraTextSpan(val start: Int, val end: Int, val bounds: CameraRect)
+internal data class CameraTextSpan(
+    val start: Int, val end: Int, val bounds: CameraRect,
+    val corners: List<CameraPoint> = emptyList()
+)
 
 internal fun cameraReadingLines(
     text: Text, readingContext: ReadingContext = ReadingContext()
@@ -40,7 +43,7 @@ internal fun cameraReadingLines(
                                 symbolCursor = symbolStart + symbol.text.length
                                 CameraTextSpan(symbolStart, symbolCursor, CameraRect(
                                     box.left.toFloat(), box.top.toFloat(), box.right.toFloat(), box.bottom.toFloat()
-                                ))
+                                ), symbol.cornerPoints?.map { CameraPoint(it.x.toFloat(), it.y.toFloat()) }.orEmpty())
                             }
                         }
                         // Prefer character geometry; element bounds remain useful when symbols are unavailable.
@@ -48,7 +51,7 @@ internal fun cameraReadingLines(
                         else element.boundingBox?.takeUnless { it.isEmpty }?.let { box ->
                             add(CameraTextSpan(start, cursor, CameraRect(
                                 box.left.toFloat(), box.top.toFloat(), box.right.toFloat(), box.bottom.toFloat()
-                            )))
+                            ), element.cornerPoints?.map { CameraPoint(it.x.toFloat(), it.y.toFloat()) }.orEmpty()))
                         }
                     }
                 }

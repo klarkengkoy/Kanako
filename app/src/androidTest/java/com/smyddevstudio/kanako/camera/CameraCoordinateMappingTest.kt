@@ -78,7 +78,16 @@ class CameraCoordinateMappingTest {
                             assertMapped(source.bounds, view.bounds, uprightToView)
                             assertTrue("Japanese OCR should supply character/element geometry", source.spans.isNotEmpty())
                             assertEquals(source.spans.map { it.start to it.end }, view.spans.map { it.start to it.end })
-                            source.spans.zip(view.spans).forEach { (a, b) -> assertMapped(a.bounds, b.bounds, uprightToView) }
+                            source.spans.zip(view.spans).forEach { (a, b) ->
+                                assertMapped(a.bounds, b.bounds, uprightToView)
+                                assertEquals(a.corners.size, b.corners.size)
+                                a.corners.zip(b.corners).forEach { (from, to) ->
+                                    val point = floatArrayOf(from.x, from.y)
+                                    uprightToView.mapPoints(point)
+                                    assertEquals(point[0], to.x, 3f)
+                                    assertEquals(point[1], to.y, 3f)
+                                }
+                            }
                         }
                     }
                 } finally { if (raw !== bitmap) raw.recycle() }
