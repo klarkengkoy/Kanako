@@ -92,7 +92,6 @@ internal class CameraReaderViewModel : ViewModel() {
         if (!gate.acceptsLive(ticket)) return
         val now = SystemClock.elapsedRealtime()
         val lines = liveReadings.update(started, now, result.getOrDefault(emptyList())) ?: return
-        val age = now - started
         mutableState.value = mutableState.value.copy(
             lines = lines,
             status = result.exceptionOrNull()?.let(::recognitionFailure)
@@ -101,9 +100,12 @@ internal class CameraReaderViewModel : ViewModel() {
         val request = ++liveRequest
         expiry?.cancel()
         expiry = viewModelScope.launch {
-            delay((CAMERA_LIVE_RESULT_MAX_AGE_MS - age).coerceAtLeast(1))
-            if (request == liveRequest && gate.acceptsLive(ticket)) {
-                mutableState.value = mutableState.value.copy(lines = emptyList())
+            while (request == liveRequest && gate.acceptsLive(ticket)) {
+                val deadline = liveReadings.nextExpiryAt ?: break
+                delay((deadline - SystemClock.elapsedRealtime()).coerceAtLeast(1))
+                if (request == liveRequest && gate.acceptsLive(ticket)) {
+                    mutableState.value = mutableState.value.copy(lines = liveReadings.expire(SystemClock.elapsedRealtime()))
+                }
             }
         }
     }
