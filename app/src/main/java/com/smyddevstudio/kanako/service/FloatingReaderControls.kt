@@ -38,6 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberUpdatedState
@@ -177,7 +178,7 @@ fun FloatingOverlayContent(
     val controlDescription = stringResource(R.string.floating_control_description)
     val currentStatusDescription = statusDescription ?: stringResource(statusMessage)
     var bubbleAbove by remember { mutableStateOf(false) }
-    var bubbleTip by remember { mutableStateOf(0.5f) }
+    var bubbleTip by remember { mutableFloatStateOf(0.5f) }
     val popupPosition = rememberFloatingMenuPosition { above, tip -> bubbleAbove = above; bubbleTip = tip }
     val menuMaxHeight = maxOf(48.dp, LocalConfiguration.current.screenHeightDp.dp - 96.dp)
 
