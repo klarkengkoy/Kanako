@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -15,21 +14,13 @@ import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.BrokenImage
-import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Share
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -40,8 +31,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -69,15 +58,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.withClip
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.smyddevstudio.kanako.R
 import com.smyddevstudio.kanako.camera.CameraPhotoGesture
-import com.smyddevstudio.kanako.camera.SavedCameraImage
-import com.smyddevstudio.kanako.camera.SavedCameraImages
+import com.smyddevstudio.kanako.camera.decodeDevicePhotoBitmap
 import com.smyddevstudio.kanako.camera.fitCameraImage
-import com.smyddevstudio.kanako.camera.galleryDecodeSampleSize
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
@@ -87,83 +71,14 @@ import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun CameraGalleryScreen(
     onBack: () -> Unit,
-    onOpen: (SavedCameraImage) -> Unit,
-    modifier: Modifier = Modifier
+    onOpen: (Uri) -> Unit,
+    modifier: Modifier = Modifier,
+    onUseSystemPicker: () -> Unit = onBack
 ) {
-    val context = LocalContext.current
-    val repository = remember(context) { SavedCameraImages(context) }
-    var version by remember { mutableIntStateOf(0) }
-    var images by remember { mutableStateOf<List<SavedCameraImage>?>(null) }
-    var failed by remember { mutableStateOf(false) }
-    val lifecycle = LocalLifecycleOwner.current.lifecycle
-    DisposableEffect(lifecycle) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) version++
-        }
-        lifecycle.addObserver(observer)
-        onDispose { lifecycle.removeObserver(observer) }
-    }
-    LaunchedEffect(repository, version) {
-        failed = false
-        try {
-            images = repository.load()
-        } catch (cancelled: CancellationException) {
-            throw cancelled
-        } catch (_: Exception) {
-            failed = true
-        }
-    }
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.gallery_title)) },
-                navigationIcon = { IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.navigate_back))
-                } },
-                actions = { IconButton(onClick = { version++ }) {
-                    Icon(Icons.Rounded.Refresh, stringResource(R.string.gallery_refresh))
-                } }
-            )
-        }
-    ) { padding ->
-        when {
-            failed -> GalleryMessage(R.string.gallery_load_failed, Modifier.padding(padding), onRetry = { version++ })
-            images == null -> Box(Modifier.padding(padding).fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-            images!!.isEmpty() -> GalleryMessage(R.string.gallery_empty, Modifier.padding(padding))
-            else -> LazyVerticalGrid(
-                columns = GridCells.Adaptive(144.dp),
-                modifier = Modifier.padding(padding).fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(images!!, key = { it.uri.toString() }) { image ->
-                    Card(onClick = { onOpen(image) }) {
-                        val decoded = rememberGalleryBitmap(image.uri, 384, version)
-                        Box(Modifier.fillMaxWidth().aspectRatio(1f), contentAlignment = Alignment.Center) {
-                            when {
-                                decoded.bitmap != null -> Image(
-                                    bitmap = decoded.bitmap.asImageBitmap(), contentDescription = image.name,
-                                    modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop
-                                )
-                                decoded.failed -> Icon(Icons.Rounded.BrokenImage, stringResource(R.string.gallery_image_missing))
-                                else -> CircularProgressIndicator(Modifier.size(24.dp))
-                            }
-                        }
-                        Text(image.name, Modifier.padding(12.dp), style = MaterialTheme.typography.bodySmall,
-                            maxLines = 2, overflow = TextOverflow.Ellipsis)
-                    }
-                }
-            }
-        }
-    }
+    DevicePhotoGallery(onBack, onOpen, modifier, onUseSystemPicker)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -242,40 +157,31 @@ internal fun shareSavedCameraImage(context: Context, uri: Uri) {
     }
 }
 
-private data class GalleryBitmap(val bitmap: Bitmap? = null, val failed: Boolean = false)
+internal data class GalleryBitmap(val bitmap: Bitmap? = null, val failed: Boolean = false)
 private val galleryDecodes = Semaphore(3)
 
 @Composable
-private fun rememberGalleryBitmap(uri: Uri, edge: Int, version: Int): GalleryBitmap {
+internal fun rememberGalleryBitmap(uri: Uri, edge: Int, version: Int): GalleryBitmap {
     val resolver = LocalContext.current.contentResolver
     val decoded by produceState(GalleryBitmap(), uri, edge, version) {
         value = GalleryBitmap()
+        var owned: Bitmap? = null
         try {
             val bitmap = galleryDecodes.withPermit {
                 withContext(Dispatchers.IO) {
-                    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-                    resolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
-                    check(bounds.outWidth > 0 && bounds.outHeight > 0)
                     currentCoroutineContext().ensureActive()
-                    val options = BitmapFactory.Options().apply {
-                        inSampleSize = galleryDecodeSampleSize(bounds.outWidth, bounds.outHeight, edge)
-                    }
-                    val loaded = resolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, options) }
-                        ?: error("Cannot decode saved image")
-                    try {
-                        currentCoroutineContext().ensureActive()
-                        loaded
-                    } catch (cancelled: CancellationException) {
-                        loaded.recycle()
-                        throw cancelled
-                    }
+                    decodeDevicePhotoBitmap(resolver, uri, edge).also { owned = it }
                 }
             }
+            currentCoroutineContext().ensureActive()
             value = GalleryBitmap(bitmap)
+            owned = null
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (_: Exception) {
             value = GalleryBitmap(failed = true)
+        } finally {
+            owned?.recycle()
         }
     }
     return decoded

@@ -37,6 +37,7 @@ cameraCamera2 = "1.6.2"
 cameraLifecycle = "1.6.2"
 cameraView = "1.6.2"
 cameraCore = "1.6.2"
+exifinterface = "1.4.2"
 loggingInterceptor = "5.3.2"
 okhttp = "5.5.1"
 moshiKotlin = "1.15.2"
@@ -49,6 +50,7 @@ sudachi = "0.8.2"
 sudachi = { group = "com.worksap.nlp", name = "sudachi", version.ref = "sudachi" }
 kuromoji-ipadic = { group = "com.atilika.kuromoji", name = "kuromoji-ipadic", version.ref = "kuromoji" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-exifinterface = { group = "androidx.exifinterface", name = "exifinterface", version.ref = "exifinterface" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

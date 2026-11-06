@@ -11,6 +11,13 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- The platform embedded picker provider discovers its service through PackageManager. -->
+    <queries>
+        <intent>
+            <action android:name="com.android.photopicker.core.embedded.EmbeddedService.BIND" />
+        </intent>
+    </queries>
+
     <application
         android:name=".KanakoApplication"
         android:allowBackup="true"

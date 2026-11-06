@@ -139,7 +139,7 @@
     <string name="how_tile_title">Quick Settings</string>
     <string name="how_tile">Swipe down twice, tap Edit, then add Kanako to your active tiles. Tap it to show or stop the floating reader. Adding the tile does not capture a screenshot. Missing access opens Home. With Auto-read enabled, starting the reader also schedules a reading.</string>
     <string name="how_camera_title">Use the camera</string>
-    <string name="how_camera">Open Camera from Home; its permission is separate from screen reading access. Read live, or capture a photo for stable reading. In a captured photo, each kanji group with a pronunciation is highlighted. Tap a highlight to show only its reading; tap it again or outside the highlights to restore automatic readings. Tap Kanako to hide or show highlights and readings without changing zoom. Double tap or hold Kanako for Kana/Romaji controls; drag Kanako to move it. Tap elsewhere in the live view to focus. Pinch to zoom; on a photo, drag to move and double tap to reset. Go back to the camera to take another photo. Photos are not saved.</string>
+    <string name="how_camera">Open Camera from Home; its permission is separate from screen reading access. Read live, or capture a photo for stable reading. In a captured photo, each kanji group with a pronunciation is highlighted. Tap a highlight to show only its reading; tap it again or outside the highlights to restore automatic readings. Tap Kanako to hide or show highlights and readings without changing zoom. Double tap or hold Kanako for Kana/Romaji controls; drag Kanako to move it. Tap elsewhere in the live view to focus. Pinch to zoom; on a photo, drag to move and double tap to reset. Go back to the camera to take another photo. Photos are not saved. Tap the thumbnail beside the capture button to choose a photo. It opens the same reading screen.</string>
     <string name="reading_size_small">10sp</string>
     <string name="reading_size_medium">12sp</string>
     <string name="reading_size_large">14sp</string>
@@ -215,11 +215,8 @@
     <string name="setup_accessibility_disconnected">Enabled, disconnected</string>
     <string name="setup_accessibility_reconnect">Kanako is enabled in Android settings, but its screen-reading service is disconnected. Open accessibility settings, turn Kanako off and on, then return here.</string>
     <string name="setup_disclosure_needed">Review screen-reading disclosure</string>
-    <string name="gallery_title">Saved images</string>
-    <string name="gallery_refresh">Refresh saved images</string>
-    <string name="gallery_load_failed">Could not load saved images. Try again.</string>
-    <string name="gallery_empty">No previously saved camera images.</string>
-    <string name="gallery_image_missing">This saved image is no longer available. It may have been moved, deleted, or its access may have expired.</string>
+    <string name="gallery_title">Gallery</string>
+    <string name="gallery_image_missing">This photo is unavailable. It may have been moved, deleted, or its access may have expired.</string>
     <string name="gallery_image_description">Saved Kanako image: %1$s</string>
     <string name="preferences_photo_size_summary">In photos, this is the minimum reading size. Readings can grow with the Japanese text. Zoom in when readings need more space.</string>
     <string name="gallery_image_hint">Pinch to zoom · Drag to move · Double tap to reset</string>

@@ -88,11 +88,12 @@ internal fun CameraResultContent(
                 }
             }
         }
-        if (state.photo == null) {
-            Text(stringResource(R.string.camera_photo_missing),
-                Modifier.align(Alignment.Center).safeDrawingPadding().padding(24.dp), color = Color.White)
-        } else if (state.status == CameraReadingStatus.PROCESSING) {
+        if (state.status == CameraReadingStatus.PROCESSING) {
             CircularProgressIndicator(Modifier.align(Alignment.Center), color = Color.White)
+        } else if (state.photo == null) {
+            Text(stringResource(if (state.status == CameraReadingStatus.READ_ERROR) R.string.gallery_image_missing
+                else R.string.camera_photo_missing),
+                Modifier.align(Alignment.Center).safeDrawingPadding().padding(24.dp), color = Color.White)
         } else if (state.status != CameraReadingStatus.PHOTO) {
             Surface(Modifier.align(Alignment.BottomCenter).safeDrawingPadding().padding(16.dp),
                 shape = CircleShape, color = Color.Black.copy(alpha = 0.8f), contentColor = Color.White) {

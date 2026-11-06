@@ -139,7 +139,7 @@
     <string name="how_tile_title">Réglages rapides</string>
     <string name="how_tile">Balayez deux fois vers le bas, touchez Modifier et ajoutez Kanako aux tuiles actives. Touchez la tuile pour afficher ou arrêter le lecteur flottant. Son ajout ne prend aucune capture. Si un accès manque, l’accueil s’ouvre. Si la lecture automatique est activée, le démarrage du lecteur programme aussi une lecture.</string>
     <string name="how_camera_title">Utiliser l’appareil photo</string>
-    <string name="how_camera">Ouvrez l’appareil photo depuis l’accueil ; son autorisation est distincte de l’accès à la lecture de l’écran. Lisez en direct ou prenez une photo pour une lecture stable. Dans une photo, chaque groupe de kanji ayant une prononciation est surligné. Touchez un groupe pour afficher uniquement sa lecture ; touchez-le à nouveau ou ailleurs pour rétablir les lectures automatiques. Touchez Kanako pour masquer ou afficher les surlignages et les lectures sans modifier le zoom. Touchez Kanako deux fois ou maintenez l’appui pour choisir kana ou romaji ; faites glisser Kanako pour le déplacer. Touchez ailleurs dans la vue en direct pour faire la mise au point. Pincez pour zoomer ; sur une photo, faites glisser pour déplacer et touchez deux fois pour réinitialiser. Revenez à l’appareil photo pour reprendre une photo. Les photos ne sont pas enregistrées.</string>
+    <string name="how_camera">Ouvrez l’appareil photo depuis l’accueil ; son autorisation est distincte de l’accès à la lecture de l’écran. Lisez en direct ou prenez une photo pour une lecture stable. Dans une photo, chaque groupe de kanji ayant une prononciation est surligné. Touchez un groupe pour afficher uniquement sa lecture ; touchez-le à nouveau ou ailleurs pour rétablir les lectures automatiques. Touchez Kanako pour masquer ou afficher les surlignages et les lectures sans modifier le zoom. Touchez Kanako deux fois ou maintenez l’appui pour choisir kana ou romaji ; faites glisser Kanako pour le déplacer. Touchez ailleurs dans la vue en direct pour faire la mise au point. Pincez pour zoomer ; sur une photo, faites glisser pour déplacer et touchez deux fois pour réinitialiser. Revenez à l’appareil photo pour reprendre une photo. Les photos ne sont pas enregistrées. Touchez la miniature à côté du bouton de capture pour choisir une photo. Elle s’ouvre dans le même écran de lecture.</string>
     <string name="reading_size_small">10sp</string>
     <string name="reading_size_medium">12sp</string>
     <string name="reading_size_large">14sp</string>
@@ -214,11 +214,8 @@
     <string name="setup_accessibility_disconnected">Activé, déconnecté</string>
     <string name="setup_accessibility_reconnect">Kanako est activé dans Android, mais son service de lecture est déconnecté. Dans les paramètres d’accessibilité, désactivez puis réactivez Kanako et revenez ici.</string>
     <string name="setup_disclosure_needed">Lire les informations sur les captures</string>
-    <string name="gallery_title">Images enregistrées</string>
-    <string name="gallery_refresh">Actualiser les images enregistrées</string>
-    <string name="gallery_load_failed">Impossible de charger les images enregistrées. Réessayez.</string>
-    <string name="gallery_empty">Aucune photo précédemment enregistrée.</string>
-    <string name="gallery_image_missing">Cette image n’est plus disponible. Elle a peut-être été déplacée ou supprimée, ou son autorisation d’accès a expiré.</string>
+    <string name="gallery_title">Galerie</string>
+    <string name="gallery_image_missing">Cette photo est indisponible. Elle a peut-être été déplacée ou supprimée, ou son accès a expiré.</string>
     <string name="gallery_image_description">Image Kanako enregistrée : %1$s</string>
     <string name="preferences_photo_size_summary">Dans les photos, il s’agit de la taille minimale des lectures. Elles peuvent grandir avec le texte japonais. Zoomez si elles ont besoin de plus de place.</string>
     <string name="gallery_image_hint">Pincez pour zoomer · Glissez pour déplacer · Touchez deux fois pour réinitialiser</string>

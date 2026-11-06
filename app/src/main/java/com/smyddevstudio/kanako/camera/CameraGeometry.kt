@@ -94,6 +94,12 @@ internal class CameraRequestGate {
         return true
     }
 
+    @Synchronized fun openPhoto(): Long {
+        active = false
+        mode = CameraReadMode.PHOTO
+        return ++revision
+    }
+
     @Synchronized fun acceptsPhoto(ticket: Long) = ticket == revision && mode == CameraReadMode.PHOTO
     @Synchronized fun acceptsLive(ticket: Long) = ticket == revision && active && mode == CameraReadMode.LIVE
 

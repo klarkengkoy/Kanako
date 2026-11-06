@@ -139,7 +139,7 @@
     <string name="how_tile_title">Quick Settings</string>
     <string name="how_tile">Mag-swipe pababa nang dalawang beses, i-tap ang I-edit, saka idagdag ang Kanako sa mga aktibong tile. I-tap ito para ipakita o ihinto ang lumulutang na reader. Walang screenshot na kinukuha kapag idinadagdag ito. Bubukas ang Home kapag kulang ang access. Kapag naka-on ang awtomatikong pagbasa, nagtatakda rin ng pagbasa ang pagsisimula ng reader.</string>
     <string name="how_camera_title">Gamitin ang camera</string>
-    <string name="how_camera">Buksan ang Camera mula sa Home; hiwalay ang pahintulot nito sa access sa pagbabasa ng screen. Magbasa nang live o kumuha ng larawan para sa matatag na pagbabasa. Sa nakuhang larawan, naka-highlight ang bawat pangkat ng kanji na may bigkas. I-tap ang isang pangkat para ipakita lamang ang pagbasa nito; i-tap muli o sa labas ng mga highlight para ibalik ang awtomatikong pagbasa. I-tap ang Kanako para itago o ipakita ang mga highlight at pagbasa nang hindi binabago ang zoom. I-double tap o pindutin nang matagal ang Kanako para pumili ng Kana o Romaji; i-drag ang Kanako para ilipat ito. I-tap ang ibang bahagi ng live view para mag-focus. Kurutin para mag-zoom; sa larawan, i-drag para ilipat at mag-double tap para i-reset. Bumalik sa camera para kumuha ng isa pang larawan. Hindi sine-save ang mga larawan.</string>
+    <string name="how_camera">Buksan ang Camera mula sa Home; hiwalay ang pahintulot nito sa access sa pagbabasa ng screen. Magbasa nang live o kumuha ng larawan para sa matatag na pagbabasa. Sa nakuhang larawan, naka-highlight ang bawat pangkat ng kanji na may bigkas. I-tap ang isang pangkat para ipakita lamang ang pagbasa nito; i-tap muli o sa labas ng mga highlight para ibalik ang awtomatikong pagbasa. I-tap ang Kanako para itago o ipakita ang mga highlight at pagbasa nang hindi binabago ang zoom. I-double tap o pindutin nang matagal ang Kanako para pumili ng Kana o Romaji; i-drag ang Kanako para ilipat ito. I-tap ang ibang bahagi ng live view para mag-focus. Kurutin para mag-zoom; sa larawan, i-drag para ilipat at mag-double tap para i-reset. Bumalik sa camera para kumuha ng isa pang larawan. Hindi sine-save ang mga larawan. I-tap ang maliit na larawan sa tabi ng capture button upang pumili ng larawan. Bubukas ito sa parehong screen sa pagbasa.</string>
     <string name="reading_size_small">10sp</string>
     <string name="reading_size_medium">12sp</string>
     <string name="reading_size_large">14sp</string>
@@ -214,11 +214,8 @@
     <string name="setup_accessibility_disconnected">Naka-on, hindi nakakonekta</string>
     <string name="setup_accessibility_reconnect">Naka-on ang Kanako sa Android settings pero hindi nakakonekta ang serbisyo sa pagbasa ng screen. Sa accessibility settings, i-off at i-on muli ang Kanako, saka bumalik dito.</string>
     <string name="setup_disclosure_needed">Basahin ang paliwanag sa screen reading</string>
-    <string name="gallery_title">Mga na-save na larawan</string>
-    <string name="gallery_refresh">I-refresh ang mga na-save na larawan</string>
-    <string name="gallery_load_failed">Hindi ma-load ang mga na-save na larawan. Subukan muli.</string>
-    <string name="gallery_empty">Walang dating na-save na larawan ng camera.</string>
-    <string name="gallery_image_missing">Hindi na available ang larawang ito. Maaaring nailipat, nabura, o nag-expire ang pahintulot sa pag-access.</string>
+    <string name="gallery_title">Galeriya</string>
+    <string name="gallery_image_missing">Hindi available ang larawang ito. Maaaring nailipat, nabura, o nag-expire ang access dito.</string>
     <string name="gallery_image_description">Na-save na larawan ng Kanako: %1$s</string>
     <string name="preferences_photo_size_summary">Sa mga larawan, ito ang pinakamaliit na laki ng pagbasa. Maaari itong lumaki kasabay ng tekstong Hapon. Mag-zoom in kung kailangan ng dagdag na espasyo.</string>
     <string name="gallery_image_hint">Kurutin para mag-zoom · I-drag para ilipat · I-double tap para i-reset</string>

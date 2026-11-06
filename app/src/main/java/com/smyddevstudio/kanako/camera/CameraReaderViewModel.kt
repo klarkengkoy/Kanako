@@ -1,6 +1,8 @@
 package com.smyddevstudio.kanako.camera
 
+import android.content.Context
 import android.graphics.Bitmap
+import android.net.Uri
 import android.os.SystemClock
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -40,6 +42,7 @@ internal class CameraReaderViewModel : ViewModel() {
     private val liveReadings = CameraLiveReadings()
     private var expiry: Job? = null
     private var recognition: Job? = null
+    private var photoLoad: Job? = null
     private var photoTicket = 0L
     private var photoRequest = 0L
     private var liveRequest = 0L
@@ -145,6 +148,35 @@ internal class CameraReaderViewModel : ViewModel() {
         }
     }
 
+    fun openPhoto(context: Context, uri: Uri) {
+        photoLoad?.cancel()
+        recognition?.cancel()
+        expiry?.cancel()
+        liveReadings.reset()
+        val ticket = gate.openPhoto()
+        photoTicket = ticket
+        photoRequest++
+        val previous = mutableState.value.photo
+        mutableState.value = CameraReaderUiState(status = CameraReadingStatus.PROCESSING)
+        previous?.close()
+        val app = context.applicationContext
+        photoLoad = viewModelScope.launch {
+            try {
+                val photo = readDevicePhoto(app, uri)
+                if (gate.acceptsPhoto(ticket)) {
+                    mutableState.value = CameraReaderUiState(status = CameraReadingStatus.PROCESSING, photo = photo)
+                    recognizePhoto()
+                } else photo.close()
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                if (gate.acceptsPhoto(ticket)) {
+                    mutableState.value = CameraReaderUiState(status = CameraReadingStatus.READ_ERROR)
+                }
+            }
+        }
+    }
+
     private fun recognizePhoto() {
         val photo = mutableState.value.photo ?: return
         val ticket = photoTicket
@@ -174,6 +206,7 @@ internal class CameraReaderViewModel : ViewModel() {
         gate.returnToLive()
         liveReadings.reset()
         expiry?.cancel()
+        photoLoad?.cancel()
         recognition?.cancel()
         photoRequest++
         val photo = mutableState.value.photo

@@ -3,6 +3,10 @@ package com.smyddevstudio.kanako.ui.navigation
 import com.smyddevstudio.kanako.service.GuidedReaderSession
 import com.smyddevstudio.kanako.service.GuidedReaderStep
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import com.smyddevstudio.kanako.ui.screens.isEmbeddedPhotoPickerAvailable
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -94,6 +98,15 @@ fun KanakoApp(
         onboardingInitialized = true
     }
     val cameraReader: CameraReaderViewModel = viewModel()
+    val photoPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null && backStack.lastOrNull() == Screen.Camera) {
+            cameraReader.openPhoto(context, uri)
+            backStack.add(Screen.CameraResult)
+        }
+    }
+    fun launchPhotoPicker() {
+        photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+    }
     val hasCameraEntry = Screen.Camera in backStack
     val cameraForeground = backStack.lastOrNull() == Screen.CameraResult ||
         (backStack.lastOrNull() == Screen.Camera && ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==
@@ -420,7 +433,12 @@ fun KanakoApp(
                     },
                     onBack = { cameraGuide = false; if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) },
                     onCaptured = { if (backStack.lastOrNull() == Screen.Camera) backStack.add(Screen.CameraResult) },
-                    onNavigateToGallery = { backStack.add(Screen.Gallery) },
+                    onNavigateToGallery = {
+                        if (backStack.lastOrNull() == Screen.Camera) {
+                            if (isEmbeddedPhotoPickerAvailable()) backStack.add(Screen.Gallery)
+                            else launchPhotoPicker()
+                        }
+                    },
                     onNavigateToPreferences = { backStack.add(Screen.Preferences) }
                 )
             }
@@ -441,7 +459,18 @@ fun KanakoApp(
             entry<Screen.Gallery> {
                 CameraGalleryScreen(
                     onBack = { handleBack() },
-                    onOpen = { image -> backStack.add(Screen.SavedImage(image.uri.toString(), image.name)) }
+                    onUseSystemPicker = {
+                        if (backStack.lastOrNull() == Screen.Gallery) {
+                            backStack.removeAt(backStack.lastIndex)
+                            if (backStack.lastOrNull() == Screen.Camera) launchPhotoPicker()
+                        }
+                    },
+                    onOpen = { uri ->
+                        if (backStack.lastOrNull() == Screen.Gallery) {
+                            cameraReader.openPhoto(context, uri)
+                            backStack.add(Screen.CameraResult)
+                        }
+                    }
                 )
             }
             entry<Screen.SavedImage> { image ->

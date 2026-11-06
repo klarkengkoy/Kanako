@@ -139,7 +139,7 @@
     <string name="how_tile_title">Impostazioni rapide</string>
     <string name="how_tile">Scorri due volte verso il basso, tocca Modifica e aggiungi Kanako ai riquadri attivi. Toccalo per mostrare o fermare il lettore mobile. Aggiungerlo non acquisisce screenshot. Se manca un accesso si apre la Home. Con la lettura automatica attiva, l’avvio del lettore programma anche una lettura.</string>
     <string name="how_camera_title">Usa la fotocamera</string>
-    <string name="how_camera">Apri la fotocamera dalla Home; la sua autorizzazione è separata dall’accesso alla lettura dello schermo. Leggi dal vivo o scatta una foto per una lettura stabile. In una foto, ogni gruppo di kanji con una pronuncia viene evidenziato. Tocca un gruppo per mostrare solo la sua lettura; toccalo di nuovo o tocca fuori dalle evidenziazioni per ripristinare le letture automatiche. Tocca Kanako per nascondere o mostrare evidenziazioni e letture senza cambiare lo zoom. Tocca due volte o tieni premuto Kanako per scegliere Kana o Romaji; trascina Kanako per spostarlo. Tocca altrove nella vista dal vivo per mettere a fuoco. Pizzica per lo zoom; su una foto, trascina per spostare e tocca due volte per ripristinare. Torna alla fotocamera per scattare un’altra foto. Le foto non vengono salvate.</string>
+    <string name="how_camera">Apri la fotocamera dalla Home; la sua autorizzazione è separata dall’accesso alla lettura dello schermo. Leggi dal vivo o scatta una foto per una lettura stabile. In una foto, ogni gruppo di kanji con una pronuncia viene evidenziato. Tocca un gruppo per mostrare solo la sua lettura; toccalo di nuovo o tocca fuori dalle evidenziazioni per ripristinare le letture automatiche. Tocca Kanako per nascondere o mostrare evidenziazioni e letture senza cambiare lo zoom. Tocca due volte o tieni premuto Kanako per scegliere Kana o Romaji; trascina Kanako per spostarlo. Tocca altrove nella vista dal vivo per mettere a fuoco. Pizzica per lo zoom; su una foto, trascina per spostare e tocca due volte per ripristinare. Torna alla fotocamera per scattare un’altra foto. Le foto non vengono salvate. Tocca la miniatura accanto al pulsante di scatto per scegliere una foto. Si aprirà nella stessa schermata di lettura.</string>
     <string name="reading_size_small">10sp</string>
     <string name="reading_size_medium">12sp</string>
     <string name="reading_size_large">14sp</string>
@@ -214,11 +214,8 @@
     <string name="setup_accessibility_disconnected">Attivo, disconnesso</string>
     <string name="setup_accessibility_reconnect">Kanako è attivo nelle impostazioni Android, ma il servizio di lettura è disconnesso. Nelle impostazioni di accessibilità, disattiva e riattiva Kanako, poi torna qui.</string>
     <string name="setup_disclosure_needed">Leggi le informazioni sulle acquisizioni</string>
-    <string name="gallery_title">Immagini salvate</string>
-    <string name="gallery_refresh">Aggiorna immagini salvate</string>
-    <string name="gallery_load_failed">Impossibile caricare le immagini salvate. Riprova.</string>
-    <string name="gallery_empty">Nessuna immagine della fotocamera salvata in precedenza.</string>
-    <string name="gallery_image_missing">Questa immagine non è più disponibile. Potrebbe essere stata spostata o eliminata, oppure il permesso di accesso è scaduto.</string>
+    <string name="gallery_title">Galleria</string>
+    <string name="gallery_image_missing">Questa foto non è disponibile. Potrebbe essere stata spostata o eliminata, oppure l’accesso è scaduto.</string>
     <string name="gallery_image_description">Immagine Kanako salvata: %1$s</string>
     <string name="preferences_photo_size_summary">Nelle foto, questa è la dimensione minima delle letture. Possono crescere con il testo giapponese. Aumenta lo zoom quando serve più spazio.</string>
     <string name="gallery_image_hint">Pizzica per lo zoom · Trascina per spostare · Tocca due volte per ripristinare</string>

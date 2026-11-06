@@ -137,7 +137,7 @@
     <string name="how_tile_title">クイック設定</string>
     <string name="how_tile">画面上部から2回スワイプし、編集からかなこを追加してください。タップでリーダーを表示・停止できます。追加だけでは撮影しません。権限が足りない場合はホームを開きます。自動読み取りが有効な場合、リーダー開始後に読み取りも行います。</string>
     <string name="how_camera_title">カメラを使う</string>
-    <string name="how_camera">ホームからカメラを開きます。カメラの権限は画面読み取りのアクセス権限とは別です。ライブ表示で読むか、写真を撮って静止画像で確認できます。撮影した写真では、読みがある漢字のまとまりがハイライトされます。タップするとその読みだけを表示し、もう一度タップするかハイライトの外をタップすると自動表示に戻ります。Kanakoをタップすると、拡大率を変えずにハイライトと読みを表示・非表示にできます。Kanakoをダブルタップまたは長押しすると、かな・ローマ字を切り替えられます。Kanakoはドラッグで移動できます。ライブ表示の他の場所をタップするとピントを合わせます。ピンチで拡大縮小し、写真ではドラッグで移動、ダブルタップで元に戻します。撮り直すにはカメラに戻ります。写真は保存されません。</string>
+    <string name="how_camera">ホームからカメラを開きます。カメラの権限は画面読み取りのアクセス権限とは別です。ライブ表示で読むか、写真を撮って静止画像で確認できます。撮影した写真では、読みがある漢字のまとまりがハイライトされます。タップするとその読みだけを表示し、もう一度タップするかハイライトの外をタップすると自動表示に戻ります。Kanakoをタップすると、拡大率を変えずにハイライトと読みを表示・非表示にできます。Kanakoをダブルタップまたは長押しすると、かな・ローマ字を切り替えられます。Kanakoはドラッグで移動できます。ライブ表示の他の場所をタップするとピントを合わせます。ピンチで拡大縮小し、写真ではドラッグで移動、ダブルタップで元に戻します。撮り直すにはカメラに戻ります。写真は保存されません。 撮影ボタンの横のサムネイルから写真を選ぶと、同じ読み取り画面が開きます。</string>
     <string name="reading_size_small">10sp</string>
     <string name="reading_size_medium">12sp</string>
     <string name="reading_size_large">14sp</string>
@@ -213,11 +213,8 @@
     <string name="setup_accessibility_disconnected">有効・未接続</string>
     <string name="setup_accessibility_reconnect">Android の設定でかなこは有効ですが、読み取りサービスが接続されていません。ユーザー補助設定でかなこを一度オフにしてからオンにし、ここに戻ってください。</string>
     <string name="setup_disclosure_needed">画面読み取りの説明を確認</string>
-    <string name="gallery_title">保存した画像</string>
-    <string name="gallery_refresh">保存した画像を更新</string>
-    <string name="gallery_load_failed">保存した画像を読み込めませんでした。もう一度お試しください。</string>
-    <string name="gallery_empty">以前保存したカメラ画像はありません。</string>
-    <string name="gallery_image_missing">この画像は利用できなくなりました。移動・削除されたか、アクセス権が失効した可能性があります。</string>
+    <string name="gallery_title">ギャラリー</string>
+    <string name="gallery_image_missing">この写真は利用できません。移動や削除されたか、アクセスの有効期限が切れた可能性があります。</string>
     <string name="gallery_image_description">保存したKanako画像：%1$s</string>
     <string name="preferences_photo_size_summary">写真では、これが読みの最小サイズになります。日本語の文字に合わせて大きくなります。表示する空間が足りない場合はズームしてください。</string>
     <string name="gallery_image_hint">ピンチでズーム・ドラッグで移動・ダブルタップでリセット</string>
