@@ -31,7 +31,7 @@ internal fun cameraPhotoReadings(
     return buildList {
         lines.forEachIndexed { lineIndex, line ->
             checkCancellation()
-            val vertical = line.bounds.height > line.bounds.width
+            val vertical = line.isVertical
             var offset = 0
             line.segments.forEach { segment ->
                 checkCancellation()
@@ -44,12 +44,13 @@ internal fun cameraPhotoReadings(
                 val annotation = kanjiAnnotation(segment.text, formatter.formatReading(raw, ScriptType.KANA))
                 val reading = formatter.formatReading(annotation.reading, script)
                 if (reading.isEmpty()) return@forEach
-                val token = cameraTokenBounds(line, start + annotation.start, start + annotation.end)
+                val outline = cameraWordOutline(line, start + annotation.start, start + annotation.end)
+                val token = outline.bounds
                 val anchor = clip.intersection(ReadingBounds(token.left.roundToInt(), token.top.roundToInt(),
                     token.right.roundToInt(), token.bottom.roundToInt())) ?: return@forEach
-                add(CameraPhotoReading(anchor, vertical, reading, "$lineIndex:$start:${segment.text}",
+                add(CameraPhotoReading(anchor, vertical, reading, line.trackingKey ?: "$lineIndex:$start:${segment.text}",
                     segment.text.substring(annotation.start, annotation.end)).copy(
-                        outlines = cameraTokenPolygons(line, start + annotation.start, start + annotation.end)))
+                        outlines = listOf(outline)))
             }
         }
     }

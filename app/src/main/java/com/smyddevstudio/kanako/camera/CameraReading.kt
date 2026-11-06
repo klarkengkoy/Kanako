@@ -10,8 +10,12 @@ internal data class CameraReadingLine(
     val bounds: CameraRect,
     val segments: List<FuriganaSegment>,
     // Coordinates use the same space as bounds: PreviewView pixels live, upright bitmap pixels in photos.
-    val spans: List<CameraTextSpan> = emptyList()
-)
+    val spans: List<CameraTextSpan> = emptyList(),
+    val vertical: Boolean? = null,
+    val trackingKey: String? = null
+) {
+    val isVertical get() = vertical ?: (bounds.height > bounds.width)
+}
 
 internal data class CameraTextSpan(
     val start: Int, val end: Int, val bounds: CameraRect,

@@ -4,6 +4,10 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.withFrameNanos
+import com.smyddevstudio.kanako.camera.CameraLiveFrame
+import com.smyddevstudio.kanako.camera.CameraLiveMotion
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.safeDrawing
@@ -82,23 +86,44 @@ internal fun CameraReadingOverlay(
     modifier: Modifier = Modifier,
     selected: String? = null,
     onTargets: (List<ReadingTarget>) -> Unit = {},
-    onSelectReading: (String) -> Unit = {}
+    onSelectReading: (String) -> Unit = {},
+    animationsEnabled: Boolean = rememberAnimationsEnabled()
 ) {
     var size by remember { mutableStateOf(IntSize.Zero) }
     val pixels = with(LocalDensity.current) { preferences.furiganaSize.sizeSp.sp.toPx() }
     val layout = remember(lines, size, pixels, preferences.scriptType) {
         layoutCameraAnnotations(lines, size.width, size.height, pixels, preferences.scriptType)
     }
+    val groups = remember(lines, size, preferences.scriptType) {
+        cameraPhotoReadings(lines, size.width, size.height, preferences.scriptType)
+    }
+    val motion = remember(size, pixels, preferences.scriptType, animationsEnabled) { CameraLiveMotion() }
+    var frame by remember(motion) { mutableStateOf(CameraLiveFrame(layout, groups)) }
+    LaunchedEffect(layout, groups, motion) {
+        var now = withFrameNanos { it / 1_000_000L }
+        motion.retarget(CameraLiveFrame(layout, groups), now, animationsEnabled)
+        do {
+            frame = motion.frameAt(now)
+            if (!motion.isMoving(now)) break
+            now = withFrameNanos { it / 1_000_000L }
+        } while (true)
+    }
+    val target = CameraLiveFrame(layout, groups)
+    val displayed = if (animationsEnabled) frame.forTarget(target) else target
     val colors = annotationColors(preferences)
-    SideEffect { onTargets(layout.labels.map { it.target }) }
+    val highlightStroke = with(LocalDensity.current) { 1.dp.toPx() }
+    SideEffect { onTargets(displayed.targets) }
     val selectLabel = stringResource(R.string.reading_bring_front)
     Canvas(modifier.onSizeChanged { size = it }.semantics {
-        text = AnnotatedString(layout.labels.joinToString(", ") { it.reading })
-        customActions = layout.labels.map { ruby ->
-            CustomAccessibilityAction("$selectLabel: ${ruby.reading}") { onSelectReading(ruby.target.key); true }
+        text = AnnotatedString(displayed.layout.labels.joinToString(", ") { it.reading })
+        customActions = displayed.groups.map { group ->
+            CustomAccessibilityAction("$selectLabel: ${group.source} · ${group.reading}") { onSelectReading(group.key); true }
         }
     }) {
-        drawIntoCanvas { drawCameraAnnotations(it.nativeCanvas, layout, colors, selected) }
+        drawIntoCanvas {
+            drawCameraPhotoHighlights(it.nativeCanvas, displayed.groups, selected, highlightStroke)
+            drawCameraAnnotations(it.nativeCanvas, displayed.layout, colors, selected)
+        }
     }
 }
 

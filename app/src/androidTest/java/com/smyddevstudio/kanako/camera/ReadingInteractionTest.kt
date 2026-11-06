@@ -37,6 +37,7 @@ import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.util.concurrent.CopyOnWriteArrayList
 
 @RunWith(AndroidJUnit4::class)
 class ReadingInteractionTest {
@@ -72,6 +73,34 @@ class ReadingInteractionTest {
         compose.runOnIdle {
             assertEquals(1, invalidations)
             assertEquals(1, focuses)
+        }
+    }
+
+    @Test fun replacingALiveIdentityNeverPublishesAnEmptyHandoff() {
+        val input = mutableStateOf(line.copy(trackingKey = "old"))
+        val published = CopyOnWriteArrayList<Pair<String, List<ReadingTarget>>>()
+        compose.setContent {
+            val current = input.value
+            KanakoTheme {
+                CameraReadingOverlay(listOf(current), KanakoPreferences(), Modifier.fillMaxSize(),
+                    onTargets = { published.add(requireNotNull(current.trackingKey) to it) },
+                    animationsEnabled = true)
+            }
+        }
+        compose.waitUntil(5_000) {
+            published.any { it.first == "old" && it.second.map { target -> target.key } == listOf("old") }
+        }
+        compose.runOnIdle {
+            published.clear()
+            input.value = line.copy(trackingKey = "new")
+        }
+        compose.waitUntil(5_000) {
+            published.any { it.first == "new" && it.second.map { target -> target.key } == listOf("new") }
+        }
+        compose.runOnIdle {
+            val handoff = published.filter { it.first == "new" }
+            assertTrue(handoff.isNotEmpty())
+            handoff.forEach { assertEquals(listOf("new"), it.second.map { target -> target.key }) }
         }
     }
 

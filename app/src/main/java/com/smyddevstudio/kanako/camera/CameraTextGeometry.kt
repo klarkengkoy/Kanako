@@ -41,9 +41,35 @@ internal fun cameraSpanPolygon(span: CameraTextSpan, start: Int, end: Int, verti
 }
 
 internal fun cameraTokenPolygons(line: CameraReadingLine, start: Int, end: Int): List<CameraPolygon> {
-    val vertical = line.bounds.height > line.bounds.width
+    val vertical = line.isVertical
     val spans = line.spans.filter { it.start < end && it.end > start }
     return if (spans.isEmpty()) listOf(cameraSpanPolygon(
         CameraTextSpan(0, line.text.length, line.bounds), start, end, vertical
     )) else spans.map { cameraSpanPolygon(it, maxOf(start, it.start), minOf(end, it.end), vertical) }
+}
+
+internal fun cameraWordOutline(line: CameraReadingLine, start: Int, end: Int): CameraPolygon {
+    val polygons = cameraTokenPolygons(line, start, end)
+    if (polygons.size == 1) return polygons.single()
+    var dx = 0f
+    var dy = 0f
+    polygons.forEach { polygon ->
+        val edge = if (line.isVertical) polygon.points[3] else polygon.points[1]
+        dx += edge.x - polygon.points[0].x
+        dy += edge.y - polygon.points[0].y
+    }
+    val length = kotlin.math.sqrt(dx * dx + dy * dy)
+    if (length < 0.001f) return cameraTokenBounds(line, start, end).polygon()
+    val along = CameraPoint(dx / length, dy / length)
+    val across = if (line.isVertical) CameraPoint(along.y, -along.x) else CameraPoint(-along.y, along.x)
+    val points = polygons.flatMap { it.points }
+    fun project(point: CameraPoint, axis: CameraPoint) = point.x * axis.x + point.y * axis.y
+    val first = points.minOf { project(it, along) }
+    val last = points.maxOf { project(it, along) }
+    val near = points.minOf { project(it, across) }
+    val far = points.maxOf { project(it, across) }
+    fun point(u: Float, v: Float) = CameraPoint(along.x * u + across.x * v, along.y * u + across.y * v)
+    return CameraPolygon(if (line.isVertical) listOf(point(first, near), point(first, far),
+        point(last, far), point(last, near)) else listOf(point(first, near), point(last, near),
+        point(last, far), point(first, far)))
 }

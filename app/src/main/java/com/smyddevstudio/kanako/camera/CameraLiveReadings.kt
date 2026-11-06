@@ -5,19 +5,23 @@ import kotlin.math.max
 import kotlin.math.min
 
 internal const val CAMERA_LIVE_RESULT_MAX_AGE_MS = 650L
+// Measured recognition cycles approach 600 ms. Leave time for tracking/layout before the next result.
+internal const val CAMERA_LIVE_DISPLAY_HOLD_MS = 800L
+internal const val CAMERA_LIVE_TRACK_MAX_SOURCE_AGE_MS = CAMERA_LIVE_RESULT_MAX_AGE_MS + CAMERA_LIVE_DISPLAY_HOLD_MS
 internal const val CAMERA_TEXT_UPDATE_INTERVAL_MS = 700L
-internal const val CAMERA_LINE_MISS_GRACE_MS = 200L
+internal const val CAMERA_LINE_MISS_GRACE_MS = 400L
 
 internal class CameraLiveReadings {
     private data class Observation(val line: CameraReadingLine, val count: Int)
     private data class Retained(
         val line: CameraReadingLine,
         val raw: CameraReadingLine,
-        val sourceStarted: Long,
         val seenAt: Long,
-        val visibleUntil: Long
+        val visibleUntil: Long,
+        val misses: Int = 0
     )
 
+    private var nextKey = 0L
     private var lastFrame = Long.MIN_VALUE
     private var lastContentChange: Long? = null
     private var content = emptyList<Retained>()
@@ -44,52 +48,51 @@ internal class CameraLiveReadings {
 
     // Geometry follows fresh results; accepting different text still requires two observations.
     fun update(started: Long, now: Long, detected: List<CameraReadingLine>): List<CameraReadingLine>? {
-        if (now < started || now - started > CAMERA_LIVE_RESULT_MAX_AGE_MS || started <= lastFrame) return null
-        if (lastFrame != Long.MIN_VALUE && started - lastFrame > CAMERA_LIVE_RESULT_MAX_AGE_MS) clearContent()
+        if (now < started || now - started > CAMERA_LIVE_RESULT_MAX_AGE_MS || started <= lastFrame) {
+            return null
+        }
+        if (lastFrame != Long.MIN_VALUE && started - lastFrame > CAMERA_LIVE_RESULT_MAX_AGE_MS) {
+            // Unconfirmed observations must be consecutive, but a still-visible confirmed track
+            // may bridge a slow cycle without losing its identity.
+            candidates = emptyList()
+            content = content.filter { it.visibleUntil > now }
+        }
         lastFrame = started
+        val observed = cameraReadingGroups(detected)
         val previousCandidates = candidates.toMutableList()
-        candidates = detected.map { line ->
+        candidates = observed.map { line ->
             val previous = previousCandidates.filter { matches(it.line, line) }
                 .minByOrNull { distance(it.line.bounds, line.bounds) }
             previousCandidates.remove(previous)
             Observation(line, ((previous?.count ?: 0) + 1).coerceAtMost(2))
         }
-        val available = detected.toMutableList()
+        val available = observed.toMutableList()
         val matches = content.map { takeMatch(available, it.raw) }
         // A blank/changed scene or motion cannot justify keeping an absent line at its old position.
         val stableScene = available.isEmpty() && matches.any { it != null } &&
             matches.withIndex().all { (index, match) -> match == null || smallMovement(content[index].raw, match) }
         fun keepMissing(old: Retained): Boolean =
-            stableScene && old.visibleUntil > now && now - old.seenAt < CAMERA_LINE_MISS_GRACE_MS &&
-                now - old.sourceStarted < CAMERA_LIVE_RESULT_MAX_AGE_MS
+            stableScene && old.misses == 0 && old.visibleUntil > now && now - old.seenAt < CAMERA_LINE_MISS_GRACE_MS
         fun held(old: Retained) = old.copy(
-            visibleUntil = min(old.sourceStarted + CAMERA_LIVE_RESULT_MAX_AGE_MS, old.seenAt + CAMERA_LINE_MISS_GRACE_MS)
+            // An omitted word never renews its display lease.
+            visibleUntil = min(old.visibleUntil, old.seenAt + CAMERA_LINE_MISS_GRACE_MS), misses = old.misses + 1
         )
         fun fresh(line: CameraReadingLine, old: Retained?) = Retained(
-            if (old != null && old.visibleUntil > now && smallMovement(old.raw, line)) smooth(old.line, line) else line,
-            line, started, now, started + CAMERA_LIVE_RESULT_MAX_AGE_MS
+            line.copy(trackingKey = if (old != null && old.visibleUntil > now) old.line.trackingKey else "live:${++nextKey}"),
+            line, now,
+            min(now + CAMERA_LIVE_DISPLAY_HOLD_MS, started + CAMERA_LIVE_TRACK_MAX_SOURCE_AGE_MS)
         )
 
-        val confirmed = candidates.filter { it.count >= 2 }.map { it.line }
-        val unmatched = content.map { it.raw }.toMutableList()
-        val sameContent = confirmed.size == content.size && confirmed.all { takeMatch(unmatched, it) != null }
+        content = content.mapIndexed { index, old ->
+            matches[index]?.let { fresh(it, old) }
+                ?: if (keepMissing(old)) held(old) else old.copy(visibleUntil = Long.MIN_VALUE)
+        }
+        val additions = candidates.filter { it.count >= 2 }.mapNotNull { takeMatch(available, it.line) }
         val lastChange = lastContentChange
-        if (confirmed.isNotEmpty() && (lastChange == null || now - lastChange >= CAMERA_TEXT_UPDATE_INTERVAL_MS) &&
-            !sameContent
-        ) {
-            val previous = content.toMutableList()
-            val next = confirmed.map { line ->
-                val old = previous.filter { matches(it.raw, line) }.minByOrNull { distance(it.raw.bounds, line.bounds) }
-                previous.remove(old)
-                fresh(line, old)
-            }
-            content = next + previous.filter(::keepMissing).map(::held)
+        val publish = additions.isNotEmpty() && (lastChange == null || now - lastChange >= CAMERA_TEXT_UPDATE_INTERVAL_MS)
+        if (publish) {
+            content = content.filter { it.visibleUntil > now } + additions.map { fresh(it, null) }
             lastContentChange = now
-        } else {
-            content = content.mapIndexed { index, old ->
-                matches[index]?.let { fresh(it, old) }
-                    ?: if (keepMissing(old)) held(old) else old.copy(visibleUntil = Long.MIN_VALUE)
-            }
         }
         return visibleLines()
     }
@@ -103,7 +106,7 @@ internal class CameraLiveReadings {
     }
 
     private fun matches(a: CameraReadingLine, b: CameraReadingLine) =
-        a.text == b.text && a.segments == b.segments && closeEnough(a.bounds, b.bounds)
+        a.text == b.text && a.segments == b.segments && a.isVertical == b.isVertical && closeEnough(a.bounds, b.bounds, a.isVertical)
 
     private fun distance(a: CameraRect, b: CameraRect): Float =
         abs(a.left + a.right - b.left - b.right) + abs(a.top + a.bottom - b.top - b.bottom)
@@ -114,25 +117,7 @@ internal class CameraLiveReadings {
             abs(a.bounds.right - b.bounds.right) <= limit && abs(a.bounds.bottom - b.bounds.bottom) <= limit
     }
 
-    private fun smooth(previous: CameraReadingLine, current: CameraReadingLine): CameraReadingLine {
-        if (previous.spans.map { it.start to it.end } != current.spans.map { it.start to it.end }) return current
-        fun rect(a: CameraRect, b: CameraRect) = CameraRect(
-            a.left + (b.left - a.left) * 0.4f, a.top + (b.top - a.top) * 0.4f,
-            a.right + (b.right - a.right) * 0.4f, a.bottom + (b.bottom - a.bottom) * 0.4f
-        )
-        return current.copy(bounds = rect(previous.bounds, current.bounds),
-            spans = current.spans.mapIndexed { index, span ->
-                val old = previous.spans[index]
-                val corners = if (old.corners.size == span.corners.size) span.corners.mapIndexed { pointIndex, point ->
-                    val before = old.corners[pointIndex]
-                    CameraPoint(before.x + (point.x - before.x) * 0.4f, before.y + (point.y - before.y) * 0.4f)
-                } else span.corners
-                span.copy(bounds = rect(old.bounds, span.bounds), corners = corners)
-            })
-    }
-
-    private fun closeEnough(a: CameraRect, b: CameraRect): Boolean {
-        val vertical = a.height > a.width
+    private fun closeEnough(a: CameraRect, b: CameraRect, vertical: Boolean): Boolean {
         val crossAxis = if (vertical) max(a.width, b.width) else max(a.height, b.height)
         val alongAxis = if (vertical) max(a.height, b.height) else max(a.width, b.width)
         val dx = abs(a.left + a.right - b.left - b.right) / 2

@@ -108,7 +108,7 @@ internal fun CameraReaderScreen(
         }
     }
     var readingTargets by remember { mutableStateOf(emptyList<ReadingTarget>()) }
-    var selectedReading by remember(state.lines.map { it.text }) { mutableStateOf<String?>(null) }
+    var selectedReading by remember { mutableStateOf<String?>(null) }
     var granted by remember { mutableStateOf(hasCameraPermission(context)) }
     var requested by rememberSaveable { mutableStateOf(false) }
     var rationale by remember { mutableStateOf(false) }
@@ -305,7 +305,10 @@ internal fun CameraReaderScreen(
                     }
                 )
                 CameraReadingOverlay(state.lines, preferences, Modifier.fillMaxSize(),
-                    selected = selectedReading, onTargets = { readingTargets = it },
+                    selected = selectedReading, onTargets = { targets ->
+                        readingTargets = targets
+                        if (selectedReading != null && targets.none { it.key == selectedReading }) selectedReading = null
+                    },
                     onSelectReading = { selectedReading = it })
             }
         }

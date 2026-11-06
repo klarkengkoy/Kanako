@@ -34,6 +34,30 @@ class CameraTextGeometryTest {
         assertEquals(CameraRect(5f, 1f, 82f, 29f), cameraTokenBounds(line, 0, 2))
     }
 
+    @Test fun aCompoundHasOneSharedOutlineWhileItsCharactersKeepTheirMeasuredGeometry() {
+        val line = CameraReadingLine("日本", CameraRect(0f, 0f, 100f, 30f), emptyList(), listOf(
+            CameraTextSpan(0, 1, CameraRect(5f, 2f, 25f, 28f)),
+            CameraTextSpan(1, 2, CameraRect(60f, 1f, 82f, 29f))))
+        assertEquals(CameraRect(5f, 1f, 82f, 29f), cameraWordOutline(line, 0, 2).bounds)
+        assertEquals(2, cameraTokenPolygons(line, 0, 2).size)
+    }
+
+    @Test fun aTiltedCompoundKeepsAnOrientedOutlineRatherThanAnAxisAlignedBox() {
+        val line = CameraReadingLine("日本", CameraRect(6f, 20f, 110f, 60f), emptyList(), listOf(
+            CameraTextSpan(0, 1, CameraRect(6f, 20f, 60f, 50f),
+                listOf(CameraPoint(10f, 20f), CameraPoint(60f, 30f),
+                    CameraPoint(56f, 50f), CameraPoint(6f, 40f))),
+            CameraTextSpan(1, 2, CameraRect(56f, 30f, 110f, 60f),
+                listOf(CameraPoint(60f, 30f), CameraPoint(110f, 40f),
+                    CameraPoint(106f, 60f), CameraPoint(56f, 50f)))))
+        val outline = cameraWordOutline(line, 0, 2)
+        assertEquals(10f, outline.points[0].x, 0.01f)
+        assertEquals(20f, outline.points[0].y, 0.01f)
+        assertEquals(110f, outline.points[1].x, 0.01f)
+        assertEquals(40f, outline.points[1].y, 0.01f)
+        assertEquals(60f, outline.points[2].y, 0.01f)
+    }
+
     @Test fun malformedOrMismatchedCornersFallBackToTheBoundingRectangle() {
         val rectangle = listOf(CameraPoint(6f, 20f), CameraPoint(110f, 20f),
             CameraPoint(110f, 60f), CameraPoint(6f, 60f))

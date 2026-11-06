@@ -49,7 +49,7 @@ internal fun layoutCameraAnnotations(
     data class Pending(val request: RubyRequest, val layouts: List<StaticLayout>, val reading: String, val key: String)
     val pending = buildList {
         lines.forEachIndexed { lineIndex, line ->
-            val vertical = line.bounds.height > line.bounds.width
+            val vertical = line.isVertical
             var offset = 0
             line.segments.forEach { segment ->
                 val start = line.text.indexOf(segment.text, offset).takeIf { it >= 0 } ?: offset
@@ -58,7 +58,7 @@ internal fun layoutCameraAnnotations(
                 if (raw.isNullOrEmpty()) return@forEach
                 val annotation = kanjiAnnotation(segment.text, formatter.formatReading(raw, ScriptType.KANA))
                 val reading = formatter.formatReading(annotation.reading, script)
-                val token = cameraTokenBounds(line, start + annotation.start, start + annotation.end)
+                val token = cameraWordOutline(line, start + annotation.start, start + annotation.end).bounds
                 val anchor = ReadingBounds(token.left.roundToInt(), token.top.roundToInt(), token.right.roundToInt(), token.bottom.roundToInt())
                 if (clip.intersection(anchor) == null) return@forEach
                 val maxWidth = width - padding * 2
@@ -76,7 +76,7 @@ internal fun layoutCameraAnnotations(
                 }
                 add(Pending(
                     RubyRequest(anchor, clip, layouts.sumOf { it.width } + (layouts.size - 1) * gap + padding * 2,
-                        layouts.maxOf { it.height } + padding * 2, vertical), layouts, reading, "$lineIndex:$start:${segment.text}"
+                        layouts.maxOf { it.height } + padding * 2, vertical), layouts, reading, line.trackingKey ?: "$lineIndex:$start:${segment.text}"
                 ))
             }
         }

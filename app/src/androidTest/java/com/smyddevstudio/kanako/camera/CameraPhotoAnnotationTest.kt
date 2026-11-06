@@ -84,7 +84,7 @@ class CameraPhotoAnnotationTest {
         } finally { bitmap.recycle() }
     }
 
-    @Test fun groupedHighlightsDoNotFillTheGapBetweenMeasuredCharacters() {
+    @Test fun compoundReadingHasOneContinuousHighlightAcrossItsCharacters() {
         val bitmap = android.graphics.Bitmap.createBitmap(100, 100, android.graphics.Bitmap.Config.ARGB_8888)
         try {
             val line = CameraReadingLine("日本", CameraRect(10f, 20f, 80f, 40f),
@@ -94,9 +94,23 @@ class CameraPhotoAnnotationTest {
             val readings = cameraPhotoReadings(listOf(line), 100, 100, ScriptType.KANA)
             assertEquals(1, readings.size)
             drawCameraPhotoHighlights(android.graphics.Canvas(bitmap), readings, readings.single().key, 1f)
-            assertEquals(0, android.graphics.Color.alpha(bitmap.getPixel(45, 30)))
+            assertEquals(1, readings.single().outlines.size)
+            assertTrue(android.graphics.Color.alpha(bitmap.getPixel(45, 30)) > 0)
             assertTrue(android.graphics.Color.alpha(bitmap.getPixel(20, 30)) > 0)
         } finally { bitmap.recycle() }
+    }
+
+    @Test fun liveAndPhotoUseTheSameCompoundOutlineAndTrackedSelectionKey() {
+        val line = CameraReadingLine("日本", CameraRect(10f, 20f, 80f, 40f),
+            listOf(FuriganaSegment("日本", "にほん")), listOf(
+                CameraTextSpan(0, 1, CameraRect(10f, 20f, 30f, 40f)),
+                CameraTextSpan(1, 2, CameraRect(60f, 20f, 80f, 40f))), trackingKey = "live:42")
+        val group = cameraPhotoReadings(listOf(line), 200, 200, ScriptType.KANA).single()
+        val live = layoutCameraAnnotations(listOf(line), 200, 200, 12f, ScriptType.KANA).labels.single()
+        assertEquals("live:42", group.key)
+        assertEquals(group.key, live.target.key)
+        assertEquals(group.anchor, live.target.anchor)
+        assertEquals(1, group.outlines.size)
     }
 
     @Test fun cancellationStopsExtractionBeforeMoreSourceGroupsAreProcessed() {
