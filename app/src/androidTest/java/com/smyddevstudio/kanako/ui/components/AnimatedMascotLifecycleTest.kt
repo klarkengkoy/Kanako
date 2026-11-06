@@ -51,7 +51,8 @@ class AnimatedMascotLifecycleTest {
                 AnimatedMascot(
                     if (nextPhase) R.drawable.kanako_peek_blink else R.drawable.kanako_peek_button,
                     56.dp, playbackKey = nextPhase, loop = nextPhase,
-                    animationsEnabled = true, holdLastFrame = true, durationMillis = 4_000,
+                    animationsEnabled = true, holdLastFrame = true,
+                    durationMillis = if (nextPhase) null else 4_000,
                     onFinished = { completions.intValue++ }
                 )
             }

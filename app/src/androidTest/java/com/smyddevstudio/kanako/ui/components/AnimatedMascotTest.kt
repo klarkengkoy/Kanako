@@ -215,13 +215,26 @@ class AnimatedMascotTest {
 
     @Test fun fastDeparturePlaysOnceInAbout700msAndHoldsTheEmptyEndFrame() {
         var finishedAt = 0L
-        val requestedAt = SystemClock.elapsedRealtime()
+        var requestedAt = 0L
+        val owner = TestOwner()
+        compose.runOnIdle { owner.registry.currentState = Lifecycle.State.CREATED }
         compose.setContent {
-            AnimatedMascot(R.drawable.kanako_peek_button, 24.dp,
-                durationMillis = 700, animationsEnabled = true, holdLastFrame = true,
-                onFinished = { finishedAt = SystemClock.elapsedRealtime() })
+            CompositionLocalProvider(LocalLifecycleOwner provides owner) {
+                AnimatedMascot(R.drawable.kanako_peek_button, 24.dp,
+                    durationMillis = 700, animationsEnabled = true, holdLastFrame = true,
+                    onFinished = { finishedAt = SystemClock.elapsedRealtime() })
+            }
         }
-        val animation = awaitAnimation()
+        // Decode before starting the lifecycle so this measures playback, not IO latency.
+        compose.waitUntil(timeoutMillis = 5_000) {
+            imageView().drawable is AnimatedImageDrawable
+        }
+        val animation = imageView().drawable as AnimatedImageDrawable
+        compose.runOnIdle {
+            assertFalse(animation.isRunning)
+            requestedAt = SystemClock.elapsedRealtime()
+            owner.registry.currentState = Lifecycle.State.STARTED
+        }
         assertEquals(0, animation.repeatCount)
         compose.waitUntil(timeoutMillis = 3_000) { finishedAt > 0 }
         val elapsed = finishedAt - requestedAt
