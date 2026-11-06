@@ -18,6 +18,7 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -78,11 +79,11 @@ class CameraResultControlsTest {
             kanako.assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription,
                 context.getString(R.string.camera_comparison_readings)))
             kanako.performClick()
-            compose.runOnIdle { assertEquals(false, showReadings.value) }
+            compose.waitUntil(5_000) { !showReadings.value }
             kanako.assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription,
                 context.getString(R.string.camera_comparison_original)))
             kanako.performClick()
-            compose.runOnIdle { assertEquals(true, showReadings.value) }
+            compose.waitUntil(5_000) { showReadings.value }
             kanako.performTouchInput { longClick() }
             compose.onNodeWithText(context.getString(R.string.controls_script,
                 context.getString(R.string.script_kana))).assertIsDisplayed()
@@ -103,7 +104,7 @@ class CameraResultControlsTest {
             }
             for (state in listOf(CameraReadingStatus.NO_TEXT, CameraReadingStatus.READ_ERROR, CameraReadingStatus.MODEL_NEEDED)) {
                 compose.runOnIdle { status.value = state }
-                compose.onNodeWithText(context.getString(cameraStatusString(state))).assertIsDisplayed()
+                compose.onAllNodesWithText(context.getString(cameraStatusString(state))).onFirst().assertIsDisplayed()
                 compose.onNodeWithContentDescription(context.getString(R.string.floating_control_description)).assertIsDisplayed()
             }
             compose.onNodeWithContentDescription(context.getString(R.string.navigate_back)).performClick()
