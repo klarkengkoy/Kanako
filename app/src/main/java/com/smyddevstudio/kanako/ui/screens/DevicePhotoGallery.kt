@@ -57,7 +57,8 @@ import com.smyddevstudio.kanako.ui.components.rememberAnimationsEnabled
 import com.smyddevstudio.kanako.ui.theme.KanakoTheme
 
 internal fun isEmbeddedPhotoPickerAvailable(): Boolean =
-    Build.VERSION.SDK_INT >= 34 && SdkExtensions.getExtensionVersion(34) >= 15
+    Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
+        SdkExtensions.getExtensionVersion(Build.VERSION_CODES.UPSIDE_DOWN_CAKE) >= 15
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
