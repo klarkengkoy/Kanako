@@ -36,7 +36,6 @@ import androidx.compose.material.icons.rounded.DocumentScanner
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -65,6 +64,7 @@ import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.Constraints
@@ -105,6 +105,7 @@ internal fun CameraReaderContent(
 ) {
     val zoomInLabel = stringResource(R.string.camera_zoom_in)
     val zoomOutLabel = stringResource(R.string.camera_zoom_out)
+    val statusDescription = stringResource(cameraStatusString(state.status))
     BoxWithConstraints(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         val density = LocalDensity.current
         val landscape = maxWidth > maxHeight
@@ -120,6 +121,7 @@ internal fun CameraReaderContent(
         val controlsGutter = if (granted && landscape) 88.dp + edgePadding else 0.dp
         val controlRotation = rememberCameraControlRotation(displayRotation)
         if (granted) viewfinder(Modifier.fillMaxSize().semantics {
+            stateDescription = statusDescription
             customActions = if (state.ready && (guideTarget < 0 || guideTarget == 2)) listOf(
                 CustomAccessibilityAction(zoomInLabel) { onZoom(1.5f); true },
                 CustomAccessibilityAction(zoomOutLabel) { onZoom(1 / 1.5f); true }
@@ -181,13 +183,10 @@ internal fun CameraReaderContent(
                     Spacer(Modifier.height(if (compact) 0.dp else TopAppBarDefaults.TopAppBarExpandedHeight))
                 } else {
                     Spacer(Modifier.weight(1f))
-                    Surface(modifier = motion, shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f), contentColor = MaterialTheme.colorScheme.onSurface) {
-                        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            if (state.status == CameraReadingStatus.STARTING || state.status == CameraReadingStatus.CAPTURING) {
-                                CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
-                            }
-                            Text(stringResource(cameraStatusString(state.status)), style = MaterialTheme.typography.bodyMedium,
+                    if (state.status == CameraReadingStatus.CAMERA_ERROR || state.status == CameraReadingStatus.READ_ERROR ||
+                        state.status == CameraReadingStatus.MODEL_NEEDED) {
+                        Surface(modifier = motion, shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f), contentColor = MaterialTheme.colorScheme.onSurface) {
+                            Text(statusDescription, Modifier.padding(12.dp), style = MaterialTheme.typography.bodyMedium,
                                 maxLines = if (compact) 2 else 3, overflow = TextOverflow.Ellipsis)
                         }
                     }
