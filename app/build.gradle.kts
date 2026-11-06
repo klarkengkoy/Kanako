@@ -12,9 +12,6 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.plugin.serialization)
 }
 
-// One engine is selected per build; -PreaderEngine=kuromoji creates a rollback build.
-val readerEngine = providers.gradleProperty("readerEngine").orElse("sudachi").get()
-require(readerEngine in setOf("sudachi", "kuromoji")) { "readerEngine must be sudachi or kuromoji" }
 val sudachiTrial = providers.gradleProperty("sudachiTrial").orNull == "true"
 val readingPerformance = providers.gradleProperty("readingPerformance").orNull == "true"
 val readingEvaluation = providers.gradleProperty("readingEvaluation").orNull == "true"
@@ -105,9 +102,7 @@ val prepareSudachiDictionary = tasks.register<PrepareSudachiDictionary>("prepare
 }
 
 androidComponents.onVariants { variant ->
-    if (readerEngine == "sudachi") {
-        variant.sources.assets?.addGeneratedSourceDirectory(prepareSudachiDictionary) { it.assetsDirectory }
-    }
+    variant.sources.assets?.addGeneratedSourceDirectory(prepareSudachiDictionary) { it.assetsDirectory }
 }
 
 android {
@@ -119,7 +114,6 @@ android {
     defaultConfig {
         applicationId = "com.smyddevstudio.kanako"
         minSdk = 26
-        buildConfigField("String", "READER_ENGINE", "\"$readerEngine\"")
         buildConfigField("String", "SUDACHI_DICTIONARY_VERSION", "\"${dictionarySpec.getProperty("version")}\"")
         buildConfigField("String", "SUDACHI_DICTIONARY_SHA256", "\"${dictionarySpec.getProperty("dictionarySha256")}\"")
         buildConfigField("long", "SUDACHI_DICTIONARY_BYTES", "${dictionarySpec.getProperty("dictionaryBytes")}L")
@@ -242,5 +236,4 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     "ksp"(libs.androidx.room.compiler)
     "ksp"(libs.moshi.kotlin.codegen)
-    implementation(libs.kuromoji.ipadic)
 }

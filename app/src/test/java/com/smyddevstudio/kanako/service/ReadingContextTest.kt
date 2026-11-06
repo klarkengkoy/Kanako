@@ -5,20 +5,12 @@ import com.smyddevstudio.kanako.data.tokenizer.JapaneseTextTokenizer
 import com.smyddevstudio.kanako.data.tokenizer.ReadingEngineFixtures
 import org.junit.Assert.*
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 
-@RunWith(Parameterized::class)
-class ReadingContextTest(private val engineName: String) {
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun engines() = listOf(arrayOf("sudachi"), arrayOf("kuromoji"))
-    }
+class ReadingContextTest {
 
     private val calls = mutableListOf<String>()
     private val tokenizer = JapaneseTextTokenizer {
-        val engine = if (engineName == "sudachi") ReadingEngineFixtures.sudachi else ReadingEngineFixtures.kuromoji
+        val engine = ReadingEngineFixtures.sudachi
         JapaneseReadingEngine { text ->
             calls.add(text)
             engine.tokenize(text)
@@ -45,7 +37,7 @@ class ReadingContextTest(private val engineName: String) {
         val changed = listOf(first, line("葉を読む。", 60))
         val actual = read(changed)
         val expected = JapaneseTextTokenizer {
-            if (engineName == "sudachi") ReadingEngineFixtures.sudachi else ReadingEngineFixtures.kuromoji
+            ReadingEngineFixtures.sudachi
         }.tokenizeLines(changed.map { it.text })
         assertEquals(expected, actual)
         assertNotEquals("い", actual[0].last().reading)

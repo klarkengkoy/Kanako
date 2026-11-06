@@ -19,8 +19,7 @@ class ReadingEngineIntegrationTest {
     @Test
     fun configuredEngineReadsOfflineAndPreservesSourceText() {
         val engine = ActiveJapaneseReadingEngine.engine
-        if (BuildConfig.READER_ENGINE == "sudachi") assertTrue(engine is SudachiReadingEngine)
-        else assertTrue(engine is KuromojiReadingEngine)
+        assertTrue(engine is SudachiReadingEngine)
         val tokenizer = JapaneseTextTokenizer()
         listOf("二人で木の下へ行く。", "机の下で眠る。", "木下さんが来た。",
             "本を一冊買う。", "猫🐈とＡＢＣ。", "ニ人と入ロ", "\u9fff").forEach { text ->
@@ -30,9 +29,7 @@ class ReadingEngineIntegrationTest {
         assertEquals("ふたり", tokenizer.tokenize("二人で").first().reading)
         assertTrue(tokenizer.tokenize("机の下で").any { it.text == "下" && it.reading == "した" })
         assertTrue(tokenizer.tokenize("一冊買う。").any { it.text == "一冊" && it.reading == "いっさつ" })
-        if (BuildConfig.READER_ENGINE == "sudachi") {
-            assertTrue(tokenizer.tokenize("二人組が来た。").any { it.text == "二人組" && it.reading == "ふたりぐみ" })
-        }
+        assertTrue(tokenizer.tokenize("二人組が来た。").any { it.text == "二人組" && it.reading == "ふたりぐみ" })
     }
 
     @Test
@@ -60,7 +57,6 @@ class ReadingEngineIntegrationTest {
 
     @Test
     fun dictionaryInstallationRepairsTruncationAndReusesVerifiedCopy() {
-        if (BuildConfig.READER_ENGINE != "sudachi") return
         val ownedDirectory = File(context.cacheDir, "sudachi-installation-test")
         val isolatedContext = object : ContextWrapper(context) {
             override fun getNoBackupFilesDir(): File = ownedDirectory

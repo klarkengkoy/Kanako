@@ -30,10 +30,7 @@ class ReadingEvaluationTest {
             assertTrue("Family crosses scored partitions: $family",
                 group.filter { it.partition != "diagnostic" }.map { it.partition }.distinct().size <= 1)
         }
-        val results = listOf(
-            "sudachi" to ReadingEngineFixtures.sudachi,
-            "kuromoji" to ReadingEngineFixtures.kuromoji
-        ).flatMap { (name, engine) ->
+        val results = listOf("sudachi" to ReadingEngineFixtures.sudachi).flatMap { (name, engine) ->
             val tokenizer = JapaneseTextTokenizer { engine }
             cases.map { case ->
                 val lines = case.input.split('\n')

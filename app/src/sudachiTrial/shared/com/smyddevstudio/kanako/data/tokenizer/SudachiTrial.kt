@@ -1,6 +1,5 @@
 package com.smyddevstudio.kanako.data.tokenizer
 
-import com.atilika.kuromoji.ipadic.Tokenizer as KuromojiTokenizer
 import com.worksap.nlp.sudachi.Config
 import com.worksap.nlp.sudachi.Dictionary
 import com.worksap.nlp.sudachi.Tokenizer
@@ -93,17 +92,10 @@ internal object SudachiTrial {
             sudachi.tokenize(Tokenizer.SplitMode.C, cases.first().text)
             report.appendLine("Sudachi first sentence ms: ${ms(System.nanoTime() - firstStart)}")
             onSudachiLoaded()
-            val kuromojiStart = System.nanoTime()
-            val kuromoji = KuromojiTokenizer()
-            report.appendLine("Kuromoji initialization ms: ${ms(System.nanoTime() - kuromojiStart)}")
             val current = JapaneseTextTokenizer { SudachiReadingEngine(dictionary) }
             fun kana(text: String) = current.hiraganaToKatakana(text)
             fun sudachiPieces(text: String) = sudachi.tokenize(Tokenizer.SplitMode.C, text).map {
                 Piece(it.surface(), it.readingForm(), it.begin(), it.end(), it.partOfSpeech().joinToString("/"))
-            }
-            fun kuromojiPieces(text: String) = kuromoji.tokenize(text).map {
-                Piece(it.surface, it.reading?.takeUnless { r -> r == "*" }.orEmpty().ifEmpty { it.surface },
-                    it.position, it.position + it.surface.length, it.partOfSpeechLevel1 + "/" + it.partOfSpeechLevel2)
             }
             fun reading(text: String, pieces: List<Piece>): String = buildString {
                 var cursor = 0
@@ -124,27 +116,23 @@ internal object SudachiTrial {
                 return kana(segments.joinToString("") { it.reading ?: it.text })
             }
             var sudachiMatches = 0
-            var rawMatches = 0
             var currentMatches = 0
             var scored = 0
-            report.appendLine("input\texpected\tSudachi\traw Kuromoji\tcurrent Kanako")
+            report.appendLine("input\texpected\tSudachi\tcurrent Kanako")
             cases.forEach { case ->
                 val sp = sudachiPieces(case.text)
-                val kp = kuromojiPieces(case.text)
                 val sr = reading(case.text, sp)
-                val kr = reading(case.text, kp)
                 val cr = currentReading(case.text)
                 if (case.expected != null) {
                     scored++
                     if (sr == case.expected) sudachiMatches++
-                    if (kr == case.expected) rawMatches++
                     if (cr == case.expected) currentMatches++
                 }
                 fun escaped(value: String) = value.replace("\n", "\\n").replace("\t", "\\t")
-                report.appendLine(listOf(case.text, case.expected ?: "(diagnostic)", sr, kr, cr).joinToString("\t", transform = ::escaped))
+                report.appendLine(listOf(case.text, case.expected ?: "(diagnostic)", sr, cr).joinToString("\t", transform = ::escaped))
                 report.appendLine("  S: " + sp.joinToString(" | ") { "${it.surface}=${it.reading} [${it.pos}]" })
             }
-            report.appendLine("Exact expected readings: Sudachi $sudachiMatches/$scored; raw Kuromoji $rawMatches/$scored; current Kanako $currentMatches/$scored")
+            report.appendLine("Exact expected readings: Sudachi $sudachiMatches/$scored; current Kanako $currentMatches/$scored")
             report.appendLine("Original surfaces/spans preserved on all ${cases.size} inputs.")
             // A small smoke timing, not AndroidX Benchmark: excludes initialization, includes tokenization.
             fun timing(label: String, action: (String) -> Unit) {

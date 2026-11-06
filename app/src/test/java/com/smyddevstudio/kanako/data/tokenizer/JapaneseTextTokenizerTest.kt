@@ -6,21 +6,13 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 
-@RunWith(Parameterized::class)
-class JapaneseTextTokenizerTest(private val engineName: String) {
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun engines() = listOf(arrayOf("sudachi"), arrayOf("kuromoji"))
-    }
+class JapaneseTextTokenizerTest {
 
     private val tokenizer = JapaneseTextTokenizer {
-        if (engineName == "sudachi") ReadingEngineFixtures.sudachi else ReadingEngineFixtures.kuromoji
+        ReadingEngineFixtures.sudachi
     }
 
     @Test
@@ -46,7 +38,7 @@ class JapaneseTextTokenizerTest(private val engineName: String) {
         val sentence = "吾輩は猫である"
         val segments = tokenizer.tokenize(sentence)
 
-        // Full Sudachi recognizes the book title as one named compound; Kuromoji splits it.
+        // Full Sudachi recognizes the book title as one named compound.
         assertEquals(sentence, segments.joinToString("") { it.text })
         assertEquals("わがはいはねこである", segments.joinToString("") { it.reading ?: it.text })
         assertTrue(segments.filter { it.text == "は" }.all { it.reading == null })
@@ -146,12 +138,12 @@ class JapaneseTextTokenizerTest(private val engineName: String) {
             assertTrue(result.toString(), result.any { it.text == "下" && it.reading == "した" })
         }
         val abstractText = "先生の指導の下で学ぶ。"
-        val engine = if (engineName == "sudachi") ReadingEngineFixtures.sudachi else ReadingEngineFixtures.kuromoji
+        val engine = ReadingEngineFixtures.sudachi
         val originalBelow = engine.tokenize(abstractText).first { it.surface == "下" }.reading!!
         val abstract = tokenizer.tokenize(abstractText)
         assertEquals(tokenizer.formatReading(originalBelow, ScriptType.KANA), abstract.first { it.text == "下" }.reading)
         val uncommonName = tokenizer.tokenize("木の下さん")
-        assertEquals(if (engineName == "sudachi") "きのしたさん" else "このしたさん",
+        assertEquals("きのしたさん",
             uncommonName.joinToString("") { it.reading ?: it.text })
         val name = tokenizer.tokenize("木下さんが来た。")
         assertTrue(name.toString(), name.any { it.text == "木下" && it.reading == "きのした" })

@@ -10,5 +10,4 @@ internal object ReadingEngineFixtures {
         check(file.isFile) { "Run tests through Gradle to prepare the pinned dictionary" }
         SudachiReadingEngine(Dictionary.load(Config.defaultConfig().systemDictionary(file.toPath())))
     }
-    val kuromoji: JapaneseReadingEngine by lazy { KuromojiReadingEngine() }
 }

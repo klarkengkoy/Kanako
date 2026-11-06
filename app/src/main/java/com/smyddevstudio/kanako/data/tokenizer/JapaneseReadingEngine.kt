@@ -1,8 +1,6 @@
 package com.smyddevstudio.kanako.data.tokenizer
 
 import android.content.Context
-import com.atilika.kuromoji.ipadic.Tokenizer as KuromojiTokenizer
-import com.smyddevstudio.kanako.BuildConfig
 import com.worksap.nlp.sudachi.Config
 import com.worksap.nlp.sudachi.Dictionary
 import com.worksap.nlp.sudachi.Tokenizer as SudachiTokenizer
@@ -34,16 +32,6 @@ internal class SudachiReadingEngine(dictionary: Dictionary) : JapaneseReadingEng
         }
 }
 
-internal class KuromojiReadingEngine(
-    private val tokenizer: KuromojiTokenizer = KuromojiTokenizer()
-) : JapaneseReadingEngine {
-    @Synchronized
-    override fun tokenize(text: String): List<JapaneseToken> = tokenizer.tokenize(text).map {
-        JapaneseToken(it.surface, it.position, it.reading,
-            listOf(it.partOfSpeechLevel1, it.partOfSpeechLevel2, it.partOfSpeechLevel3))
-    }
-}
-
 internal object ActiveJapaneseReadingEngine {
     private var applicationContext: Context? = null
 
@@ -53,14 +41,8 @@ internal object ActiveJapaneseReadingEngine {
 
     // Resolving the engine is deferred until the first worker actually requests tokenization.
     val engine: JapaneseReadingEngine by lazy {
-        when (BuildConfig.READER_ENGINE) {
-            "sudachi" -> {
-                val context = checkNotNull(applicationContext) { "Reader application is not initialized" }
-                val dictionary = SudachiDictionaryFile.prepare(context)
-                SudachiReadingEngine(Dictionary.load(Config.defaultConfig().systemDictionary(dictionary.toPath())))
-            }
-            "kuromoji" -> KuromojiReadingEngine()
-            else -> error("Unsupported reader engine")
-        }
+        val context = checkNotNull(applicationContext) { "Reader application is not initialized" }
+        val dictionary = SudachiDictionaryFile.prepare(context)
+        SudachiReadingEngine(Dictionary.load(Config.defaultConfig().systemDictionary(dictionary.toPath())))
     }
 }

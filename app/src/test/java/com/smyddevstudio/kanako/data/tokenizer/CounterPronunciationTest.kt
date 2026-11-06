@@ -4,16 +4,9 @@ import com.smyddevstudio.kanako.model.ScriptType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 
-@RunWith(Parameterized::class)
-class CounterPronunciationTest(private val engineName: String) {
-    companion object {
-        @JvmStatic @Parameterized.Parameters(name = "{0}")
-        fun engines() = listOf(arrayOf("sudachi"), arrayOf("kuromoji"))
-    }
-    private val engine get() = if (engineName == "sudachi") ReadingEngineFixtures.sudachi else ReadingEngineFixtures.kuromoji
+class CounterPronunciationTest {
+    private val engine get() = ReadingEngineFixtures.sudachi
     private val tokenizer = JapaneseTextTokenizer { engine }
 
     @Test fun quantityContextsUseTheCounterSoundChanges() {

@@ -4,18 +4,11 @@ import com.smyddevstudio.kanako.ui.components.FuriganaSegment
 import kotlin.random.Random
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 
-@RunWith(Parameterized::class)
-class LineProjectionTest(private val engineName: String) {
-    companion object {
-        @JvmStatic @Parameterized.Parameters(name = "{0}")
-        fun engines() = listOf(arrayOf("sudachi"), arrayOf("kuromoji"))
-    }
+class LineProjectionTest {
 
     private val tokenizer = JapaneseTextTokenizer {
-        if (engineName == "sudachi") ReadingEngineFixtures.sudachi else ReadingEngineFixtures.kuromoji
+        ReadingEngineFixtures.sudachi
     }
 
     @Test fun emptyRowsAndAllSplitPositionsMatchTheOriginalProjection() {
