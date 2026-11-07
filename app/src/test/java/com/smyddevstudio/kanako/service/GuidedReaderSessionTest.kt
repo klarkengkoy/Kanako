@@ -7,24 +7,18 @@ import org.junit.Test
 class GuidedReaderSessionTest {
     @After fun reset() = GuidedReaderSession.end()
 
-    @Test fun preferencesReturnResumesOnlyThePreferencesLesson() {
+    @Test fun visibleSampleRequiresBoundsAndNeverAllowsOtherApps() {
         GuidedReaderSession.begin()
-        GuidedReaderSession.returnFromPreferences()
-        GuidedReaderSession.openPreferencesFromHome()
-        assertEquals(GuidedReaderStep.SHOW, GuidedReaderSession.step.value)
         GuidedReaderSession.setSampleVisible(true)
-        GuidedReaderSession.advance(GuidedReaderStep.SHOW, GuidedReaderStep.READ)
-        GuidedReaderSession.advance(GuidedReaderStep.READ, GuidedReaderStep.CONTROLS)
-        GuidedReaderSession.advance(GuidedReaderStep.CONTROLS, GuidedReaderStep.SCRIPT)
-        GuidedReaderSession.advance(GuidedReaderStep.SCRIPT, GuidedReaderStep.CLEAR)
-        GuidedReaderSession.advance(GuidedReaderStep.CLEAR, GuidedReaderStep.DRAG)
-        GuidedReaderSession.advance(GuidedReaderStep.DRAG, GuidedReaderStep.PREFERENCES)
-        GuidedReaderSession.setSampleVisible(false)
-        GuidedReaderSession.openPreferencesFromHome()
-        assertEquals(GuidedReaderStep.RETURN, GuidedReaderSession.step.value)
         assertFalse(GuidedReaderSession.allowsSource(true))
-        GuidedReaderSession.returnFromPreferences()
-        assertEquals(GuidedReaderStep.STOP, GuidedReaderSession.step.value)
+        GuidedReaderSession.setSampleBounds(ReadingBounds(20, 40, 20, 40))
+        assertFalse(GuidedReaderSession.allowsSource(true))
+        GuidedReaderSession.setSampleBounds(ReadingBounds(20, 40, 300, 200))
+        assertTrue(GuidedReaderSession.allowsSource(true))
+        assertFalse(GuidedReaderSession.allowsSource(false))
+        GuidedReaderSession.setSampleVisible(false)
+        assertFalse(GuidedReaderSession.allowsSource(true))
+        assertFalse(GuidedReaderSession.allowsSource(false))
     }
 
     @Test fun outsideTheLessonOnlyOtherAppsAreEligible() {
@@ -33,32 +27,43 @@ class GuidedReaderSessionTest {
         assertTrue(GuidedReaderSession.allowsSource(false))
     }
 
-    @Test fun lessonRequiresVisibleSampleAndReadStepAndRejectsOtherApps() {
-        GuidedReaderSession.begin()
-        assertFalse(GuidedReaderSession.allowsSource(true))
+    @Test fun restoredVisibleLayoutCanArriveBeforeTheSessionStarts() {
         GuidedReaderSession.setSampleVisible(true)
+        GuidedReaderSession.setSampleBounds(ReadingBounds(20, 40, 300, 200))
         assertFalse(GuidedReaderSession.allowsSource(true))
-        GuidedReaderSession.advance(GuidedReaderStep.SHOW, GuidedReaderStep.READ)
+        GuidedReaderSession.begin()
         assertTrue(GuidedReaderSession.allowsSource(true))
         assertFalse(GuidedReaderSession.allowsSource(false))
-        GuidedReaderSession.setSampleVisible(false)
-        assertFalse(GuidedReaderSession.allowsSource(true))
-        GuidedReaderSession.advance(GuidedReaderStep.READ, GuidedReaderStep.CONTROLS)
-        assertEquals(GuidedReaderStep.READ, GuidedReaderSession.step.value)
-        GuidedReaderSession.setSampleVisible(true)
-        GuidedReaderSession.advance(GuidedReaderStep.READ, GuidedReaderStep.CONTROLS)
-        assertFalse(GuidedReaderSession.allowsSource(true))
     }
 
-    @Test fun outOfOrderOrBackgroundEventsCannotFinishTheLesson() {
+    @Test fun endingTheLessonDiscardsItsSampleState() {
         GuidedReaderSession.begin()
-        GuidedReaderSession.advance(GuidedReaderStep.SHOW, GuidedReaderStep.COMPLETE)
-        assertEquals(GuidedReaderStep.SHOW, GuidedReaderSession.step.value)
         GuidedReaderSession.setSampleVisible(true)
-        GuidedReaderSession.advance(GuidedReaderStep.STOP, GuidedReaderStep.COMPLETE)
-        assertEquals(GuidedReaderStep.SHOW, GuidedReaderSession.step.value)
+        GuidedReaderSession.setSampleBounds(ReadingBounds(20, 40, 300, 200))
         GuidedReaderSession.end()
-        assertFalse(GuidedReaderSession.active)
-        assertFalse(GuidedReaderSession.sampleVisible)
+        assertEquals(GuidedReaderState(), GuidedReaderSession.state.value)
+        GuidedReaderSession.begin()
+        assertFalse(GuidedReaderSession.allowsSource(true))
     }
+    @Test fun automaticPracticeRequiresTheVisibleSampleAndStopsDuringScroll() {
+        GuidedReaderSession.begin()
+        GuidedReaderSession.setSampleVisible(true)
+        GuidedReaderSession.setSampleBounds(ReadingBounds(20, 40, 300, 200))
+        assertFalse(GuidedReaderSession.allowsAutomaticRead)
+        GuidedReaderSession.setAutomaticPractice(true)
+        assertTrue(GuidedReaderSession.allowsAutomaticRead)
+        assertFalse(GuidedReaderSession.allowsSource(false))
+        GuidedReaderSession.setSampleScrolling(true)
+        assertFalse(GuidedReaderSession.allowsAutomaticRead)
+        GuidedReaderSession.setSampleScrolling(false)
+        assertTrue(GuidedReaderSession.allowsAutomaticRead)
+        GuidedReaderSession.setSampleVisible(false)
+        assertFalse(GuidedReaderSession.allowsAutomaticRead)
+        GuidedReaderSession.setSampleVisible(true)
+        GuidedReaderSession.setAutomaticPractice(false)
+        assertFalse(GuidedReaderSession.allowsAutomaticRead)
+        GuidedReaderSession.end()
+        assertFalse(GuidedReaderSession.allowsAutomaticRead)
+    }
+
 }

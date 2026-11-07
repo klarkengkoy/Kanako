@@ -102,7 +102,7 @@ internal fun RecognizedTextOverlayContent(
             }
         }
     }
-    val selectiveTouch = preferences.autoReadAfterScroll && !tutorialContrast
+    val selectiveTouch = preferences.autoReadAfterScroll || tutorialContrast
     var selected by remember(lines.map { it.windowId to it.text }, selectiveTouch) {
         mutableStateOf<String?>(null)
     }

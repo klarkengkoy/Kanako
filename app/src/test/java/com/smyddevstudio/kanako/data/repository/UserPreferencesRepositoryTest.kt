@@ -12,7 +12,6 @@ import com.smyddevstudio.kanako.model.FuriganaColor
 import com.smyddevstudio.kanako.model.FuriganaSize
 import com.smyddevstudio.kanako.model.KanakoPreferences
 import com.smyddevstudio.kanako.model.ScriptType
-import com.smyddevstudio.kanako.model.TutorialPath
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
@@ -58,7 +57,7 @@ class UserPreferencesRepositoryTest {
         assertFalse(preferences.offerGuidedSetup)
         assertFalse(preferences.hasAcceptedSnapshotDisclosure)
         assertFalse(preferences.autoReadAfterScroll)
-        assertFalse(preferences.completedFloatingTutorial)
+        assertFalse(preferences.completedTutorial)
         assertTrue(preferences.offerAutoRead)
     }
 
@@ -126,17 +125,39 @@ class UserPreferencesRepositoryTest {
     }
 
     @Test
-    fun tutorialCompletionIsIndependentForEachPathAndNeverGrantsAccess() = runTest(testDispatcher) {
+    fun unifiedCompletionSurvivesRecreationWithoutGrantingAccessOrAutoRead() = runTest(testDispatcher) {
+        repository.initializeAutoReadOffer(isNewInstallation = true)
         val before = repository.userPreferencesFlow.first()
-        repository.completeTutorial(TutorialPath.FLOATING)
-        val floating = UserPreferencesRepository(testDataStore).userPreferencesFlow.first()
-        assertEquals(before.copy(hasSeenTutorialInvitation = true, completedFloatingTutorial = true), floating)
-        repository.completeTutorial(TutorialPath.CAMERA)
-        val both = UserPreferencesRepository(testDataStore).userPreferencesFlow.first()
-        assertEquals(floating.copy(completedCameraTutorial = true), both)
-        assertFalse(both.hasAcceptedSnapshotDisclosure)
-        assertFalse(both.autoReadAfterScroll)
-        assertFalse(both.isOverlayActive)
+        repository.completeTutorial()
+        val restored = UserPreferencesRepository(testDataStore).userPreferencesFlow.first()
+        assertEquals(before.copy(hasSeenTutorialInvitation = true, offerGuidedSetup = false,
+            completedTutorial = true), restored)
+        assertFalse(restored.hasAcceptedSnapshotDisclosure)
+        assertFalse(restored.autoReadAfterScroll)
+        assertFalse(restored.isOverlayActive)
+        assertTrue(restored.offerAutoRead)
+    }
+
+    @Test
+    fun eitherLegacyCompletionCountsWithoutReofferingOrChangingPreferences() = runTest(testDispatcher) {
+        repository.updateScriptType(ScriptType.ROMAJI)
+        repository.updateFabOffset(480, 620)
+        val oldKeys = listOf("tutorial_floating_completed", "tutorial_camera_completed")
+        for (key in oldKeys) {
+            testDataStore.edit { stored ->
+                oldKeys.forEach { stored[booleanPreferencesKey(it)] = false }
+                stored[booleanPreferencesKey(key)] = true
+                stored[booleanPreferencesKey("guided_setup_pending")] = true
+            }
+            val restored = UserPreferencesRepository(testDataStore).userPreferencesFlow.first()
+            assertTrue(restored.completedTutorial)
+            assertFalse(restored.offerGuidedSetup)
+            assertEquals(ScriptType.ROMAJI, restored.scriptType)
+            assertEquals(480, restored.fabOffsetX)
+            assertEquals(620, restored.fabOffsetY)
+            assertFalse(restored.hasAcceptedSnapshotDisclosure)
+            assertFalse(restored.autoReadAfterScroll)
+        }
     }
 
     @Test

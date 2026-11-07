@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -37,6 +36,9 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import com.smyddevstudio.kanako.ui.components.tutorialAllows
+import com.smyddevstudio.kanako.ui.components.tutorialTarget
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
@@ -69,15 +71,11 @@ internal fun CameraResultContent(
     showReadings: Boolean = true,
     onShowReadingsChange: (Boolean) -> Unit = {},
     onControlsHeight: (Int) -> Unit = {},
-    photograph: @Composable (Modifier) -> Unit = {},
-    guide: @Composable () -> Unit = {}
+    photograph: @Composable (Modifier) -> Unit = {}
 ) {
     BoxWithConstraints(modifier.fillMaxSize().background(Color.Black)) {
-        val guideMaxHeight = maxHeight / 2
-        Column(Modifier.fillMaxSize()) {
-            BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
                 val density = LocalDensity.current
-                if (state.photo != null) photograph(Modifier.fillMaxSize())
+                if (state.photo != null) photograph(Modifier.fillMaxSize().tutorialTarget("photo_readings"))
                 Spacer(Modifier.fillMaxWidth()
                     .height(with(density) { WindowInsets.safeDrawing.getTop(this).toDp() } + 96.dp)
                     .background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.7f), Color.Transparent))))
@@ -85,10 +83,10 @@ internal fun CameraResultContent(
                     .onSizeChanged { onControlsHeight(it.height) },
                     horizontalAlignment = Alignment.CenterHorizontally) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        IconButton(onClick = onBack, modifier = Modifier.size(48.dp)) {
+                        IconButton(onClick = onBack, enabled = tutorialAllows("photo_back"), modifier = Modifier.size(48.dp)) {
                             Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.navigate_back), tint = Color.White)
                         }
-                        IconButton(onClick = onPreferences, modifier = Modifier.size(48.dp)) {
+                        IconButton(onClick = onPreferences, enabled = tutorialAllows("photo_preferences"), modifier = Modifier.size(48.dp)) {
                             Icon(Icons.Rounded.Settings, stringResource(R.string.camera_appearance), tint = Color.White)
                         }
                     }
@@ -108,9 +106,6 @@ internal fun CameraResultContent(
                 }
                 if (state.photo != null) CameraPhotoKanako(state, showReadings, onShowReadingsChange,
                     preferences, onToggleScriptType, Modifier.fillMaxSize())
-            }
-            Box(Modifier.heightIn(max = guideMaxHeight)) { guide() }
-        }
     }
 }
 
@@ -144,7 +139,10 @@ private fun CameraPhotoKanako(
             CameraReadingStatus.READ_ERROR -> R.string.reading_ocr_failed
             else -> R.string.reading_ready
         }
+        val canUseKanako = tutorialAllows("photo_kanako")
         FloatingOverlayContent(
+            guided = com.smyddevstudio.kanako.service.GuidedReaderSession.active,
+            interactionEnabled = canUseKanako,
             preferences = preferences,
             showFurigana = showReadings && state.status == CameraReadingStatus.PHOTO,
             onReadOrClear = { onShowReadingsChange(!showReadings) },
@@ -158,7 +156,7 @@ private fun CameraPhotoKanako(
             onStopService = {},
             modifier = Modifier.offset {
                 IntOffset((horizontal * travelX).roundToInt(), (vertical * travelY).roundToInt())
-            },
+            }.tutorialTarget("photo_kanako").alpha(if (canUseKanako) 1f else 0.35f),
             mirrorMascot = horizontal < 0.5f,
             isReading = state.status == CameraReadingStatus.PROCESSING,
             statusMessage = status,

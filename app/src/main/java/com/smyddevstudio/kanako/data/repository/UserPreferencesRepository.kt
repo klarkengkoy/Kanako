@@ -16,7 +16,6 @@ import com.smyddevstudio.kanako.model.FuriganaColor
 import com.smyddevstudio.kanako.model.FuriganaSize
 import com.smyddevstudio.kanako.model.KanakoPreferences
 import com.smyddevstudio.kanako.model.ScriptType
-import com.smyddevstudio.kanako.model.TutorialPath
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -44,9 +43,9 @@ class UserPreferencesRepository(
         private val AUTO_READ_OFFER_PENDING = booleanPreferencesKey("auto_read_offer_pending")
         private val SNAPSHOT_DISCLOSURE_ACCEPTED = booleanPreferencesKey("snapshot_disclosure_accepted")
         private val CAMERA_PERMISSION_DENIED = booleanPreferencesKey("camera_permission_denied")
-        private val CAMERA_GUIDE_SEEN = booleanPreferencesKey("camera_guide_seen")
         private val GUIDED_SETUP_PENDING = booleanPreferencesKey("guided_setup_pending")
         private val TUTORIAL_INVITATION_SEEN = booleanPreferencesKey("tutorial_invitation_seen")
+        private val TUTORIAL_COMPLETED = booleanPreferencesKey("tutorial_completed")
         private val TUTORIAL_FLOATING_COMPLETED = booleanPreferencesKey("tutorial_floating_completed")
         private val TUTORIAL_CAMERA_COMPLETED = booleanPreferencesKey("tutorial_camera_completed")
     }
@@ -94,6 +93,9 @@ class UserPreferencesRepository(
         val fabOffsetX = preferences[FAB_OFFSET_X] ?: 100
         val fabOffsetY = preferences[FAB_OFFSET_Y] ?: 300
 
+        val completedTutorial = preferences[TUTORIAL_COMPLETED] == true ||
+            preferences[TUTORIAL_FLOATING_COMPLETED] == true || preferences[TUTORIAL_CAMERA_COMPLETED] == true
+
         return KanakoPreferences(
             furiganaSize = furiganaSize,
             furiganaColor = furiganaColor,
@@ -107,13 +109,11 @@ class UserPreferencesRepository(
             autoHideOnKeyboard = autoHideOnKeyboard,
             autoReadAfterScroll = preferences[AUTO_READ_AFTER_SCROLL] ?: false,
             offerAutoRead = preferences[AUTO_READ_OFFER_PENDING] ?: false,
-            offerGuidedSetup = preferences[GUIDED_SETUP_PENDING] ?: false,
+            offerGuidedSetup = preferences[GUIDED_SETUP_PENDING] == true && !completedTutorial,
             hasAcceptedSnapshotDisclosure = preferences[SNAPSHOT_DISCLOSURE_ACCEPTED] ?: false,
             hasDeniedCameraPermission = preferences[CAMERA_PERMISSION_DENIED] ?: false,
             hasSeenTutorialInvitation = preferences[TUTORIAL_INVITATION_SEEN] ?: false,
-            completedFloatingTutorial = preferences[TUTORIAL_FLOATING_COMPLETED] ?: false,
-            completedCameraTutorial = preferences[TUTORIAL_CAMERA_COMPLETED] ?: false,
-            hasSeenCameraGuide = preferences[CAMERA_GUIDE_SEEN] ?: false
+            completedTutorial = completedTutorial
         )
     }
 
@@ -135,10 +135,6 @@ class UserPreferencesRepository(
         }
     }
 
-    suspend fun dismissCameraGuide() {
-        dataStore.edit { it[CAMERA_GUIDE_SEEN] = true }
-    }
-
     suspend fun dismissGuidedSetup() {
         dataStore.edit { it[GUIDED_SETUP_PENDING] = false }
     }
@@ -147,13 +143,11 @@ class UserPreferencesRepository(
         dataStore.edit { it[TUTORIAL_INVITATION_SEEN] = true }
     }
 
-    suspend fun completeTutorial(path: TutorialPath) {
+    suspend fun completeTutorial() {
         dataStore.edit {
             it[TUTORIAL_INVITATION_SEEN] = true
-            it[when (path) {
-                TutorialPath.FLOATING -> TUTORIAL_FLOATING_COMPLETED
-                TutorialPath.CAMERA -> TUTORIAL_CAMERA_COMPLETED
-            }] = true
+            it[GUIDED_SETUP_PENDING] = false
+            it[TUTORIAL_COMPLETED] = true
         }
     }
 

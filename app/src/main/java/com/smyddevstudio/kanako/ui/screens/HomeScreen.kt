@@ -18,6 +18,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.clickable
+import com.smyddevstudio.kanako.model.TutorialPath
+import com.smyddevstudio.kanako.ui.components.LocalTutorialFocus
+import com.smyddevstudio.kanako.ui.components.tutorialAllows
+import com.smyddevstudio.kanako.ui.components.tutorialTarget
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.CameraAlt
@@ -42,12 +47,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.TopAppBar
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.relocation.BringIntoViewRequester
-import androidx.compose.foundation.relocation.bringIntoViewRequester
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.layout.boundsInRoot
-import androidx.compose.ui.layout.onGloballyPositioned
-import com.smyddevstudio.kanako.ui.components.GuidedSpotlight
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -93,29 +92,19 @@ fun HomeScreen(
     onNavigateToTutorial: () -> Unit = {},
     onDismissTutorialInvitation: () -> Unit = {},
     animationsEnabled: Boolean = rememberAnimationsEnabled(),
-    guidedSetup: Boolean = false,
-    guidePreferences: Boolean = false,
-    onSkipGuidedSetup: () -> Unit = {}
+    tutorialActive: Boolean = false,
+    onSelectTutorialReader: (TutorialPath) -> Unit = {},
+    onStartTutorialReader: (TutorialPath) -> Unit = onSelectTutorialReader
 ) {
-    var showAccess by rememberSaveable { mutableStateOf(guidedSetup) }
-    val guideTarget = if (guidePreferences) 3 else if (!overlayGranted) 0 else if (!accessibilityEnabled ||
-        !accessibilityConnected || !preferences.hasAcceptedSnapshotDisclosure) 1 else 2
-    var targetBounds by remember(guideTarget) { mutableStateOf<Rect?>(null) }
-    val bringTarget = remember { BringIntoViewRequester() }
-    val targetModifier = if (guidedSetup) Modifier.bringIntoViewRequester(bringTarget)
-        .onGloballyPositioned { targetBounds = it.boundsInRoot() } else Modifier
-    LaunchedEffect(guidedSetup, guideTarget) {
-        if (guidedSetup) {
-            showAccess = guideTarget in 0..1
-            delay(100)
-            bringTarget.bringIntoView()
-        }
-    }
+    val focus = LocalTutorialFocus.current
+    val chooser = focus?.step == 0
+    val homeScroll = rememberScrollState()
+    var showAccess by rememberSaveable { mutableStateOf(false) }
     var departing by remember { mutableStateOf(false) }
     var awaitingReader by remember { mutableStateOf(false) }
     var departureVersion by remember { mutableIntStateOf(0) }
     var greetingVersion by remember { mutableIntStateOf(0) }
-    DisposableEffect(guidedSetup) {
+    DisposableEffect(tutorialActive, focus?.step) {
         onDispose { departing = false; awaitingReader = false }
     }
     val lifecycle = LocalLifecycleOwner.current.lifecycle
@@ -150,6 +139,15 @@ fun HomeScreen(
             awaitingReader = false
         }
     }
+    LaunchedEffect(focus?.step, focus?.allowed, ready) {
+        if (focus != null) {
+            if (focus.step == -1 && "camera_card" !in focus.allowed) showAccess = !ready
+            androidx.compose.runtime.withFrameNanos { }
+            if ("camera_card" in focus.allowed && "floating_card" !in focus.allowed) {
+                homeScroll.scrollTo(homeScroll.maxValue)
+            } else homeScroll.scrollTo(0)
+        }
+    }
     Box(modifier.fillMaxSize()) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -158,9 +156,7 @@ fun HomeScreen(
                 title = { Text(stringResource(R.string.app_name)) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
                 actions = {
-                    IconButton(onClick = { if (!guidedSetup || guidePreferences) onNavigateToPreferences() },
-                        enabled = !guidedSetup || guidePreferences,
-                        modifier = if (guidePreferences) targetModifier else Modifier) {
+                    IconButton(onClick = onNavigateToPreferences, enabled = tutorialAllows("preferences"), modifier = Modifier.tutorialTarget("preferences")) {
                         Icon(Icons.Rounded.Settings, contentDescription = stringResource(R.string.preferences_title))
                     }
                 }
@@ -169,7 +165,7 @@ fun HomeScreen(
     ) { padding ->
         Column(
             modifier = Modifier.padding(padding).fillMaxWidth()
-                .verticalScroll(rememberScrollState()).padding(24.dp),
+                .verticalScroll(homeScroll).padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Column(
@@ -181,8 +177,8 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     IconButton(
-                        onClick = { if (!guidedSetup) greetingVersion++ },
-                        enabled = !guidedSetup,
+                        onClick = { greetingVersion++ },
+                        enabled = focus == null,
                         modifier = Modifier.size(mascotSize)
                     ) {
                         AnimatedMascot(
@@ -206,7 +202,11 @@ fun HomeScreen(
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                Card(modifier = Modifier.tutorialTarget("floating_card", hideWhenDimmed = false)
+                    .then(if (chooser) Modifier.clickable(enabled = tutorialAllows("floating_card") && supported) {
+                        onSelectTutorialReader(TutorialPath.FLOATING)
+                    } else Modifier),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
                     Column(Modifier.fillMaxWidth().animateContentSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(
                             stringResource(if (preferences.isOverlayActive) R.string.home_reader_active else R.string.home_reader_off),
@@ -223,7 +223,7 @@ fun HomeScreen(
                                 itemVerticalAlignment = Alignment.CenterVertically
                             ) {
                                 AccessStatusBadge(stringResource(R.string.setup_ready), granted = true)
-                                TextButton(onClick = { showAccess = true }, enabled = !guidedSetup,
+                                TextButton(onClick = { showAccess = true }, enabled = focus == null,
                                     modifier = Modifier.weight(1f).wrapContentWidth(Alignment.End).width(IntrinsicSize.Max)) {
                                     Text(stringResource(R.string.home_manage_access))
                                 }
@@ -232,7 +232,8 @@ fun HomeScreen(
                             Text(stringResource(R.string.setup_unsupported))
                         } else if (!showAccess) {
                             Text(stringResource(R.string.home_setup_summary), style = MaterialTheme.typography.bodySmall)
-                            OutlinedButton(onClick = { showAccess = true }) {
+                            OutlinedButton(onClick = { showAccess = true }, enabled = tutorialAllows("setup_access"),
+                                modifier = Modifier.tutorialTarget("setup_access")) {
                                 Text(stringResource(R.string.home_setup_action))
                             }
                         } else {
@@ -241,9 +242,9 @@ fun HomeScreen(
                                 description = stringResource(R.string.setup_overlay_description),
                                 granted = overlayGranted,
                                 action = stringResource(R.string.setup_open_overlay),
-                                onAction = { if (!guidedSetup || guideTarget == 0) onRequestOverlay() },
-                                actionModifier = if (guideTarget == 0) targetModifier else Modifier,
-                                enabled = !guidedSetup || guideTarget == 0
+                                onAction = onRequestOverlay,
+                                enabled = tutorialAllows("overlay_access"),
+                                actionModifier = Modifier.tutorialTarget("overlay_access")
                             )
                             PermissionRequirement(
                                 title = stringResource(R.string.setup_accessibility_title),
@@ -260,13 +261,13 @@ fun HomeScreen(
                                     if (accessibilityEnabled && preferences.hasAcceptedSnapshotDisclosure)
                                         R.string.setup_manage_accessibility else R.string.setup_open_accessibility
                                 ),
-                                onAction = { if (!guidedSetup || guideTarget == 1) onRequestAccessibility() },
-                                actionModifier = if (guideTarget == 1) targetModifier else Modifier,
-                                enabled = !guidedSetup || guideTarget == 1,
+                                onAction = onRequestAccessibility,
+                                enabled = tutorialAllows("screen_access"),
+                                actionModifier = Modifier.tutorialTarget("screen_access"),
                                 connecting = accessibilityEnabled && preferences.hasAcceptedSnapshotDisclosure && !accessibilityConnected
                             )
                             if (ready) {
-                                TextButton(onClick = { showAccess = false }, enabled = !guidedSetup) {
+                                TextButton(onClick = { showAccess = false }, enabled = focus == null) {
                                     Text(stringResource(R.string.done))
                                 }
                             }
@@ -276,16 +277,17 @@ fun HomeScreen(
                         }
                         Button(
                             onClick = {
-                                if (guidedSetup && guideTarget != 2) Unit
+                                if (chooser) onStartTutorialReader(TutorialPath.FLOATING)
                                 else if (preferences.isOverlayActive) onUpdateOverlayActive(false)
                                 else if (!departing && !awaitingReader && ready) {
                                     departureVersion++
                                     departing = true
                                 }
                             },
-                            enabled = (!guidedSetup || !guidePreferences) && (preferences.isOverlayActive || (ready && !departing && !awaitingReader)),
+                            enabled = tutorialAllows("floating_card", "start_reader") &&
+                                (if (chooser) supported else preferences.isOverlayActive || (ready && !departing && !awaitingReader)),
                             modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 16.dp).then(readingActionModifier)
-                                .then(if (guideTarget == 2) targetModifier else Modifier),
+                                .tutorialTarget("start_reader", parent = "floating_card"),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = if (preferences.isOverlayActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
                                 contentColor = if (preferences.isOverlayActive) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondary
@@ -322,16 +324,21 @@ fun HomeScreen(
                         }
                     }
                 }
-                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                Card(modifier = Modifier.tutorialTarget("camera_card", hideWhenDimmed = false)
+                    .then(if (chooser) Modifier.clickable(enabled = tutorialAllows("camera_card")) {
+                        onSelectTutorialReader(TutorialPath.CAMERA)
+                    } else Modifier),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
                     Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(stringResource(R.string.camera_title), style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.semantics { heading() })
                         Text(stringResource(R.string.home_camera_summary), style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Button(
-                            onClick = { if (!guidedSetup) onNavigateToCamera() },
-                            enabled = !guidedSetup,
-                            modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 16.dp).then(readingActionModifier),
+                            onClick = { if (chooser) onStartTutorialReader(TutorialPath.CAMERA) else onNavigateToCamera() },
+                            enabled = tutorialAllows("camera_card"),
+                            modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 16.dp).then(readingActionModifier)
+                                .tutorialTarget("camera_open", parent = "camera_card"),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.secondary,
                                 contentColor = MaterialTheme.colorScheme.onSecondary
@@ -348,18 +355,12 @@ fun HomeScreen(
                 if (showTutorialInvitation) {
                     TutorialInvitation(onStart = onNavigateToTutorial, onDismiss = onDismissTutorialInvitation)
                 }
-                TextButton(onClick = { if (!guidedSetup) onNavigateToHowItWorks() }, enabled = !guidedSetup, modifier = Modifier.align(Alignment.CenterHorizontally)) {
+                TextButton(onClick = onNavigateToHowItWorks, enabled = focus == null, modifier = Modifier.align(Alignment.CenterHorizontally)) {
                     Text(stringResource(R.string.how_it_works))
                 }
             }
         }
     }
-    if (guidedSetup) GuidedSpotlight(targetBounds, stringResource(when (guideTarget) {
-        0 -> R.string.guided_overlay
-        1 -> R.string.guided_accessibility
-        3 -> R.string.guided_preferences
-        else -> R.string.guided_show
-    }), onSkipGuidedSetup)
     }
 }
 
@@ -461,11 +462,4 @@ private fun HomeScreenDarkPreview() {
         HomeScreen({}, {}, {}, preferences = KanakoPreferences(hasAcceptedSnapshotDisclosure = true),
             overlayGranted = true, accessibilityEnabled = true, accessibilityConnected = true)
     }
-}
-
-@Preview(name = "Guided overlay access", widthDp = 360, heightDp = 800)
-@Preview(name = "Guided compact", widthDp = 320, heightDp = 640, fontScale = 1.5f)
-@Composable
-private fun GuidedHomePreview() {
-    KanakoTheme { HomeScreen({}, {}, {}, guidedSetup = true) }
 }

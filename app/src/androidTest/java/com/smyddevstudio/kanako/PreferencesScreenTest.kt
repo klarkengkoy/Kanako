@@ -14,11 +14,12 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
-import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.hasScrollToNodeAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -77,42 +78,13 @@ class PreferencesScreenTest {
         compose.onNodeWithText("nihongo").assertIsDisplayed()
     }
 
-    @Test fun guideAndAutoReadConfirmationStillWorkWithLazyControls() {
-        var enabled = false
-        val preferences = mutableStateOf(KanakoPreferences())
-        compose.setContent {
-            KanakoTheme {
-                PreferencesScreen(
-                    onBack = {},
-                    preferences = preferences.value,
-                    onUpdateAutoReadAfterScroll = {
-                        enabled = it
-                        preferences.value = preferences.value.copy(autoReadAfterScroll = it)
-                    }
-                )
-            }
-        }
+    @Test fun quickSettingsGuideRemainsAndAutoReadMovesOutOfPreferences() {
+        compose.setContent { KanakoTheme { PreferencesScreen(onBack = {}) } }
         compose.onNode(hasScrollToNodeAction()).performScrollToNode(hasText(context.getString(R.string.guide)))
         compose.onNodeWithText(context.getString(R.string.guide)).performClick()
         compose.onNodeWithText(context.getString(R.string.quick_settings_guide_title)).assertIsDisplayed()
         compose.onNodeWithText(context.getString(R.string.done)).performClick()
-        compose.onNode(hasScrollToNodeAction())
-            .performScrollToNode(hasText(context.getString(R.string.auto_read_title)))
-        compose.onNodeWithText(context.getString(R.string.tap_to_read)).assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.auto_read_title)).performClick()
-        compose.onNodeWithText(context.getString(R.string.auto_read_enable)).assertIsDisplayed()
-        assertEquals(false, enabled)
-        compose.onNodeWithText(context.getString(R.string.snapshot_disclosure_cancel)).performClick()
-        assertEquals(false, enabled)
-        compose.onNodeWithText(context.getString(R.string.tap_to_read)).assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.auto_read_title)).performClick()
-        compose.onNodeWithText(context.getString(R.string.auto_read_enable)).performClick()
-        compose.onNodeWithText(context.getString(R.string.auto_read_title)).assertIsSelected()
-        assertEquals(true, enabled)
-        compose.onNodeWithText(context.getString(R.string.tap_to_read)).performClick()
-        compose.onNodeWithText(context.getString(R.string.auto_read_title)).assertIsNotSelected()
-        compose.onNodeWithText(context.getString(R.string.tap_to_read)).assertIsSelected()
-        assertEquals(false, enabled)
+        compose.onNodeWithText(context.getString(R.string.auto_read_title)).assertDoesNotExist()
     }
 
     @Test fun compactPreviewStaysExpandedWithLargeTextWhileControlsScroll() {
@@ -126,7 +98,7 @@ class PreferencesScreenTest {
         compose.onNodeWithText("にほんご").assertIsDisplayed()
         compose.onNodeWithText("日本語").assertIsDisplayed()
         compose.onNode(hasScrollToNodeAction())
-            .performScrollToNode(hasText(context.getString(R.string.reading_mode)))
+            .performScrollToNode(hasText(context.getString(R.string.preferences_control_size)))
         compose.onNodeWithText(context.getString(R.string.preferences_preview)).assertIsDisplayed()
         compose.onNodeWithText("にほんご").assertIsDisplayed()
         compose.onNodeWithText("日本語").assertIsDisplayed()
@@ -165,7 +137,7 @@ class PreferencesScreenTest {
     @Test fun defaultAppearanceAndReadingControlsMatchTheRepositoryDefaults() {
         compose.setContent { KanakoTheme { PreferencesScreen(onBack = {}) } }
         for (label in listOf(R.string.script_kana, R.string.reading_size_medium,
-                R.string.color_crimson, R.string.plate_washi, R.string.size_medium, R.string.tap_to_read)) {
+                R.string.color_crimson, R.string.plate_washi, R.string.size_medium)) {
             compose.onNode(hasScrollToNodeAction())
                 .performScrollToNode(hasText(context.getString(label)))
             compose.onNodeWithText(context.getString(label)).assertIsSelected()
@@ -176,4 +148,27 @@ class PreferencesScreenTest {
             compose.onNodeWithText(context.getString(label)).assertIsOn()
         }
     }
+    @Test fun dimmedPreferencesStillAcceptScrollGesturesDuringTheTutorial() {
+        compose.setContent {
+            KanakoTheme {
+                val focus = androidx.compose.runtime.remember {
+                    com.smyddevstudio.kanako.ui.components.TutorialFocus(4, setOf("tile_guide"))
+                }
+                CompositionLocalProvider(com.smyddevstudio.kanako.ui.components.LocalTutorialFocus provides focus) {
+                    com.smyddevstudio.kanako.ui.screens.TutorialLayout(4,
+                        com.smyddevstudio.kanako.model.TutorialPath.FLOATING, {}, {},
+                        Modifier.requiredSize(320.dp, 600.dp)) { modifier ->
+                        PreferencesScreen(onBack = {}, modifier = modifier)
+                    }
+                }
+            }
+        }
+        val list = compose.onNode(hasScrollToNodeAction())
+        val before = list.fetchSemanticsNode().config[SemanticsProperties.VerticalScrollAxisRange].value()
+        list.performTouchInput { swipeDown() }
+        val after = list.fetchSemanticsNode().config[SemanticsProperties.VerticalScrollAxisRange].value()
+        org.junit.Assert.assertTrue(after < before)
+        compose.onNodeWithText(context.getString(R.string.guided_skip)).assertIsDisplayed()
+    }
+
 }

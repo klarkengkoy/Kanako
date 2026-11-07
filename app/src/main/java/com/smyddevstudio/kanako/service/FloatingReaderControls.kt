@@ -13,8 +13,6 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -26,11 +24,6 @@ import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.OpenInNew
-import androidx.compose.material.icons.rounded.Language
-import androidx.compose.material.icons.rounded.PowerSettingsNew
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TextButton
@@ -50,7 +43,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalAccessibilityManager
@@ -104,14 +96,17 @@ fun FloatingOverlayContent(
     isReading: Boolean = false,
     statusMessage: Int = R.string.reading_ready,
     controlsVisible: Boolean = true,
-    guidedStep: GuidedReaderStep = GuidedReaderStep.INACTIVE,
+    guided: Boolean = false,
+    interactionEnabled: Boolean = true,
     showServiceActions: Boolean = true,
     statusDescription: String? = null,
-    animateWhenReadingsShown: Boolean = false
+    animateWhenReadingsShown: Boolean = false,
+    onUpdateAutoReadAfterScroll: ((Boolean) -> Unit)? = null
 ) {
     val currentOnDrag by rememberUpdatedState(onDrag)
     val currentOnDragEnd by rememberUpdatedState(onDragEnd)
     var isExpanded by remember { mutableStateOf(false) }
+    var confirmAutoRead by remember { mutableStateOf(false) }
     var readAttempt by remember { mutableIntStateOf(0) }
     var statusPopupMessage by remember { mutableStateOf<Int?>(null) }
     var reaction by remember { mutableStateOf<Int?>(null) }
@@ -128,22 +123,18 @@ fun FloatingOverlayContent(
             motion = motion.copy(readQueued = false)
         }
     }
-    val guided = guidedStep != GuidedReaderStep.INACTIVE
     fun openControls() {
-        if (!guided || guidedStep in listOf(GuidedReaderStep.CONTROLS, GuidedReaderStep.SCRIPT, GuidedReaderStep.CLEAR, GuidedReaderStep.PREFERENCES, GuidedReaderStep.STOP)) {
-            statusPopupMessage = null
-            isExpanded = true
-            GuidedReaderSession.advance(GuidedReaderStep.CONTROLS, GuidedReaderStep.SCRIPT)
-        }
+        if (!interactionEnabled) return
+        statusPopupMessage = null
+        isExpanded = true
+        GuidedReaderSession.action("menu")
     }
     val accessibilityManager = LocalAccessibilityManager.current
     fun dismiss() {
         isExpanded = false
+        confirmAutoRead = false
         statusPopupMessage = null
         reaction = null
-    }
-    LaunchedEffect(guidedStep) {
-        if (guidedStep == GuidedReaderStep.PREFERENCES) dismiss()
     }
     LaunchedEffect(controlsVisible) {
         if (!controlsVisible) dismiss()
@@ -181,6 +172,7 @@ fun FloatingOverlayContent(
     var bubbleTip by remember { mutableFloatStateOf(0.5f) }
     val popupPosition = rememberFloatingMenuPosition { above, tip -> bubbleAbove = above; bubbleTip = tip }
     val menuMaxHeight = maxOf(48.dp, LocalConfiguration.current.screenHeightDp.dp - 96.dp)
+    val confirmationWidth = minOf(360.dp, maxOf(48.dp, LocalConfiguration.current.screenWidthDp.dp - 32.dp))
 
     Box(
         modifier = modifier.size(fabSize).onSizeChanged {
@@ -197,25 +189,26 @@ fun FloatingOverlayContent(
                     stateDescription = currentStatusDescription
                 }
                 .combinedClickable(
-                    onClick = { if (!guided || guidedStep == GuidedReaderStep.READ || guidedStep == GuidedReaderStep.CLEAR) { dismiss(); readAttempt++; onReadOrClear() } },
+                    enabled = interactionEnabled,
+                    onClick = { dismiss(); readAttempt++; onReadOrClear(); GuidedReaderSession.action("toggle") },
                     onLongClick = { if (guided) openControls() else { statusPopupMessage = null; isExpanded = !isExpanded } },
                     onDoubleClick = { if (guided) openControls() else { statusPopupMessage = null; isExpanded = !isExpanded } }
                 )
-                .pointerInput(guidedStep) {
+                .pointerInput(interactionEnabled) {
                     var pickupOffset = Offset.Zero
                     detectDragGestures(
                         onDragStart = { position ->
-                            if (guided && guidedStep != GuidedReaderStep.DRAG) return@detectDragGestures
+                            if (!interactionEnabled) return@detectDragGestures
                             val bodyAnchor = Offset(size.width * 0.5f, size.height * 0.7f)
                             pickupOffset = position - bodyAnchor
                             dismiss()
                             motion = motion.startDrag()
                         },
-                        onDragEnd = { if (!guided || guidedStep == GuidedReaderStep.DRAG) { motion = motion.endDrag(); currentOnDragEnd() } },
-                        onDragCancel = { if (!guided || guidedStep == GuidedReaderStep.DRAG) { motion = motion.endDrag(); currentOnDragEnd() } },
+                        onDragEnd = { motion = motion.endDrag(); currentOnDragEnd() },
+                        onDragCancel = { motion = motion.endDrag(); currentOnDragEnd() },
                         onDrag = { change, dragAmount ->
+                            if (!interactionEnabled) return@detectDragGestures
                             change.consume()
-                            if (guided && guidedStep != GuidedReaderStep.DRAG) return@detectDragGestures
                             val bodyPosition = change.position - pickupOffset
                             val previousBodyPosition = change.position - dragAmount - pickupOffset
                             val movement = bodyPosition - previousBodyPosition
@@ -274,7 +267,7 @@ fun FloatingOverlayContent(
                 .graphicsLayer { alpha = dotAlpha }
                 .background(dotColor, CircleShape))
         }
-        if (controlsVisible && (isExpanded || statusPopupMessage != null)) {
+        if (controlsVisible && interactionEnabled && (isExpanded || statusPopupMessage != null)) {
             Popup(
                 popupPositionProvider = popupPosition,
                 onDismissRequest = ::dismiss,
@@ -287,7 +280,7 @@ fun FloatingOverlayContent(
                 )
             ) {
                 Surface(
-                    modifier = Modifier.width(200.dp).heightIn(max = menuMaxHeight),
+                    modifier = Modifier.width(if (confirmAutoRead) confirmationWidth else 200.dp).heightIn(max = menuMaxHeight),
                     shape = MascotSpeechBubbleShape(bubbleAbove, bubbleTip),
                     color = MaterialTheme.colorScheme.surface,
                     shadowElevation = 8.dp,
@@ -297,22 +290,44 @@ fun FloatingOverlayContent(
                         Modifier.verticalScroll(rememberScrollState()).padding(vertical = 8.dp).padding(12.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        if (isExpanded) {
+                        if (isExpanded && confirmAutoRead) {
+                            Text(stringResource(R.string.auto_read_title), style = MaterialTheme.typography.titleSmall)
+                            Text(stringResource(R.string.auto_read_disclosure), style = MaterialTheme.typography.bodySmall)
+                            TextButton(onClick = {
+                                confirmAutoRead = false
+                                dismiss()
+                                onUpdateAutoReadAfterScroll?.invoke(true)
+                            }, modifier = Modifier.fillMaxWidth()) {
+                                Text(stringResource(R.string.auto_read_enable))
+                            }
+                            TextButton(onClick = { confirmAutoRead = false }, modifier = Modifier.fillMaxWidth()) {
+                                Text(stringResource(R.string.snapshot_disclosure_cancel))
+                            }
+                        } else if (isExpanded) {
                             Text(stringResource(R.string.controls_title), fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                             Text(currentStatusDescription, style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
                             FloatingMenuAction(
                                 stringResource(R.string.controls_script, stringResource(preferences.scriptType.labelRes)),
-                                Icons.Rounded.Language, onToggleScriptType,
-                                enabled = !guided || guidedStep == GuidedReaderStep.SCRIPT || guidedStep == GuidedReaderStep.CLEAR
+                                { onToggleScriptType(); GuidedReaderSession.action("script") }
                             )
-                            if (showServiceActions) {
-                                if (!guided) FloatingMenuAction(stringResource(R.string.controls_open),
-                                    Icons.AutoMirrored.Rounded.OpenInNew, { dismiss(); onOpenApp() })
-                                FloatingMenuAction(stringResource(R.string.controls_stop),
-                                    Icons.Rounded.PowerSettingsNew, { dismiss(); onStopService() },
-                                    emphasized = true, enabled = !guided || guidedStep == GuidedReaderStep.STOP)
+                            if (onUpdateAutoReadAfterScroll != null) {
+                                FloatingMenuAction(
+                                    stringResource(R.string.controls_mode, stringResource(
+                                        if (preferences.autoReadAfterScroll) R.string.mode_auto_reader else R.string.mode_tap_to_read)),
+                                    onClick = {
+                                        if (preferences.autoReadAfterScroll) {
+                                            dismiss()
+                                            onUpdateAutoReadAfterScroll(false)
+                                        } else confirmAutoRead = true
+                                    }
+                                )
+                            }
+                            if (showServiceActions && !guided) {
+                                FloatingMenuAction(stringResource(R.string.controls_open), { dismiss(); onOpenApp() })
+                                FloatingMenuAction(stringResource(R.string.controls_stop), { dismiss(); onStopService() },
+                                    emphasized = true)
                             }
                         } else {
                             Text(stringResource(statusPopupMessage ?: statusMessage),
@@ -364,7 +379,6 @@ internal fun LoadingMascot(
 @Composable
 private fun FloatingMenuAction(
     label: String,
-    icon: ImageVector,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
@@ -377,12 +391,8 @@ private fun FloatingMenuAction(
         onClick = onClick,
         enabled = enabled
     ) {
-        Row(Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically) {
-            Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp),
-                tint = if (emphasized) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
-            Spacer(Modifier.width(6.dp))
-            Text(label, Modifier.weight(1f), fontSize = 12.sp,
+        Box(Modifier.padding(horizontal = 8.dp, vertical = 6.dp), contentAlignment = Alignment.CenterStart) {
+            Text(label, fontSize = 12.sp,
                 fontWeight = if (emphasized) FontWeight.Bold else FontWeight.SemiBold,
                 maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis,
                 color = if (emphasized) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)

@@ -2,6 +2,7 @@ package com.smyddevstudio.kanako.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.LaunchedEffect
+import com.smyddevstudio.kanako.ui.components.LocalTutorialFocus
+import com.smyddevstudio.kanako.ui.components.tutorialTarget
+import com.smyddevstudio.kanako.ui.components.tutorialAllows
+import androidx.compose.ui.semantics.disabled
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.ui.semantics.Role
@@ -90,19 +97,16 @@ fun PreferencesScreen(
     onUpdateAnnotationPlateStyle: (AnnotationPlateStyle) -> Unit = {},
     onUpdateFabSize: (FabSize) -> Unit = {},
     onUpdateAutoHideOnKeyboard: (Boolean) -> Unit = {},
-    onUpdateAutoReadAfterScroll: (Boolean) -> Unit = {},
     onRequestAccessibility: () -> Unit = {},
     onNavigateToPrivacy: () -> Unit = {}
 ) {
-    var showTileGuide by rememberSaveable { mutableStateOf(false) }
-    var showAutoReadDisclosure by rememberSaveable { mutableStateOf(false) }
-
-    if (showAutoReadDisclosure) {
-        com.smyddevstudio.kanako.ui.components.AutoReadDisclosure(
-            onConfirm = { showAutoReadDisclosure = false; onUpdateAutoReadAfterScroll(true) },
-            onDismiss = { showAutoReadDisclosure = false }
-        )
+    val tutorial = LocalTutorialFocus.current
+    val listState = rememberLazyListState()
+    LaunchedEffect(tutorial?.step) {
+        if (tutorial?.step == 4) listState.scrollToItem(9)
+        else if (tutorial?.step == 3) listState.scrollToItem(0)
     }
+    var showTileGuide by rememberSaveable { mutableStateOf(false) }
 
     if (showTileGuide) {
         AlertDialog(
@@ -127,7 +131,7 @@ fun PreferencesScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = onBack, enabled = tutorial == null) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                             contentDescription = stringResource(R.string.navigate_back)
@@ -151,10 +155,11 @@ fun PreferencesScreen(
                 ReadingPreviewCard(
                     preferences = preferences,
                     compact = compactPreview,
-                    modifier = Modifier.heightIn(max = previewMaxHeight)
+                    modifier = Modifier.heightIn(max = previewMaxHeight).tutorialTarget("appearance_preview")
                 )
                 LazyColumn(
-                    Modifier.weight(1f),
+                    state = listState,
+                    modifier = Modifier.weight(1f).tutorialTarget("preferences_scroll", hideWhenDimmed = false),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     item(key = "appearance_header") {
@@ -166,10 +171,11 @@ fun PreferencesScreen(
                     }
 
                     item(key = "script_type") {
-                        PreferenceControlCard(title = stringResource(R.string.preferences_script)) {
+                        PreferenceControlCard(title = stringResource(R.string.preferences_script), modifier = Modifier.tutorialTarget("appearance_script", clipTo = "preferences_scroll")) {
                             FlowRow(modifier = Modifier.selectableGroup(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 ScriptType.entries.forEach { script ->
                                     PreferenceChoiceChip(
+                                        enabled = tutorialAllows("appearance_script"),
                                         selected = preferences.scriptType == script,
                                         onClick = { onUpdateScriptType(script) },
                                         label = stringResource(script.labelRes)
@@ -180,10 +186,11 @@ fun PreferencesScreen(
                     }
 
                     item(key = "furigana_size") {
-                        PreferenceControlCard(title = stringResource(R.string.preferences_size)) {
+                        PreferenceControlCard(title = stringResource(R.string.preferences_size), modifier = Modifier.tutorialTarget("appearance_size", clipTo = "preferences_scroll")) {
                             FlowRow(modifier = Modifier.selectableGroup(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 FuriganaSize.entries.forEach { size ->
                                     PreferenceChoiceChip(
+                                        enabled = tutorialAllows("appearance_size"),
                                         selected = preferences.furiganaSize == size,
                                         onClick = { onUpdateFuriganaSize(size) },
                                         label = stringResource(size.labelRes)
@@ -200,7 +207,7 @@ fun PreferencesScreen(
                     }
 
                     item(key = "furigana_color") {
-                        PreferenceControlCard(title = stringResource(R.string.preferences_color)) {
+                        PreferenceControlCard(title = stringResource(R.string.preferences_color), modifier = Modifier.tutorialTarget("appearance_color", clipTo = "preferences_scroll")) {
                             FlowRow(
                                 modifier = Modifier.selectableGroup(),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -208,6 +215,7 @@ fun PreferencesScreen(
                             ) {
                                 FuriganaColor.entries.forEach { color ->
                                     PreferenceChoiceChip(
+                                        enabled = tutorialAllows("appearance_color"),
                                         selected = preferences.furiganaColor == color,
                                         onClick = { onUpdateFuriganaColor(color) },
                                         label = stringResource(color.labelRes),
@@ -219,10 +227,11 @@ fun PreferencesScreen(
                     }
 
                     item(key = "plate_style") {
-                        PreferenceControlCard(title = stringResource(R.string.preferences_plate)) {
+                        PreferenceControlCard(title = stringResource(R.string.preferences_plate), modifier = Modifier.tutorialTarget("appearance_plate", clipTo = "preferences_scroll")) {
                             FlowRow(modifier = Modifier.selectableGroup(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 AnnotationPlateStyle.entries.forEach { style ->
                                     PreferenceChoiceChip(
+                                        enabled = tutorialAllows("appearance_plate"),
                                         selected = preferences.annotationPlateStyle == style,
                                         onClick = { onUpdateAnnotationPlateStyle(style) },
                                         label = stringResource(style.labelRes)
@@ -237,10 +246,11 @@ fun PreferencesScreen(
                     }
 
                     item(key = "fab_size") {
-                        PreferenceControlCard(title = stringResource(R.string.preferences_control_size)) {
+                        PreferenceControlCard(title = stringResource(R.string.preferences_control_size), modifier = Modifier.tutorialTarget("button_size", clipTo = "preferences_scroll")) {
                             FlowRow(modifier = Modifier.selectableGroup(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 FabSize.entries.forEach { size ->
                                     PreferenceChoiceChip(
+                                        enabled = tutorialAllows("button_size"),
                                         selected = preferences.fabSize == size,
                                         onClick = { onUpdateFabSize(size) },
                                         label = stringResource(size.labelRes)
@@ -250,38 +260,16 @@ fun PreferencesScreen(
                         }
                     }
 
-                    item(key = "auto_read") {
-                        PreferenceControlCard(title = stringResource(R.string.reading_mode)) {
-                            FlowRow(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                PreferenceChoiceChip(
-                                    selected = preferences.autoReadAfterScroll,
-                                    onClick = { if (!preferences.autoReadAfterScroll) showAutoReadDisclosure = true },
-                                    label = stringResource(R.string.auto_read_title)
-                                )
-                                PreferenceChoiceChip(
-                                    selected = !preferences.autoReadAfterScroll,
-                                    onClick = { onUpdateAutoReadAfterScroll(false) },
-                                    label = stringResource(R.string.tap_to_read)
-                                )
-                            }
-                            Text(
-                                stringResource(R.string.auto_read_summary),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-
                     item(key = "keyboard_hide") {
+                        Box(Modifier.tutorialTarget("keyboard")) {
                         PreferenceToggleCard(
                             title = stringResource(R.string.preferences_keyboard),
                             subtitle = stringResource(R.string.preferences_keyboard_check),
                             checked = preferences.autoHideOnKeyboard,
-                            onCheckedChange = { onUpdateAutoHideOnKeyboard(it) }
+                            onCheckedChange = { onUpdateAutoHideOnKeyboard(it) },
+                            enabled = tutorialAllows("keyboard")
                         )
+                        }
                     }
 
                     item(key = "keyboard_hint") {
@@ -295,7 +283,7 @@ fun PreferencesScreen(
 
                     item(key = "tile_guide") {
                         Card(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().tutorialTarget("tile_guide", clipTo = "preferences_scroll"),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                             shape = RoundedCornerShape(16.dp)
                         ) {
@@ -320,6 +308,7 @@ fun PreferencesScreen(
                                     )
                                 }
                                 OutlinedButton(
+                                    enabled = tutorial == null,
                                     onClick = { showTileGuide = true },
                                     shape = RoundedCornerShape(10.dp)
                                 ) {
@@ -336,12 +325,13 @@ fun PreferencesScreen(
                     item(key = "accessibility") {
                         OutlinedButton(
                             onClick = onRequestAccessibility,
+                            enabled = tutorial == null,
                             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
                         ) { Text(stringResource(R.string.home_manage_access)) }
                     }
 
                     item(key = "privacy") {
-                        TextButton(onClick = onNavigateToPrivacy,
+                        TextButton(onClick = onNavigateToPrivacy, enabled = tutorial == null,
                             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
                             Icon(Icons.Rounded.Security, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
@@ -364,17 +354,19 @@ private fun PreferenceChoiceChip(
     onClick: () -> Unit,
     label: String,
     modifier: Modifier = Modifier,
-    swatch: Color? = null
+    swatch: Color? = null,
+    enabled: Boolean = true
 ) {
     FilterChip(
         selected = selected,
+        enabled = enabled,
         onClick = onClick,
         label = { Text(label) },
         modifier = modifier.heightIn(min = 48.dp).clearAndSetSemantics {
             role = Role.RadioButton
             this.selected = selected
             text = AnnotatedString(label)
-            onClick { onClick(); true }
+            if (enabled) onClick { onClick(); true } else disabled()
         },
         border = null,
         leadingIcon = if (swatch != null) {
@@ -420,10 +412,11 @@ private fun PreferenceSectionHeader(
 @Composable
 private fun PreferenceControlCard(
     title: String,
+    modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp)
     ) {
@@ -444,11 +437,12 @@ private fun PreferenceToggleCard(
     title: String,
     subtitle: String,
     checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
+    enabled: Boolean = true
 ) {
     Card(
         modifier = Modifier.fillMaxWidth().toggleable(
-            value = checked, role = Role.Switch, onValueChange = onCheckedChange
+            value = checked, role = Role.Switch, enabled = enabled, onValueChange = onCheckedChange
         ),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp)
@@ -473,6 +467,7 @@ private fun PreferenceToggleCard(
             Spacer(modifier = Modifier.width(12.dp))
             Switch(
                 checked = checked,
+                enabled = enabled,
                 onCheckedChange = null,
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = MaterialTheme.colorScheme.onSecondary,

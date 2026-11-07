@@ -15,7 +15,6 @@ import android.view.View
 import androidx.compose.ui.platform.LocalView
 import android.graphics.drawable.AnimatedImageDrawable
 import android.widget.ImageView
-import androidx.compose.runtime.collectAsState
 import com.smyddevstudio.kanako.model.ScriptType
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
@@ -25,6 +24,7 @@ import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
 import org.junit.Assert.assertFalse
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.assertWidthIsEqualTo
@@ -61,14 +61,12 @@ class FloatingReaderControlsTest {
         var switches = 0
         GuidedReaderSession.begin()
         GuidedReaderSession.setSampleVisible(true)
-        GuidedReaderSession.advance(GuidedReaderStep.SHOW, GuidedReaderStep.READ)
-        GuidedReaderSession.advance(GuidedReaderStep.READ, GuidedReaderStep.CONTROLS)
         try {
             compose.setContent {
                 KanakoTheme {
                     FloatingOverlayContent(
                         preferences = preferences.value, showFurigana = true,
-                        guidedStep = GuidedReaderSession.step.collectAsState().value,
+                        guided = true,
                         onReadOrClear = { clears++ },
                         onDrag = { _, _ -> }, onDragEnd = {},
                         onToggleScriptType = {
@@ -77,7 +75,6 @@ class FloatingReaderControlsTest {
                                 scriptType = if (preferences.value.scriptType == ScriptType.KANA)
                                     ScriptType.ROMAJI else ScriptType.KANA
                             )
-                            GuidedReaderSession.advance(GuidedReaderStep.SCRIPT, GuidedReaderStep.CLEAR)
                         },
                         onOpenApp = {}, onStopService = {}
                     )
@@ -89,10 +86,11 @@ class FloatingReaderControlsTest {
             compose.onNodeWithText(scriptLabel(R.string.script_kana)).assertIsDisplayed().performClick()
             compose.onNodeWithText(scriptLabel(R.string.script_romaji)).assertIsDisplayed().performClick()
             compose.onNodeWithText(scriptLabel(R.string.script_kana)).assertIsDisplayed()
+            compose.onNodeWithText(context.getString(R.string.controls_stop)).assertDoesNotExist()
             compose.runOnIdle {
                 assertEquals(0, clears)
                 assertEquals(2, switches)
-                assertEquals(GuidedReaderStep.CLEAR, GuidedReaderSession.step.value)
+                assertTrue(GuidedReaderSession.active)
             }
         } finally {
             GuidedReaderSession.end()
@@ -486,4 +484,47 @@ class FloatingReaderControlsTest {
         compose.runOnIdle { visible.value = true }
         compose.onNodeWithText(title).assertDoesNotExist()
     }
+    @Test fun floatingMenuRequiresConfirmationAndCanTurnAutoReadBackOff() {
+        val preferences = mutableStateOf(KanakoPreferences())
+        val changes = mutableListOf<Boolean>()
+        compose.setContent {
+            KanakoTheme {
+                FloatingOverlayContent(preferences.value, false, { _, _ -> }, {}, {}, {}, {},
+                    onUpdateAutoReadAfterScroll = {
+                        changes.add(it)
+                        preferences.value = preferences.value.copy(autoReadAfterScroll = it)
+                    })
+            }
+        }
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        fun mode(id: Int) = context.getString(R.string.controls_mode, context.getString(id))
+        fun openMenu() { compose.onNodeWithContentDescription(description).performTouchInput { longClick() } }
+        openMenu()
+        compose.onNodeWithText(mode(R.string.mode_tap_to_read)).performClick()
+        compose.runOnIdle { assertTrue(changes.isEmpty()) }
+        compose.onNodeWithText(context.getString(R.string.snapshot_disclosure_cancel))
+            .performScrollTo().performClick()
+        compose.runOnIdle { assertFalse(preferences.value.autoReadAfterScroll) }
+        compose.onNodeWithText(mode(R.string.mode_tap_to_read)).performScrollTo().performClick()
+        compose.onNodeWithText(context.getString(R.string.auto_read_enable)).performScrollTo().performClick()
+        compose.runOnIdle { assertEquals(listOf(true), changes) }
+        openMenu()
+        compose.onNodeWithText(mode(R.string.mode_auto_reader)).assertIsDisplayed().performScrollTo().performClick()
+        compose.runOnIdle { assertEquals(listOf(true, false), changes) }
+    }
+
+    @Test fun photoControlsHaveNoAutoReadSetting() {
+        compose.setContent {
+            KanakoTheme {
+                FloatingOverlayContent(KanakoPreferences(), true, { _, _ -> }, {}, {}, {}, {},
+                    showServiceActions = false)
+            }
+        }
+        compose.onNodeWithContentDescription(description).performTouchInput { longClick() }
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        compose.onNodeWithText(context.getString(R.string.controls_title)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.controls_mode,
+            context.getString(R.string.mode_tap_to_read))).assertDoesNotExist()
+    }
+
 }

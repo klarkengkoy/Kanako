@@ -57,8 +57,7 @@ fun HowItWorksScreen(
     modifier: Modifier = Modifier,
     onNavigateToHome: () -> Unit = {},
     initialTopic: HelpTopic = HelpTopic.FLOATING_READER,
-    onNavigateToTutorial: () -> Unit = {},
-    onNavigateToCameraTutorial: () -> Unit = onNavigateToTutorial
+    onNavigateToTutorial: () -> Unit = {}
 ) {
     var topic by rememberSaveable { mutableStateOf(initialTopic) }
     Scaffold(
@@ -143,7 +142,7 @@ fun HowItWorksScreen(
                         ReadingExplanation(stringResource(R.string.how_recovery_title), stringResource(R.string.how_recovery))
                     }
                 }
-                OutlinedButton(onClick = if (topic == HelpTopic.CAMERA) onNavigateToCameraTutorial else onNavigateToTutorial,
+                OutlinedButton(onClick = onNavigateToTutorial,
                     modifier = Modifier.align(Alignment.CenterHorizontally).heightIn(min = 48.dp)) {
                     Text(stringResource(R.string.guided_replay))
                 }

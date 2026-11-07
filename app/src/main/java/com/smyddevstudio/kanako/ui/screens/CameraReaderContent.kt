@@ -76,9 +76,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.smyddevstudio.kanako.R
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.boundsInRoot
+import com.smyddevstudio.kanako.ui.components.tutorialTarget
+import com.smyddevstudio.kanako.ui.components.tutorialAllows
 import com.smyddevstudio.kanako.camera.CameraReaderUiState
 import com.smyddevstudio.kanako.camera.CameraReadingStatus
 import com.smyddevstudio.kanako.ui.theme.KanakoTheme
@@ -97,8 +96,6 @@ internal fun CameraReaderContent(
     onGallery: () -> Unit = {},
     captureThumbnail: Bitmap? = null,
     savedThumbnail: @Composable () -> Unit = { Icon(Icons.Rounded.Image, null, tint = Color.White) },
-    guideTarget: Int = -1,
-    onGuideBounds: (Rect) -> Unit = {},
     permissionLabel: Int = R.string.camera_allow,
     displayRotation: Int = DisplaySurface.ROTATION_0,
     viewfinder: @Composable (Modifier) -> Unit = { Box(it.background(MaterialTheme.colorScheme.surfaceVariant)) }
@@ -122,15 +119,11 @@ internal fun CameraReaderContent(
         val controlRotation = rememberCameraControlRotation(displayRotation)
         if (granted) viewfinder(Modifier.fillMaxSize().semantics {
             stateDescription = statusDescription
-            customActions = if (state.ready && (guideTarget < 0 || guideTarget == 2)) listOf(
+            customActions = if (state.ready) listOf(
                 CustomAccessibilityAction(zoomInLabel) { onZoom(1.5f); true },
                 CustomAccessibilityAction(zoomOutLabel) { onZoom(1 / 1.5f); true }
             ) else emptyList()
-        }.then(if (guideTarget == 1 || guideTarget == 2) Modifier.onGloballyPositioned {
-            val bounds = it.boundsInRoot()
-            onGuideBounds(Rect(bounds.left + bounds.width * 0.1f, bounds.top + bounds.height * 0.4f,
-                bounds.right - bounds.width * 0.1f, bounds.bottom - bounds.height * 0.4f))
-        } else Modifier))
+        })
         if (granted) {
             Spacer(Modifier.fillMaxWidth().height(with(density) { insets.getTop(this).toDp() } + 96.dp)
                 .background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.7f), Color.Transparent))))
@@ -145,10 +138,10 @@ internal fun CameraReaderContent(
                 horizontalAlignment = Alignment.CenterHorizontally) {
                 if (granted) {
                     Row(modifier = motion.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        IconButton(onClick = onBack, enabled = guideTarget < 0, modifier = Modifier.size(48.dp)) {
+                        IconButton(enabled = tutorialAllows("camera_back"), onClick = onBack, modifier = Modifier.size(48.dp)) {
                             Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.navigate_back), tint = Color.White)
                         }
-                        IconButton(onClick = onPreferences, enabled = guideTarget < 0, modifier = Modifier.size(48.dp)) {
+                        IconButton(enabled = tutorialAllows("camera_preferences"), onClick = onPreferences, modifier = Modifier.size(48.dp)) {
                             Icon(Icons.Rounded.Settings, stringResource(R.string.camera_appearance), tint = Color.White)
                         }
                     }
@@ -169,11 +162,10 @@ internal fun CameraReaderContent(
                                     verticalArrangement = Arrangement.spacedBy(4.dp),
                                     itemVerticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Button(onClick = onPermission, modifier = Modifier.heightIn(min = 48.dp).then(
-                                        if (guideTarget == 0) Modifier.onGloballyPositioned { onGuideBounds(it.boundsInRoot()) } else Modifier)) {
+                                    Button(onClick = onPermission, enabled = tutorialAllows("camera_permission"), modifier = Modifier.heightIn(min = 48.dp).tutorialTarget("camera_permission")) {
                                         Text(stringResource(permissionLabel))
                                     }
-                                    TextButton(onClick = onBack, enabled = guideTarget < 0, modifier = Modifier.heightIn(min = 48.dp)) {
+                                    TextButton(onClick = onBack, enabled = tutorialAllows("camera_back"), modifier = Modifier.heightIn(min = 48.dp)) {
                                         Text(stringResource(R.string.camera_not_now))
                                     }
                                 }
@@ -191,8 +183,7 @@ internal fun CameraReaderContent(
                         }
                     }
                     if (state.status == CameraReadingStatus.CAMERA_ERROR || state.status == CameraReadingStatus.READ_ERROR) {
-                        Button(onClick = onRetry, modifier = Modifier.padding(top = 8.dp).then(
-                            if (guideTarget == 4) Modifier.onGloballyPositioned { onGuideBounds(it.boundsInRoot()) } else Modifier)) { Text(stringResource(R.string.camera_retry)) }
+                        Button(onClick = onRetry, enabled = tutorialAllows("camera_permission"), modifier = Modifier.padding(top = 8.dp).tutorialTarget("camera_permission")) { Text(stringResource(R.string.camera_retry)) }
                     }
                     Spacer(Modifier.height(if (landscape) 8.dp else 104.dp + edgePadding))
                 }
@@ -201,7 +192,7 @@ internal fun CameraReaderContent(
         if (granted) {
             CameraCaptureControls(state, onCapture, onGallery, controlRotation,
                 modifier = Modifier.fillMaxSize(), displayRotation = displayRotation,
-                edgePadding = edgePadding, guideTarget = guideTarget, onGuideBounds = onGuideBounds,
+                edgePadding = edgePadding,
                 thumbnail = {
                     if (captureThumbnail != null) Image(captureThumbnail.asImageBitmap(), null,
                         Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
@@ -220,24 +211,20 @@ private fun CameraCaptureControls(
     modifier: Modifier = Modifier,
     displayRotation: Int = DisplaySurface.ROTATION_0,
     edgePadding: androidx.compose.ui.unit.Dp = 16.dp,
-    guideTarget: Int = -1,
-    onGuideBounds: (Rect) -> Unit = {},
     thumbnail: @Composable () -> Unit = {}
 ) {
     val galleryLabel = stringResource(R.string.gallery_title)
     Layout(modifier = modifier, content = {
-        IconButton(onClick = onGallery, enabled = guideTarget < 0,
-            modifier = Modifier.size(52.dp).semantics { contentDescription = galleryLabel }.clip(CircleShape).border(1.dp, Color.White.copy(alpha = 0.7f), CircleShape)) {
+        IconButton(onClick = onGallery, enabled = tutorialAllows("camera_gallery"),
+            modifier = Modifier.size(52.dp).tutorialTarget("camera_gallery").semantics { contentDescription = galleryLabel }.clip(CircleShape).border(1.dp, Color.White.copy(alpha = 0.7f), CircleShape)) {
             Box(Modifier.fillMaxSize().graphicsLayer { rotationZ = iconRotation.value },
                 contentAlignment = Alignment.Center) {
                 thumbnail()
             }
         }
-        val enabled = state.ready && state.status != CameraReadingStatus.CAPTURING &&
-            (guideTarget < 0 || guideTarget == 3)
+        val enabled = state.ready && state.status != CameraReadingStatus.CAPTURING && tutorialAllows("camera_capture")
         IconButton(onClick = onCapture, enabled = enabled,
-            modifier = Modifier.size(88.dp).border(2.dp, Color.White.copy(alpha = if (enabled) 0.9f else 0.4f), CircleShape)
-                .then(if (guideTarget == 3) Modifier.onGloballyPositioned { onGuideBounds(it.boundsInRoot()) } else Modifier)) {
+            modifier = Modifier.size(88.dp).tutorialTarget("camera_capture").border(2.dp, Color.White.copy(alpha = if (enabled) 0.9f else 0.4f), CircleShape)) {
             Box(Modifier.padding(7.dp).fillMaxSize().background(
                 Color.White.copy(alpha = if (enabled) 1f else 0.4f), CircleShape),
                 contentAlignment = Alignment.Center) {
@@ -295,12 +282,12 @@ internal fun CameraReaderTopBar(
             title = { Text(stringResource(title), maxLines = 1, overflow = TextOverflow.Ellipsis) },
             modifier = modifier.fillMaxWidth(),
             navigationIcon = {
-                IconButton(onClick = onBack) {
+                IconButton(enabled = tutorialAllows("camera_back"), onClick = onBack) {
                     Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.navigate_back))
                 }
             },
             actions = {
-                IconButton(onClick = onPreferences) {
+                IconButton(enabled = tutorialAllows("camera_preferences"), onClick = onPreferences) {
                     Icon(Icons.Rounded.Settings, stringResource(R.string.camera_appearance))
                 }
             },
@@ -314,12 +301,12 @@ internal fun CameraReaderTopBar(
         Surface(modifier.fillMaxWidth().padding(vertical = 8.dp), shape = RoundedCornerShape(20.dp),
             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f), contentColor = MaterialTheme.colorScheme.onSurface) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onBack) {
+                IconButton(enabled = tutorialAllows("camera_back"), onClick = onBack) {
                     Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.navigate_back))
                 }
                 Text(stringResource(title), Modifier.weight(1f), style = MaterialTheme.typography.titleMedium,
                     maxLines = 1, overflow = TextOverflow.Ellipsis)
-                IconButton(onClick = onPreferences) {
+                IconButton(enabled = tutorialAllows("camera_preferences"), onClick = onPreferences) {
                     Icon(Icons.Rounded.Settings, stringResource(R.string.camera_appearance))
                 }
             }

@@ -199,6 +199,10 @@ internal fun CameraPhotoSurface(
     val zoomOut = stringResource(R.string.camera_zoom_out)
     val zoomReset = stringResource(R.string.camera_zoom_reset)
     val description = stringResource(R.string.camera_photo_description)
+    fun select(key: String?) {
+        selected = key
+        com.smyddevstudio.kanako.service.GuidedReaderSession.action(if (key != null) "selected" else "dismissed")
+    }
     fun zoom(factor: Float): Boolean {
         gesture = gesture.update(factor, 0f, 0f, size.width / 2f, size.height / 2f,
             photo.width, photo.height, size.width, size.height, topPadding = panTop, bottomPadding = panBottom)
@@ -219,8 +223,8 @@ internal fun CameraPhotoSurface(
                         val currentScale = (fit?.scale ?: 1f) * gesture.zoom
                         val imageLeft = (size.width - photo.width * currentScale) / 2f + gesture.x
                         val imageTop = (size.height - photo.height * currentScale) / 2f + gesture.y
-                        selected = selectCameraPhotoReading(currentReadings,
-                            (point.x - imageLeft) / currentScale, (point.y - imageTop) / currentScale, selected)
+                        select(selectCameraPhotoReading(currentReadings,
+                            (point.x - imageLeft) / currentScale, (point.y - imageTop) / currentScale, selected))
                     },
                     onDoubleTap = { gesture = CameraPhotoGesture() }
                 )
@@ -235,11 +239,11 @@ internal fun CameraPhotoSurface(
                     CustomAccessibilityAction(zoomReset) { gesture = CameraPhotoGesture(); true }
                 ) + (if (showReadings) readings else emptyList()).map { item ->
                     CustomAccessibilityAction("$selectLabel: ${item.source} · ${item.reading}") {
-                        selected = if (selected == item.key) null else item.key
+                        select(if (selected == item.key) null else item.key)
                         true
                     }
                 } + if (showReadings && focused != null) listOf(
-                    CustomAccessibilityAction(clearLabel) { selected = null; true }
+                    CustomAccessibilityAction(clearLabel) { select(null); true }
                 ) else emptyList()
             }
     ) {

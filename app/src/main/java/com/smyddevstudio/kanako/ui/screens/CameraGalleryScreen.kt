@@ -1,5 +1,6 @@
 package com.smyddevstudio.kanako.ui.screens
 
+import com.smyddevstudio.kanako.ui.components.tutorialTarget
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.Context
@@ -78,7 +79,7 @@ internal fun CameraGalleryScreen(
     modifier: Modifier = Modifier,
     onUseSystemPicker: () -> Unit = onBack
 ) {
-    DevicePhotoGallery(onBack, onOpen, modifier, onUseSystemPicker)
+    DevicePhotoGallery(onBack, onOpen, modifier.tutorialTarget("gallery_picker"), onUseSystemPicker)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

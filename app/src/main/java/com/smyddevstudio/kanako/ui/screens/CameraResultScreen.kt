@@ -26,10 +26,7 @@ internal fun CameraResultScreen(
     onNavigateToPreferences: () -> Unit,
     modifier: Modifier = Modifier,
     preferences: KanakoPreferences = KanakoPreferences(),
-    onToggleScriptType: () -> Unit = {},
-    guidedTutorial: Boolean = false,
-    onSkipTutorial: () -> Unit = {},
-    onCompleteTutorial: () -> Unit = {}
+    onToggleScriptType: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val lifecycle = LocalLifecycleOwner.current.lifecycle
@@ -62,11 +59,6 @@ internal fun CameraResultScreen(
         showReadings = showReadings,
         onShowReadingsChange = { showReadings = it },
         onControlsHeight = { controlsHeight = it },
-        guide = {
-            if (guidedTutorial && state.photo != null) {
-                CameraPhotoGuide(onComplete = onCompleteTutorial, onSkip = onSkipTutorial)
-            }
-        },
         photograph = { surfaceModifier ->
             state.photo?.let { photo ->
                 CameraPhotoSurface(photo, state.lines, preferences, surfaceModifier, showReadings = showReadings,

@@ -39,6 +39,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.boundsInWindow
+import com.smyddevstudio.kanako.ui.components.LocalTutorialFocus
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
@@ -56,8 +60,6 @@ import com.smyddevstudio.kanako.camera.CameraReaderViewModel
 import com.smyddevstudio.kanako.camera.LiveCameraSession
 import com.smyddevstudio.kanako.model.KanakoPreferences
 import com.smyddevstudio.kanako.ui.components.CameraReadingOverlay
-import com.smyddevstudio.kanako.ui.components.GuidedSpotlight
-import androidx.compose.ui.geometry.Rect
 
 @Composable
 internal fun CameraReaderScreen(
@@ -68,9 +70,7 @@ internal fun CameraReaderScreen(
     modifier: Modifier = Modifier,
     preferences: KanakoPreferences = KanakoPreferences(),
     onNavigateToGallery: () -> Unit = {},
-    onPermissionDenied: () -> Unit = onBack,
-    guidedTutorial: Boolean = false,
-    onSkipTutorial: () -> Unit = {}
+    onPermissionDenied: () -> Unit = onBack
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -107,6 +107,12 @@ internal fun CameraReaderScreen(
             latestSavedImage = null
         }
     }
+    val tutorialFocus = LocalTutorialFocus.current
+    var viewBounds by remember { mutableStateOf(Rect.Zero) }
+    var tutorialWord by remember(tutorialFocus) { mutableStateOf<String?>(null) }
+    DisposableEffect(tutorialFocus) {
+        onDispose { tutorialFocus?.bounds?.remove("camera_readings") }
+    }
     var readingTargets by remember { mutableStateOf(emptyList<ReadingTarget>()) }
     var selectedReading by remember { mutableStateOf<String?>(null) }
     var granted by remember { mutableStateOf(hasCameraPermission(context)) }
@@ -122,6 +128,10 @@ internal fun CameraReaderScreen(
             viewModel.returnToLive()
             onPermissionDenied()
         }
+    }
+    LaunchedEffect(tutorialFocus, granted) {
+        tutorialFocus?.message = if (granted) null else R.string.camera_state_permission_body
+        tutorialFocus?.heading = if (granted) null else R.string.camera_state_permission
     }
     val activity = context.cameraActivity()
     DisposableEffect(activity, granted) {
@@ -222,25 +232,13 @@ internal fun CameraReaderScreen(
             }
         )
     }
-    var lessonStep by rememberSaveable { mutableIntStateOf(1) }
-    var previousGuidance by rememberSaveable { mutableStateOf(false) }
-    LaunchedEffect(guidedTutorial) {
-        if (guidedTutorial && !previousGuidance) lessonStep = 1
-        previousGuidance = guidedTutorial
-    }
-    val guideTarget = if (!guidedTutorial) -1 else if (!granted) 0 else if (
-        state.status == com.smyddevstudio.kanako.camera.CameraReadingStatus.CAMERA_ERROR ||
-        state.status == com.smyddevstudio.kanako.camera.CameraReadingStatus.READ_ERROR) 4 else lessonStep
-    var guideBounds by remember(guideTarget) { mutableStateOf<Rect?>(null) }
     Box(modifier) {
     CameraReaderContent(
-        guideTarget = guideTarget,
-        onGuideBounds = { guideBounds = it },
         state = state,
         granted = granted,
-        onBack = { if (!guidedTutorial) { viewModel.returnToLive(); onBack() } },
-        onPreferences = { if (!guidedTutorial) onNavigateToPreferences() },
-        onGallery = { if (!guidedTutorial) onNavigateToGallery() },
+        onBack = { viewModel.returnToLive(); onBack() },
+        onPreferences = onNavigateToPreferences,
+        onGallery = onNavigateToGallery,
         captureThumbnail = captureThumbnail,
         savedThumbnail = {
             val image = latestSavedImage
@@ -259,11 +257,8 @@ internal fun CameraReaderScreen(
         },
         onRetry = { retry++ },
         onZoom = { factor ->
-            if (!guidedTutorial || lessonStep == 2) {
-                viewModel.invalidateGeometry()
-                session?.zoomBy(factor)
-                if (guidedTutorial && session != null) lessonStep = 3
-            }
+            viewModel.invalidateGeometry()
+            session?.zoomBy(factor)
         },
         modifier = Modifier,
         permissionLabel = if (permanentlyDenied) R.string.camera_settings else R.string.camera_allow,
@@ -279,21 +274,14 @@ internal fun CameraReaderScreen(
                             preview = this
                         }
                     },
-                    modifier = cameraModifier.cameraReaderGestures(
-                        onZoom = { if (it != 1f && (!guidedTutorial || lessonStep == 2)) {
-                            session?.zoomBy(it)
-                            if (guidedTutorial && session != null) lessonStep = 3
-                        } },
-                        onFocus = { if (!guidedTutorial || lessonStep == 1) {
-                            session?.focusAt(it)
-                            if (guidedTutorial && session != null) lessonStep = 2
-                        } },
+                    modifier = cameraModifier.onGloballyPositioned { viewBounds = it.boundsInWindow() }.cameraReaderGestures(
+                        onZoom = { if (it != 1f) session?.zoomBy(it) },
+                        onFocus = { session?.focusAt(it) },
                         onInteraction = viewModel::invalidateGeometry,
                         onSelect = { point ->
-                            if (guidedTutorial) false else {
-                                selectedReading = selectReading(readingTargets, point.x, point.y, selectedReading)
-                                selectedReading != null
-                            }
+                            selectedReading = selectReading(readingTargets, point.x, point.y, selectedReading)
+                            com.smyddevstudio.kanako.service.GuidedReaderSession.action(if (selectedReading != null) "selected" else "dismissed")
+                            selectedReading != null
                         }
                     ),
                     update = { it.contentDescription = liveDescription },
@@ -307,19 +295,30 @@ internal fun CameraReaderScreen(
                 CameraReadingOverlay(state.lines, preferences, Modifier.fillMaxSize(),
                     selected = selectedReading, onTargets = { targets ->
                         readingTargets = targets
+                        if (tutorialFocus != null) {
+                            val chosen = targets.firstOrNull { it.key == tutorialWord }
+                                ?: targets.minByOrNull {
+                                    val dx = (it.anchor.left + it.anchor.right) / 2f - viewBounds.width / 2f
+                                    val dy = (it.anchor.top + it.anchor.bottom) / 2f - viewBounds.height / 2f
+                                    dx * dx + dy * dy
+                                }
+                            tutorialWord = chosen?.key
+                            if (chosen == null) tutorialFocus.bounds.remove("camera_readings")
+                            else tutorialFocus.bounds["camera_readings"] = Rect(
+                                minOf(chosen.anchor.left, chosen.label.left).toFloat() + viewBounds.left,
+                                minOf(chosen.anchor.top, chosen.label.top).toFloat() + viewBounds.top,
+                                maxOf(chosen.anchor.right, chosen.label.right).toFloat() + viewBounds.left,
+                                maxOf(chosen.anchor.bottom, chosen.label.bottom).toFloat() + viewBounds.top)
+                        }
                         if (selectedReading != null && targets.none { it.key == selectedReading }) selectedReading = null
                     },
-                    onSelectReading = { selectedReading = it })
+                    onSelectReading = {
+                        selectedReading = it
+                        com.smyddevstudio.kanako.service.GuidedReaderSession.action("selected")
+                    })
             }
         }
     )
-    if (guidedTutorial && !rationale) GuidedSpotlight(guideBounds, stringResource(when (guideTarget) {
-        0 -> R.string.camera_state_permission_body
-        1 -> R.string.guided_camera_focus
-        2 -> R.string.guided_camera_zoom
-        3 -> R.string.guided_camera_capture
-        else -> R.string.camera_state_error
-    }), onSkipTutorial)
     }
 }
 

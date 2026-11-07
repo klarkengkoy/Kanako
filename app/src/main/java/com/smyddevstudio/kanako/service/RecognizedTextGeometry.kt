@@ -4,6 +4,23 @@ import kotlin.math.roundToInt
 
 internal data class RecognizedTextSpan(val start: Int, val end: Int, val bounds: ReadingBounds)
 
+internal fun tutorialSampleSpans(
+    sampleText: String, sampleSpans: List<RecognizedTextSpan>, text: String
+): List<RecognizedTextSpan>? {
+    val sampleIndices = sampleText.indices.filter { !sampleText[it].isWhitespace() }
+    val lineIndices = text.indices.filter { !text[it].isWhitespace() }
+    val source = sampleIndices.map { sampleText[it] }.joinToString("")
+    val recognized = lineIndices.map { text[it] }.joinToString("")
+    if (recognized.isEmpty()) return null
+    val start = source.indexOf(recognized)
+    if (start < 0 || source.indexOf(recognized, start + 1) >= 0) return null
+    return lineIndices.mapIndexed { index, lineIndex ->
+        val sourceIndex = sampleIndices[start + index]
+        val span = sampleSpans.firstOrNull { it.start == sourceIndex } ?: return null
+        span.copy(start = lineIndex, end = lineIndex + 1)
+    }
+}
+
 internal data class RecognitionSlice(val span: Int?, val start: Int, val end: Int)
 
 internal fun recognitionSlices(start: Int, end: Int, ranges: List<Pair<Int, Int>>): List<RecognitionSlice> {

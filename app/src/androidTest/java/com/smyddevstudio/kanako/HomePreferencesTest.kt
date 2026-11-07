@@ -66,30 +66,53 @@ class HomePreferencesTest {
         compose.onNodeWithText(context.getString(R.string.setup_enable)).assertIsNotEnabled()
     }
 
-    @Test fun preferencesLessonEnablesOnlyTheHomeGear() {
+    @Test fun homeControlsRemainAvailableDuringOptionalTutorialPractice() {
         var opens = 0
         compose.setContent {
             KanakoTheme {
                 HomeScreen({}, {}, { opens++ },
                     preferences = KanakoPreferences(isOverlayActive = true, hasAcceptedSnapshotDisclosure = true),
                     overlayGranted = true, accessibilityEnabled = true, accessibilityConnected = true,
-                    guidedSetup = true, guidePreferences = true, animationsEnabled = false)
+                    animationsEnabled = false, tutorialActive = true)
             }
         }
-        compose.onNodeWithText(context.getString(R.string.camera_open)).assertIsNotEnabled()
-        compose.onNodeWithText(context.getString(R.string.setup_stop)).assertIsNotEnabled()
+        compose.onNodeWithText(context.getString(R.string.camera_open)).assertIsEnabled()
+        compose.onNodeWithText(context.getString(R.string.setup_stop)).assertIsEnabled()
         compose.onNodeWithContentDescription(context.getString(R.string.preferences_title)).assertIsEnabled().performClick()
         compose.runOnIdle { assertEquals(1, opens) }
     }
 
-    @Test fun guidedSetupRestrictsActionsAndWaitsForRealAccessState() {
+    @Test fun tutorialLaunchButtonsDoNotRepeatCardSelection() {
+        val selected = mutableListOf<com.smyddevstudio.kanako.model.TutorialPath>()
+        val started = mutableListOf<com.smyddevstudio.kanako.model.TutorialPath>()
+        compose.setContent {
+            KanakoTheme {
+                CompositionLocalProvider(com.smyddevstudio.kanako.ui.components.LocalTutorialFocus provides
+                    com.smyddevstudio.kanako.ui.components.TutorialFocus(0, setOf("floating_card", "camera_card"))) {
+                    HomeScreen({}, {}, {},
+                        preferences = KanakoPreferences(hasAcceptedSnapshotDisclosure = true),
+                        overlayGranted = true, accessibilityEnabled = true, accessibilityConnected = true,
+                        supported = true, animationsEnabled = false, tutorialActive = true,
+                        onSelectTutorialReader = { selected.add(it) }, onStartTutorialReader = { started.add(it) })
+                }
+            }
+        }
+        compose.onNodeWithText(context.getString(R.string.camera_open)).performScrollTo().performClick()
+        compose.onNodeWithText(context.getString(R.string.setup_enable)).performScrollTo().performClick()
+        compose.runOnIdle {
+            assertEquals(listOf(com.smyddevstudio.kanako.model.TutorialPath.CAMERA,
+                com.smyddevstudio.kanako.model.TutorialPath.FLOATING), started)
+            assertTrue(selected.isEmpty())
+        }
+    }
+
+    @Test fun setupWaitsForRealAccessStateWithoutBlockingCamera() {
         val overlay = mutableStateOf(false)
         val connected = mutableStateOf(false)
         val consent = mutableStateOf(false)
         var overlayRequests = 0
         var accessibilityRequests = 0
         var starts = 0
-        var skips = 0
         compose.setContent {
             KanakoTheme {
                 HomeScreen({}, {}, {},
@@ -98,12 +121,12 @@ class HomePreferencesTest {
                     accessibilityConnected = connected.value,
                     onUpdateOverlayActive = { starts++ }, animationsEnabled = false,
                     onRequestOverlay = { overlayRequests++ },
-                    onRequestAccessibility = { accessibilityRequests++ },
-                    guidedSetup = true, onSkipGuidedSetup = { skips++ })
+                    onRequestAccessibility = { accessibilityRequests++ })
             }
         }
-        compose.onNodeWithText(context.getString(R.string.camera_open)).assertIsNotEnabled()
+        compose.onNodeWithText(context.getString(R.string.camera_open)).assertIsEnabled()
         compose.onNodeWithText(context.getString(R.string.setup_enable)).assertIsNotEnabled()
+        compose.onNodeWithText(context.getString(R.string.home_setup_action)).performClick()
         compose.waitForIdle()
         compose.onNodeWithText(context.getString(R.string.setup_open_overlay)).performClick()
         compose.runOnIdle { assertEquals(1, overlayRequests); assertEquals(0, starts) }
@@ -115,8 +138,6 @@ class HomePreferencesTest {
         compose.waitForIdle()
         compose.onNodeWithText(context.getString(R.string.setup_enable)).performScrollTo().performClick()
         compose.waitUntil(3_000) { starts == 1 }
-        compose.onNodeWithText(context.getString(R.string.guided_skip)).performClick()
-        compose.runOnIdle { assertEquals(1, skips) }
     }
 
     @Test fun homeRequiresConnectedAccessAndConsentButCameraIsIndependent() {

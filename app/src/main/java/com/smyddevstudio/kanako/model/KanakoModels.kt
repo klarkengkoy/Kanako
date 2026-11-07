@@ -70,7 +70,5 @@ data class KanakoPreferences(
     val isDarkMode: Boolean = false,
     val hasDeniedCameraPermission: Boolean = false,
     val hasSeenTutorialInvitation: Boolean = false,
-    val completedFloatingTutorial: Boolean = false,
-    val completedCameraTutorial: Boolean = false,
-    val hasSeenCameraGuide: Boolean = false
+    val completedTutorial: Boolean = false
 )
