@@ -196,6 +196,18 @@ class JapaneseTextTokenizerTest {
     }
 
     @Test
+    fun realSudachiEndingsExtendOnlyTheWordHighlight() {
+        mapOf("読みます。" to "読みます", "読みました。" to "読みました", "読む本。" to "読む").forEach { (text, expected) ->
+            val segments = tokenizer.tokenize(text)
+            val word = com.smyddevstudio.kanako.service.readingWords(text, segments).first()
+            assertEquals(expected, word.source)
+            assertEquals("よ", word.reading)
+            assertEquals("読", text.substring(word.readingStart, word.readingEnd))
+            assertEquals(text, segments.joinToString("") { it.text })
+        }
+    }
+
+    @Test
     fun testHelperConversions() {
         assertEquals("がっこう", tokenizer.katakanaToHiragana("ガッコウ"))
         assertEquals("ガッコウ", tokenizer.hiraganaToKatakana("がっこう"))

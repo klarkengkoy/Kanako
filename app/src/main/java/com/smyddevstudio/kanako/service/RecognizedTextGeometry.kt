@@ -4,6 +4,20 @@ import kotlin.math.roundToInt
 
 internal data class RecognizedTextSpan(val start: Int, val end: Int, val bounds: ReadingBounds)
 
+internal data class RecognitionSlice(val span: Int?, val start: Int, val end: Int)
+
+internal fun recognitionSlices(start: Int, end: Int, ranges: List<Pair<Int, Int>>): List<RecognitionSlice> {
+    val result = mutableListOf<RecognitionSlice>()
+    for (offset in start until end) {
+        val best = ranges.indices.filter { ranges[it].first <= offset && ranges[it].second > offset }
+            .minByOrNull { ranges[it].second - ranges[it].first }
+        val previous = result.lastOrNull()
+        if (previous != null && previous.span == best) result[result.lastIndex] = previous.copy(end = offset + 1)
+        else result.add(RecognitionSlice(best, offset, offset + 1))
+    }
+    return result
+}
+
 internal fun readingTokenBounds(
     text: String, bounds: ReadingBounds, spans: List<RecognizedTextSpan>, start: Int, end: Int
 ): ReadingBounds {
@@ -13,16 +27,12 @@ internal fun readingTokenBounds(
             box.right, (box.top + (box.bottom - box.top) * to).roundToInt())
     else ReadingBounds((box.left + (box.right - box.left) * from).roundToInt(), box.top,
         (box.left + (box.right - box.left) * to).roundToInt(), box.bottom)
-    val matching = spans.filter { it.start < end && it.end > start }
-    if (matching.isEmpty()) {
-        val length = text.length.coerceAtLeast(1).toFloat()
-        return slice(bounds, start / length, end / length)
-    }
-    val boxes = matching.map { span ->
+    val boxes = recognitionSlices(start, end, spans.map { it.start to it.end }).map { piece ->
+        val span = piece.span?.let { spans[it] } ?: RecognizedTextSpan(0, text.length, bounds)
         val length = (span.end - span.start).coerceAtLeast(1).toFloat()
-        slice(span.bounds, (maxOf(start, span.start) - span.start) / length,
-            (minOf(end, span.end) - span.start) / length)
+        slice(span.bounds, (piece.start - span.start) / length, (piece.end - span.start) / length)
     }
+    if (boxes.isEmpty()) return bounds
     return ReadingBounds(boxes.minOf { it.left }, boxes.minOf { it.top },
         boxes.maxOf { it.right }, boxes.maxOf { it.bottom })
 }

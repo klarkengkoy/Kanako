@@ -34,6 +34,24 @@ class CameraLiveMotionTest {
         assertFalse(motion.isMoving(1250))
     }
 
+    @Test fun kanaEndingHitBoundsMoveAlongsideTheirSeparateKanjiAnchor() {
+        fun wordFrame(x: Int): CameraLiveFrame {
+            val original = frame(x)
+            val group = original.groups.single()
+            val highlight = group.anchor.copy(right = group.anchor.right + 40)
+            return original.copy(groups = listOf(group.copy(group = group.group.copy(highlight = highlight))))
+        }
+        val motion = CameraLiveMotion()
+        motion.retarget(wordFrame(100), 1000, true)
+        motion.retarget(wordFrame(140), 1160, true)
+        val halfway = motion.frameAt(1205)
+        val word = halfway.groups.single()
+        assertEquals(ReadingBounds(120, 100, 180, 130), word.anchor)
+        assertEquals(ReadingBounds(120, 100, 220, 130), word.highlight)
+        assertEquals(word.highlight, halfway.targets.single().anchor)
+        assertEquals(word.key, selectCameraPhotoReading(listOf(word), 210f, 115f, null))
+    }
+
     @Test fun retargetingAnActiveSlideStartsAtItsCurrentPosition() {
         val motion = CameraLiveMotion()
         motion.retarget(frame(100), 1000, true)

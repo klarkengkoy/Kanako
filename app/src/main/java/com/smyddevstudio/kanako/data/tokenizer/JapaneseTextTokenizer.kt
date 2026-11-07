@@ -160,13 +160,28 @@ class JapaneseTextTokenizer internal constructor(
                     val raw = if (spatialBelow) "シタ" else token.reading
                     add(FuriganaSegment(surface,
                         if (surface.containsKanji() && !raw.isNullOrEmpty() && raw != "*" && !raw.containsKanji())
-                            formatReading(raw, scriptType) else null))
+                            formatReading(raw, scriptType) else null,
+                        highlightSuffixLength = highlightSuffixLength(tokens, index)))
                 }
                 cursor = token.position + surface.length
                 index++
             }
             if (cursor < text.length) add(FuriganaSegment(text.substring(cursor)))
         }
+    }
+
+    private fun highlightSuffixLength(tokens: List<JapaneseToken>, index: Int): Int {
+        val token = tokens[index]
+        if (!token.surface.containsKanji() || token.partOfSpeechLevel1 !in listOf("動詞", "形容詞")) return 0
+        val end = token.position + token.surface.length
+        var cursor = end
+        for (nextIndex in index + 1 until tokens.size) {
+            val next = tokens[nextIndex]
+            if (next.position != cursor || next.partOfSpeechLevel1 != "助動詞" ||
+                next.surface.isEmpty() || next.surface.any { it !in 'ぁ'..'ゖ' && it != 'ー' }) break
+            cursor += next.surface.length
+        }
+        return cursor - end
     }
 
     private fun counterReading(number: String, counter: JapaneseToken): String? {
@@ -215,7 +230,9 @@ class JapaneseTextTokenizer internal constructor(
                                 raw == null || !raw.startsWith(before) || !raw.endsWith(after)
                             ) null else raw.substring(before.length, raw.length - after.length)
                         }
-                        add(FuriganaSegment(surface, reading))
+                        val suffix = if (reading != null && to == segment.text.length)
+                            (minOf(lineEnd, segmentEnd + segment.highlightSuffixLength) - segmentEnd).coerceAtLeast(0) else 0
+                        add(FuriganaSegment(surface, reading, highlightSuffixLength = suffix))
                     }
                     if (segmentEnd > lineEnd) break
                     segmentStart = segmentEnd

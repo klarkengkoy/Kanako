@@ -62,7 +62,7 @@ internal class CameraLiveReadings {
         val previousCandidates = candidates.toMutableList()
         candidates = observed.map { line ->
             val previous = previousCandidates.filter { matches(it.line, line) }
-                .minByOrNull { distance(it.line.bounds, line.bounds) }
+                .minByOrNull { distance(it.line.trackingBounds, line.trackingBounds) }
             previousCandidates.remove(previous)
             Observation(line, ((previous?.count ?: 0) + 1).coerceAtMost(2))
         }
@@ -100,21 +100,23 @@ internal class CameraLiveReadings {
     private fun visibleLines() = content.filter { it.visibleUntil != Long.MIN_VALUE }.map { it.line }
 
     private fun takeMatch(available: MutableList<CameraReadingLine>, line: CameraReadingLine): CameraReadingLine? {
-        val match = available.filter { matches(line, it) }.minByOrNull { distance(line.bounds, it.bounds) }
+        val match = available.filter { matches(line, it) }.minByOrNull { distance(line.trackingBounds, it.trackingBounds) }
         available.remove(match)
         return match
     }
 
     private fun matches(a: CameraReadingLine, b: CameraReadingLine) =
-        a.text == b.text && a.segments == b.segments && a.isVertical == b.isVertical && closeEnough(a.bounds, b.bounds, a.isVertical)
+        a.trackingIdentity == b.trackingIdentity && a.isVertical == b.isVertical && closeEnough(a.trackingBounds, b.trackingBounds, a.isVertical)
 
     private fun distance(a: CameraRect, b: CameraRect): Float =
         abs(a.left + a.right - b.left - b.right) + abs(a.top + a.bottom - b.top - b.bottom)
 
     private fun smallMovement(a: CameraReadingLine, b: CameraReadingLine): Boolean {
-        val limit = max(1f, min(min(a.bounds.width, a.bounds.height), min(b.bounds.width, b.bounds.height)) * 0.2f)
-        return abs(a.bounds.left - b.bounds.left) <= limit && abs(a.bounds.top - b.bounds.top) <= limit &&
-            abs(a.bounds.right - b.bounds.right) <= limit && abs(a.bounds.bottom - b.bounds.bottom) <= limit
+        val before = a.trackingBounds
+        val after = b.trackingBounds
+        val limit = max(1f, min(min(before.width, before.height), min(after.width, after.height)) * 0.2f)
+        return abs(before.left - after.left) <= limit && abs(before.top - after.top) <= limit &&
+            abs(before.right - after.right) <= limit && abs(before.bottom - after.bottom) <= limit
     }
 
     private fun closeEnough(a: CameraRect, b: CameraRect, vertical: Boolean): Boolean {

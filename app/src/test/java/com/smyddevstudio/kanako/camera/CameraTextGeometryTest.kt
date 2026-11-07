@@ -69,6 +69,16 @@ class CameraTextGeometryTest {
         }
     }
 
+    @Test fun partialCharacterGeometryWinsOverAnOverlappingTiltedElement() {
+        val measured = CameraTextSpan(0, 1, CameraRect(12f, 22f, 35f, 42f))
+        val element = CameraTextSpan(0, 2, span.bounds, tilted)
+        val line = CameraReadingLine("日本", span.bounds, emptyList(), listOf(measured, element))
+        val polygons = cameraTokenPolygons(line, 0, 2)
+        assertEquals(measured.bounds, polygons.first().bounds)
+        assertEquals(cameraSpanPolygon(element, 1, 2, false), polygons.last())
+        assertEquals(measured.bounds, cameraTokenBounds(line, 0, 1))
+    }
+
     @Test fun missingCharacterGeometryKeepsTheExistingHorizontalAndVerticalFallbacks() {
         val horizontal = CameraReadingLine("日本語", CameraRect(0f, 0f, 120f, 30f), emptyList())
         assertEquals(CameraRect(40f, 0f, 120f, 30f), cameraTokenBounds(horizontal, 1, 3))

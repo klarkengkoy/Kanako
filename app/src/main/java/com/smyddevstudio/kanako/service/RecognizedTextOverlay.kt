@@ -50,7 +50,6 @@ import com.smyddevstudio.kanako.R
 import com.smyddevstudio.kanako.data.tokenizer.JapaneseTextTokenizer
 import com.smyddevstudio.kanako.model.AnnotationPlateStyle
 import com.smyddevstudio.kanako.model.KanakoPreferences
-import com.smyddevstudio.kanako.model.ScriptType
 import com.smyddevstudio.kanako.ui.components.FuriganaSegment
 import com.smyddevstudio.kanako.ui.theme.CreamBackgroundDark
 import com.smyddevstudio.kanako.ui.theme.KanakoTheme
@@ -91,22 +90,14 @@ internal fun RecognizedTextOverlayContent(
             lines.forEachIndexed { index, line ->
                 val clip = line.clip.intersection(viewport) ?: return@forEachIndexed
                 val vertical = line.bounds.height() > line.bounds.width()
-                var cursor = 0
-                tokenized[index].forEach { segment ->
-                    val start = line.text.indexOf(segment.text, cursor).takeIf { it >= 0 } ?: cursor
-                    cursor = start + segment.text.length
-                    val raw = segment.reading ?: return@forEach
-                    if (segment.text.none { it in '\u3400'..'\u9FFF' || it in '\uF900'..'\uFAFF' || it == '々' }) return@forEach
-                    val annotation = kanjiAnnotation(segment.text, tokenizer.formatReading(raw, ScriptType.KANA))
-                    val reading = tokenizer.formatReading(annotation.reading, preferences.scriptType)
-                    if (reading.isEmpty()) return@forEach
-                    val anchor = readingTokenBounds(line.text,
-                        ReadingBounds(line.bounds.left, line.bounds.top, line.bounds.right, line.bounds.bottom),
-                        line.spans, start + annotation.start, start + annotation.end)
-                    if (anchor.intersection(clip) == null) return@forEach
+                readingWords(line.text, tokenized[index]).forEach { word ->
+                    val reading = tokenizer.formatReading(word.reading, preferences.scriptType)
+                    val lineBounds = ReadingBounds(line.bounds.left, line.bounds.top, line.bounds.right, line.bounds.bottom)
+                    val anchor = readingTokenBounds(line.text, lineBounds, line.spans, word.readingStart, word.readingEnd)
+                    val highlight = readingTokenBounds(line.text, lineBounds, line.spans, word.start, word.end)
+                    if (highlight.intersection(clip) == null) return@forEach
                     add(ScreenReadingGroup(ReadingGroup(anchor, vertical, reading,
-                        "${line.windowId}:$index:$start:${segment.text}",
-                        segment.text.substring(annotation.start, annotation.end)), clip))
+                        "${line.windowId}:$index:${word.start}:${word.source}", word.source, highlight), clip))
                 }
             }
         }
@@ -164,8 +155,8 @@ internal fun RecognizedTextOverlayContent(
     val currentPlacements by rememberUpdatedState(placements)
     val currentOrigin by rememberUpdatedState(origin)
     val selectAt: (Float, Float) -> Unit = { x, y ->
-        val readings = currentGroups.map { it.reading.copy(anchor = it.reading.anchor.intersection(it.clip) ?: it.reading.anchor) }
-        val hitsSource = readings.any { x >= it.anchor.left && x < it.anchor.right && y >= it.anchor.top && y < it.anchor.bottom }
+        val readings = currentGroups.map { it.reading.copy(highlight = it.reading.highlight.intersection(it.clip) ?: it.reading.highlight) }
+        val hitsSource = readings.any { x >= it.highlight.left && x < it.highlight.right && y >= it.highlight.top && y < it.highlight.bottom }
         select(if (hitsSource) selectReadingGroup(readings, x, y, selected) else {
             val index = currentPlacements.indexOfLast { item -> item?.bounds?.let {
                 x >= it.left && x < it.right && y >= it.top && y < it.bottom
@@ -182,7 +173,7 @@ internal fun RecognizedTextOverlayContent(
     SideEffect {
         onInspectionChanged(focused != null)
         onInteractionChanged(ReadingOverlayInteraction(
-            regions = groups.mapNotNull { it.reading.anchor.intersection(it.clip) } +
+            regions = groups.mapNotNull { it.reading.highlight.intersection(it.clip) } +
                 if (focused != null) placements.mapNotNull { it?.bounds } else emptyList(),
             selective = selectiveTouch,
             selected = focused != null,
@@ -224,7 +215,7 @@ internal fun RecognizedTextOverlayContent(
                 (clip.right - origin.x).toFloat(), (clip.bottom - origin.y).toFloat()) {
                 drawIntoCanvas { canvas ->
                     canvas.nativeCanvas.withTranslation(-origin.x.toFloat(), -origin.y.toFloat()) {
-                        drawReadingHighlight(this, item.reading.anchor, item == focused, 1.dp.toPx())
+                        drawReadingHighlight(this, item.reading.highlight, item == focused, 1.dp.toPx())
                     }
                 }
             }

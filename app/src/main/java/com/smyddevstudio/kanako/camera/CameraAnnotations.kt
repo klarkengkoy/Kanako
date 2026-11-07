@@ -9,12 +9,10 @@ import android.text.StaticLayout
 import android.text.TextPaint
 import androidx.core.graphics.withClip
 import androidx.core.graphics.withTranslation
-import com.smyddevstudio.kanako.data.tokenizer.JapaneseTextTokenizer
 import com.smyddevstudio.kanako.model.ScriptType
 import com.smyddevstudio.kanako.service.ReadingBounds
 import com.smyddevstudio.kanako.service.RubyRequest
 import com.smyddevstudio.kanako.service.ReadingTarget
-import com.smyddevstudio.kanako.service.kanjiAnnotation
 import com.smyddevstudio.kanako.service.readingDrawOrder
 import kotlin.math.ceil
 import kotlin.math.roundToInt
@@ -45,46 +43,35 @@ internal fun layoutCameraAnnotations(
         textSize = fontPixels
         typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
     }
-    val formatter = JapaneseTextTokenizer()
-    data class Pending(val request: RubyRequest, val layouts: List<StaticLayout>, val reading: String, val key: String)
+    data class Pending(val request: RubyRequest, val layouts: List<StaticLayout>, val reading: String,
+        val key: String, val highlight: ReadingBounds)
     val pending = buildList {
-        lines.forEachIndexed { lineIndex, line ->
-            val vertical = line.isVertical
-            var offset = 0
-            line.segments.forEach { segment ->
-                val start = line.text.indexOf(segment.text, offset).takeIf { it >= 0 } ?: offset
-                offset = start + segment.text.length
-                val raw = segment.reading
-                if (raw.isNullOrEmpty()) return@forEach
-                val annotation = kanjiAnnotation(segment.text, formatter.formatReading(raw, ScriptType.KANA))
-                val reading = formatter.formatReading(annotation.reading, script)
-                val token = cameraWordOutline(line, start + annotation.start, start + annotation.end).bounds
-                val anchor = ReadingBounds(token.left.roundToInt(), token.top.roundToInt(), token.right.roundToInt(), token.bottom.roundToInt())
-                if (clip.intersection(anchor) == null) return@forEach
-                val maxWidth = width - padding * 2
-                if (maxWidth <= 0) return@forEach
-                val chunks = if (vertical) {
-                    val rows = ((height - padding * 2) / paint.fontSpacing).toInt().coerceAtLeast(1)
-                    reading.chunked(rows).map { it.toList().joinToString("\n") }
-                } else listOf(reading)
-                val layouts = chunks.map { chunk ->
-                    val desiredWidth = ceil(Layout.getDesiredWidth(chunk, paint).toDouble()).toInt().coerceIn(1, maxWidth)
-                    StaticLayout.Builder.obtain(chunk, 0, chunk.length, paint, desiredWidth)
-                        .setAlignment(Layout.Alignment.ALIGN_CENTER)
-                        .setIncludePad(false)
-                        .build()
-                }
-                add(Pending(
-                    RubyRequest(anchor, clip, layouts.sumOf { it.width } + (layouts.size - 1) * gap + padding * 2,
-                        layouts.maxOf { it.height } + padding * 2, vertical), layouts, reading, line.trackingKey ?: "$lineIndex:$start:${segment.text}"
-                ))
+        cameraPhotoReadings(lines, width, height, script).forEach { item ->
+            val anchor = item.anchor
+            val vertical = item.vertical
+            val reading = item.reading
+            val maxWidth = width - padding * 2
+            if (maxWidth <= 0) return@forEach
+            val chunks = if (vertical) {
+                val rows = ((height - padding * 2) / paint.fontSpacing).toInt().coerceAtLeast(1)
+                reading.chunked(rows).map { it.toList().joinToString("\n") }
+            } else listOf(reading)
+            val layouts = chunks.map { chunk ->
+                val desiredWidth = ceil(Layout.getDesiredWidth(chunk, paint).toDouble()).toInt().coerceIn(1, maxWidth)
+                StaticLayout.Builder.obtain(chunk, 0, chunk.length, paint, desiredWidth)
+                    .setAlignment(Layout.Alignment.ALIGN_CENTER)
+                    .setIncludePad(false)
+                    .build()
             }
+            add(Pending(
+                RubyRequest(anchor, clip, layouts.sumOf { it.width } + (layouts.size - 1) * gap + padding * 2,
+                    layouts.maxOf { it.height } + padding * 2, vertical), layouts, reading, item.key, item.highlight))
         }
     }
     val positions = placeCameraRubyReadings(pending.map { it.request }, gap)
     return CameraAnnotationLayout(pending.mapIndexedNotNull { index, item ->
         positions[index]?.let { CameraRuby(it, clip, item.layouts, padding, gap, item.request.vertical, item.reading,
-            ReadingTarget(item.key, item.request.anchor, it)) }
+            ReadingTarget(item.key, item.highlight, it)) }
     })
 }
 

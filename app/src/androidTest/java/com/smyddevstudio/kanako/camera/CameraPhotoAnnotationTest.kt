@@ -61,14 +61,33 @@ class CameraPhotoAnnotationTest {
         assertTrue(viewport.contains(selected.labels.single().bounds))
     }
 
-    @Test fun highlightsFollowReadingGroupsAndExcludeMatchingOkuriganaAndKanaOnlyTokens() {
+    @Test fun highlightsIncludeOkuriganaWhileReadingsStayOnKanjiAndExcludeKanaOnlyTokens() {
         val line = CameraReadingLine("読みかな", CameraRect(100f, 200f, 260f, 240f),
             listOf(FuriganaSegment("読み", "よみ"), FuriganaSegment("かな", "かな")))
         val group = cameraPhotoReadings(listOf(line), 400, 400, ScriptType.KANA).single()
-        assertEquals("読", group.source)
+        assertEquals("読み", group.source)
         assertEquals("よ", group.reading)
         assertEquals(100, group.anchor.left)
         assertEquals(140, group.anchor.right)
+        assertEquals(180, group.highlight.right)
+        assertEquals(group.key, selectCameraPhotoReading(listOf(group), 170f, 220f, null))
+        assertNull(selectCameraPhotoReading(listOf(group), 220f, 220f, null))
+    }
+
+    @Test fun auxiliaryKanaIsHighlightedInLiveAndPhotoWhileTheLabelStaysOnKanji() {
+        val line = CameraReadingLine("読みますを本", CameraRect(100f, 200f, 340f, 240f),
+            listOf(FuriganaSegment("読み", "よみ", highlightSuffixLength = 2),
+                FuriganaSegment("ます"), FuriganaSegment("を"), FuriganaSegment("本", "ほん")))
+        val group = cameraPhotoReadings(listOf(line), 500, 500, ScriptType.KANA).first()
+        val liveLine = cameraReadingGroups(listOf(line)).first()
+        val live = cameraPhotoReadings(listOf(liveLine), 500, 500, ScriptType.KANA).single()
+        assertEquals("読みます", group.source)
+        assertEquals("よ", group.reading)
+        assertEquals(ReadingBounds(100, 200, 140, 240), group.anchor)
+        assertEquals(ReadingBounds(100, 200, 260, 240), group.highlight)
+        assertEquals(group.highlight, live.highlight)
+        assertEquals(group.anchor, live.anchor)
+        assertEquals(group.key, selectCameraPhotoReading(listOf(group), 240f, 220f, null))
     }
 
     @Test fun tiltedHighlightsStayInsideTheCharacterShape() {

@@ -125,8 +125,9 @@ internal fun screenReadingLines(
                                     RecognizedTextSpan(from, symbolCursor, bounds(symbolBox))
                                 }
                             }
-                            if (symbols.sumOf { it.end - it.start } == element.text.length) addAll(symbols)
-                            else element.boundingBox?.takeUnless { it.isEmpty }?.let {
+                            addAll(symbols)
+                            if (symbols.sumOf { it.end - it.start } < element.text.length)
+                                element.boundingBox?.takeUnless { it.isEmpty }?.let {
                                 add(RecognizedTextSpan(start, cursor, bounds(it)))
                             }
                         }

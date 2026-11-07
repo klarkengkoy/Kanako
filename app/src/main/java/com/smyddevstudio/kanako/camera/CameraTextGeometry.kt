@@ -1,5 +1,7 @@
 package com.smyddevstudio.kanako.camera
 
+import com.smyddevstudio.kanako.service.recognitionSlices
+
 internal data class CameraPoint(val x: Float, val y: Float)
 
 internal data class CameraPolygon(val points: List<CameraPoint>) {
@@ -42,10 +44,10 @@ internal fun cameraSpanPolygon(span: CameraTextSpan, start: Int, end: Int, verti
 
 internal fun cameraTokenPolygons(line: CameraReadingLine, start: Int, end: Int): List<CameraPolygon> {
     val vertical = line.isVertical
-    val spans = line.spans.filter { it.start < end && it.end > start }
-    return if (spans.isEmpty()) listOf(cameraSpanPolygon(
-        CameraTextSpan(0, line.text.length, line.bounds), start, end, vertical
-    )) else spans.map { cameraSpanPolygon(it, maxOf(start, it.start), minOf(end, it.end), vertical) }
+    return recognitionSlices(start, end, line.spans.map { it.start to it.end }).map { piece ->
+        val span = piece.span?.let { line.spans[it] } ?: CameraTextSpan(0, line.text.length, line.bounds)
+        cameraSpanPolygon(span, piece.start, piece.end, vertical)
+    }
 }
 
 internal fun cameraWordOutline(line: CameraReadingLine, start: Int, end: Int): CameraPolygon {

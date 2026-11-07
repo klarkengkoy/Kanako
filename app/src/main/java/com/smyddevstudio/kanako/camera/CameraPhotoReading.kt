@@ -13,6 +13,7 @@ internal data class CameraPhotoReading(
         this(ReadingGroup(anchor, vertical, reading, key, source))
 
     val anchor get() = group.anchor
+    val highlight get() = group.highlight
     val vertical get() = group.vertical
     val reading get() = group.reading
     val key get() = group.key

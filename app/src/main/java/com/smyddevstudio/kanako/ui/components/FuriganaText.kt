@@ -31,7 +31,8 @@ import com.smyddevstudio.kanako.ui.theme.PrimaryCrimsonLight
 data class FuriganaSegment(
     val text: String,
     val reading: String? = null,
-    val isHighlighted: Boolean = false
+    val isHighlighted: Boolean = false,
+    val highlightSuffixLength: Int = 0
 )
 
 @Composable

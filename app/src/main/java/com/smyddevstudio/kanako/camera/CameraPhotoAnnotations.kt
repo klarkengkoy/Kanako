@@ -14,7 +14,8 @@ import com.smyddevstudio.kanako.data.tokenizer.JapaneseTextTokenizer
 import com.smyddevstudio.kanako.model.ScriptType
 import com.smyddevstudio.kanako.service.ReadingBounds
 import com.smyddevstudio.kanako.service.ReadingTarget
-import com.smyddevstudio.kanako.service.kanjiAnnotation
+import com.smyddevstudio.kanako.service.readingWords
+import com.smyddevstudio.kanako.service.ReadingGroup
 import com.smyddevstudio.kanako.service.drawReadingHighlight
 import kotlin.math.ceil
 import kotlin.math.roundToInt
@@ -32,25 +33,19 @@ internal fun cameraPhotoReadings(
         lines.forEachIndexed { lineIndex, line ->
             checkCancellation()
             val vertical = line.isVertical
-            var offset = 0
-            line.segments.forEach { segment ->
+            readingWords(line.text, line.segments, checkCancellation).forEach { word ->
                 checkCancellation()
-                val start = line.text.indexOf(segment.text, offset).takeIf { it >= 0 } ?: offset
-                offset = start + segment.text.length
-                val raw = segment.reading
-                if (raw.isNullOrEmpty() || segment.text.none {
-                    it in '\u3400'..'\u9FFF' || it in '\uF900'..'\uFAFF' || it == '々'
-                }) return@forEach
-                val annotation = kanjiAnnotation(segment.text, formatter.formatReading(raw, ScriptType.KANA))
-                val reading = formatter.formatReading(annotation.reading, script)
-                if (reading.isEmpty()) return@forEach
-                val outline = cameraWordOutline(line, start + annotation.start, start + annotation.end)
-                val token = outline.bounds
+                val reading = formatter.formatReading(word.reading, script)
+                val outline = cameraWordOutline(line, word.start, word.end)
+                val token = cameraTokenBounds(line, word.readingStart, word.readingEnd)
                 val anchor = clip.intersection(ReadingBounds(token.left.roundToInt(), token.top.roundToInt(),
                     token.right.roundToInt(), token.bottom.roundToInt())) ?: return@forEach
-                add(CameraPhotoReading(anchor, vertical, reading, line.trackingKey ?: "$lineIndex:$start:${segment.text}",
-                    segment.text.substring(annotation.start, annotation.end)).copy(
-                        outlines = listOf(outline)))
+                val bounds = outline.bounds
+                val highlight = clip.intersection(ReadingBounds(bounds.left.roundToInt(), bounds.top.roundToInt(),
+                    bounds.right.roundToInt(), bounds.bottom.roundToInt())) ?: return@forEach
+                add(CameraPhotoReading(ReadingGroup(anchor, vertical, reading,
+                    line.trackingKey ?: "$lineIndex:${word.start}:${word.source}", word.source, highlight),
+                    outlines = listOf(outline)))
             }
         }
     }
@@ -100,7 +95,7 @@ internal fun layoutCameraPhotoReadings(
         val item = readings[index]
         return CameraRuby(bounds, if (callout) selectionClip else clip, size.content.layouts,
             size.content.padding, size.gap, item.vertical && !callout, item.reading,
-            ReadingTarget(item.key, item.anchor, bounds))
+            ReadingTarget(item.key, item.highlight, bounds))
     }
     val selectedIndex = readings.indexOfFirst { it.key == selected }
     if (selectedIndex >= 0) {
@@ -133,8 +128,8 @@ internal fun drawCameraPhotoHighlights(
     val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { strokeJoin = Paint.Join.ROUND }
     readings.forEach { item ->
         if (item.outlines.isEmpty()) {
-            drawReadingHighlight(canvas, item.anchor, item.key == selected, strokeWidth)
-        } else canvas.withClip(item.anchor.left, item.anchor.top, item.anchor.right, item.anchor.bottom) {
+            drawReadingHighlight(canvas, item.highlight, item.key == selected, strokeWidth)
+        } else canvas.withClip(item.highlight.left, item.highlight.top, item.highlight.right, item.highlight.bottom) {
             item.outlines.forEach { polygon ->
                 val path = Path().apply {
                     moveTo(polygon.points.first().x, polygon.points.first().y)

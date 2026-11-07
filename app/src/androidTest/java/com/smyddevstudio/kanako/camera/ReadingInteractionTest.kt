@@ -104,11 +104,11 @@ class ReadingInteractionTest {
         }
     }
 
-    @Test fun matchingOkuriganaIsRemovedFromReadingAndAnchor() {
+    @Test fun wholeWordIsSelectableWhileTheReadingStaysAboveKanji() {
         val ruby = layoutCameraAnnotations(listOf(line), 400, 400, 24f, ScriptType.KANA).labels.single()
         assertEquals("よ", ruby.reading)
         assertEquals(100, ruby.target.anchor.left)
-        assertEquals(140, ruby.target.anchor.right)
+        assertEquals(180, ruby.target.anchor.right)
         assertEquals(120f, (ruby.bounds.left + ruby.bounds.right) / 2f, 0.5f)
     }
 
@@ -124,7 +124,7 @@ class ReadingInteractionTest {
             }
             val image = compose.onNodeWithTag("photo")
             val context = InstrumentationRegistry.getInstrumentation().targetContext
-            val expected = context.getString(R.string.photo_reading_selected, "読", "よ")
+            val expected = context.getString(R.string.photo_reading_selected, "読み", "よ")
             compose.waitUntil(5_000) {
                 image.fetchSemanticsNode().config[SemanticsActions.CustomActions].size > 3
             }
@@ -134,7 +134,7 @@ class ReadingInteractionTest {
                 val scale = fit.scale * zoom
                 image.performTouchInput {
                     advanceEventTime(500)
-                    click(Offset((bounds.width - 400 * scale) / 2 + 120 * scale,
+                    click(Offset((bounds.width - 400 * scale) / 2 + 160 * scale,
                         (bounds.height - 400 * scale) / 2 + 220 * scale))
                 }
             }

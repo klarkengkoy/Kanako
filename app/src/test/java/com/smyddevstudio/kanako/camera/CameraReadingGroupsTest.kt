@@ -105,9 +105,23 @@ class CameraReadingGroupsTest {
         tracker.update(1000, 1010, listOf(verb("読み", "よみ")))
         val before = tracker.update(1160, 1170, listOf(verb("読み", "よみ")))!!.single()
         val after = tracker.update(1320, 1330, listOf(verb("読む", "よむ")))!!.single()
-        assertEquals("読", after.text)
-        assertEquals("よ", after.segments.single().reading)
+        assertEquals("読む", after.text)
+        assertEquals("よむ", after.segments.single().reading)
+        assertEquals(listOf("読" to "よ"), cameraReadingIdentity(after))
         assertEquals(before.trackingKey, after.trackingKey)
+    }
+
+    @Test fun auxiliaryKanaStaysInsideItsWordRatherThanBecomingAnotherTrack() {
+        val line = CameraReadingLine("読みますを本", CameraRect(0f, 0f, 120f, 20f), listOf(
+            FuriganaSegment("読み", "よみ", highlightSuffixLength = 2),
+            FuriganaSegment("ます"), FuriganaSegment("を"), FuriganaSegment("本", "ほん")))
+        val groups = cameraReadingGroups(listOf(line))
+        assertEquals(listOf("読みます", "を", "本"), groups.map { it.text })
+        assertEquals("よみます", groups.first().segments.single().reading)
+        assertEquals(listOf("読" to "よ"), cameraReadingIdentity(groups.first()))
+        assertEquals(CameraRect(0f, 0f, 80f, 20f), groups.first().bounds)
+        assertEquals(CameraRect(0f, 0f, 20f, 20f), cameraTrackingBounds(groups.first()))
+        assertEquals(groups, cameraReadingGroups(groups))
     }
 
     @Test fun sessionResetDoesNotReuseTheOldVisualIdentity() {

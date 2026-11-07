@@ -15,6 +15,8 @@ internal data class CameraReadingLine(
     val trackingKey: String? = null
 ) {
     val isVertical get() = vertical ?: (bounds.height > bounds.width)
+    val trackingIdentity by lazy { cameraReadingIdentity(this) }
+    val trackingBounds by lazy { cameraTrackingBounds(this) }
 }
 
 internal data class CameraTextSpan(
@@ -51,8 +53,9 @@ internal fun cameraReadingLines(
                             }
                         }
                         // Prefer character geometry; element bounds remain useful when symbols are unavailable.
-                        if (symbols.sumOf { it.end - it.start } == element.text.length) addAll(symbols)
-                        else element.boundingBox?.takeUnless { it.isEmpty }?.let { box ->
+                        addAll(symbols)
+                        if (symbols.sumOf { it.end - it.start } < element.text.length)
+                            element.boundingBox?.takeUnless { it.isEmpty }?.let { box ->
                             add(CameraTextSpan(start, cursor, CameraRect(
                                 box.left.toFloat(), box.top.toFloat(), box.right.toFloat(), box.bottom.toFloat()
                             ), element.cornerPoints?.map { CameraPoint(it.x.toFloat(), it.y.toFloat()) }.orEmpty()))

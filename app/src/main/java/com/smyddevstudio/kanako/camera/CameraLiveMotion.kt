@@ -32,7 +32,7 @@ internal data class CameraLiveFrame(
     val targets: List<ReadingTarget>
         get() {
             val labels = layout.labels.associateBy { it.target.key }
-            return groups.map { ReadingTarget(it.key, it.anchor, labels[it.key]?.bounds ?: it.anchor) }
+            return groups.map { ReadingTarget(it.key, it.highlight, labels[it.key]?.bounds ?: it.anchor) }
         }
 }
 
@@ -72,6 +72,7 @@ internal class CameraLiveMotion {
             val before = move.from.group
             val after = move.to.group
             val anchor = bounds(before.anchor, after.anchor)
+            val highlight = bounds(before.highlight, after.highlight)
             val outlines = if (before.outlines.size == after.outlines.size) {
                 after.outlines.mapIndexed { index, polygon ->
                     CameraPolygon(polygon.points.mapIndexed { pointIndex, point ->
@@ -82,9 +83,9 @@ internal class CameraLiveMotion {
             } else after.outlines
             val label = move.to.label?.let { next ->
                 val box = move.from.label?.let { bounds(it.bounds, next.bounds) } ?: next.bounds
-                next.copy(bounds = box, target = ReadingTarget(after.key, anchor, box))
+                next.copy(bounds = box, target = ReadingTarget(after.key, highlight, box))
             }
-            Item(after.copy(group = after.group.copy(anchor = anchor), outlines = outlines), label)
+            Item(after.copy(group = after.group.copy(anchor = anchor, highlight = highlight), outlines = outlines), label)
         }
     }
 

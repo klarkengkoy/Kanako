@@ -5,13 +5,14 @@ internal data class ReadingGroup(
     val vertical: Boolean,
     val reading: String,
     val key: String,
-    val source: String
+    val source: String,
+    val highlight: ReadingBounds = anchor
 )
 
 internal fun selectReadingGroup(
     readings: List<ReadingGroup>, x: Float, y: Float, selected: String?
 ): String? {
-    val hits = readings.filter { x >= it.anchor.left && x < it.anchor.right && y >= it.anchor.top && y < it.anchor.bottom }
+    val hits = readings.filter { x >= it.highlight.left && x < it.highlight.right && y >= it.highlight.top && y < it.highlight.bottom }
     return if (hits.any { it.key == selected }) null else hits.lastOrNull()?.key
 }
 

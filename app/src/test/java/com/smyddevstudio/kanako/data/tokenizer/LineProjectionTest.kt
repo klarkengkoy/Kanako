@@ -3,6 +3,7 @@ package com.smyddevstudio.kanako.data.tokenizer
 import com.smyddevstudio.kanako.ui.components.FuriganaSegment
 import kotlin.random.Random
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class LineProjectionTest {
@@ -36,7 +37,16 @@ class LineProjectionTest {
     private fun verify(lines: List<String>) {
         val actual = tokenizer.tokenizeLines(lines)
         assertEquals(lines, actual.map { it.joinToString("") { segment -> segment.text } })
-        assertEquals(originalProjection(lines), actual)
+        // The original oracle covers source projection and readings, before highlight metadata existed.
+        val projectedReadings = actual.map { row -> row.map { it.copy(highlightSuffixLength = 0) } }
+        assertEquals(originalProjection(lines), projectedReadings)
+        actual.forEachIndexed { index, row ->
+            var offset = 0
+            row.forEach { segment ->
+                offset += segment.text.length
+                assertTrue(segment.highlightSuffixLength in 0..(lines[index].length - offset))
+            }
+        }
     }
 
     // Keep the original full scan as a differential oracle for the cursor-based implementation.
