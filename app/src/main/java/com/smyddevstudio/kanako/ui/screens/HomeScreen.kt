@@ -60,6 +60,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.smyddevstudio.kanako.R
@@ -176,17 +177,19 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    val greetingDescription = stringResource(R.string.replay_mascot_greeting)
                     IconButton(
                         onClick = { greetingVersion++ },
                         enabled = focus == null,
-                        modifier = Modifier.size(mascotSize)
+                        modifier = Modifier.size(mascotSize).semantics {
+                            contentDescription = greetingDescription
+                        }
                     ) {
                         AnimatedMascot(
                             animationRes = R.drawable.kanako_welcome_wave,
                             size = mascotSize,
                             staticRes = R.drawable.kanako_mascot,
                             playbackKey = greetingVersion,
-                            contentDescription = stringResource(R.string.replay_mascot_greeting),
                             animationsEnabled = animationsEnabled,
                             holdLastFrame = true
                         )

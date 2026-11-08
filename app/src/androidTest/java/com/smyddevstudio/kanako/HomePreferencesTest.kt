@@ -5,6 +5,7 @@ import android.os.LocaleList
 import android.graphics.drawable.AnimatedImageDrawable
 import android.view.View
 import android.view.ViewGroup
+import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.ImageView
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.matcher.ViewMatchers.isRoot
@@ -291,6 +292,32 @@ class HomePreferencesTest {
             collect(root)
         }
         return result
+    }
+
+    @Test fun greetingActionHasOneLabelInTheNativeAccessibilityTree() {
+        val motion = mutableStateOf(true)
+        compose.setContent {
+            KanakoTheme { HomeScreen({}, {}, {}, animationsEnabled = motion.value) }
+        }
+        val label = context.getString(R.string.replay_mascot_greeting)
+        fun labelCount(node: AccessibilityNodeInfo?): Int {
+            if (node == null) return 0
+            val own = if (node.contentDescription?.toString() == label) 1 else 0
+            return own + (0 until node.childCount).sumOf { labelCount(node.getChild(it)) }
+        }
+        fun labeledActions(node: AccessibilityNodeInfo?): Int {
+            if (node == null) return 0
+            val own = if (node.isClickable && labelCount(node) > 0) 1 else 0
+            return own + (0 until node.childCount).sumOf { labeledActions(node.getChild(it)) }
+        }
+        for (enabled in listOf(true, false)) {
+            compose.runOnIdle { motion.value = enabled }
+            compose.onNodeWithContentDescription(label).assertIsDisplayed().assertHasClickAction()
+            compose.waitUntil(timeoutMillis = 5_000) {
+                val root = InstrumentationRegistry.getInstrumentation().uiAutomation.rootInActiveWindow
+                labelCount(root) == 1 && labeledActions(root) == 1
+            }
+        }
     }
 
     @androidx.test.filters.SdkSuppress(minSdkVersion = 28)
