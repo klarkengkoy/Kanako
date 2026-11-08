@@ -194,6 +194,71 @@ class TutorialGuideTest {
         compose.onNodeWithText(text(R.string.tutorial_controls_camera)).assertIsDisplayed()
     }
 
+    @Test fun footerActionsStayReachableAtDoubleFontScaleInShortWindows() {
+        val window = mutableStateOf(Triple(320.dp, 480.dp, false))
+        val position = mutableStateOf(Triple(TutorialPath.FLOATING, 1, 0))
+        var nextClicks = 0
+        var previousClicks = 0
+        var skips = 0
+        compose.setContent {
+            CompositionLocalProvider(LocalDensity provides Density(LocalDensity.current.density, 2f)) {
+                KanakoTheme(darkTheme = window.value.third) {
+                    TutorialLayout(
+                        position.value.second, position.value.first, { nextClicks++ }, { skips++ },
+                        Modifier.requiredSize(window.value.first, window.value.second).testTag("large-text-tutorial"),
+                        prompt = position.value.third, onPrevious = { previousClicks++ }, canPrevious = true
+                    ) { Box(it.testTag("large-text-reader")) }
+                }
+            }
+        }
+        val minimumTarget = 48 * context.resources.displayMetrics.density
+        var checked = 0
+        for (configuration in listOf(Triple(320.dp, 480.dp, false), Triple(400.dp, 320.dp, true))) {
+            for (path in TutorialPath.entries) {
+                val stages = if (path == TutorialPath.FLOATING) listOf(-1, 0, 1, 2, 6, 5, 3, 4)
+                    else listOf(-1, 0, 1, 2, 5, 3, 4)
+                for (stage in stages) {
+                    val prompts = tutorialPrompts(stage, path)
+                    for (prompt in 0..prompts.lastIndex.coerceAtLeast(0)) {
+                        compose.runOnIdle {
+                            window.value = configuration
+                            position.value = Triple(path, stage, prompt)
+                        }
+                        val label = "$configuration / $path / stage $stage / prompt $prompt"
+                        val root = compose.onNodeWithTag("large-text-tutorial").fetchSemanticsNode().boundsInRoot
+                        val reader = compose.onNodeWithTag("large-text-reader").fetchSemanticsNode().boundsInRoot
+                        assertTrue("$label leaves reader space", reader.height > 0f)
+                        val skip = compose.onNodeWithText(text(R.string.guided_skip))
+                        val previous = compose.onNodeWithContentDescription(text(R.string.tutorial_previous))
+                        val next = compose.onNodeWithContentDescription(text(
+                            if (stage == 4 && prompt == prompts.lastIndex) R.string.done else R.string.tutorial_next
+                        ))
+                        val bounds = listOf(skip, previous, next).map { action ->
+                            action.assertIsDisplayed().fetchSemanticsNode().boundsInRoot.also {
+                                assertTrue("$label has a full touch target",
+                                    it.width >= minimumTarget - 1 && it.height >= minimumTarget - 1)
+                                assertTrue("$label keeps the action below the reader and inside the window",
+                                    it.left >= root.left - 1 && it.right <= root.right + 1 &&
+                                        it.top >= reader.bottom - 1 && it.bottom <= root.bottom + 1)
+                            }
+                        }
+                        assertTrue("$label keeps actions separate",
+                            bounds[0].right <= bounds[1].left + 1 && bounds[1].right <= bounds[2].left + 1)
+                        skip.performClick()
+                        previous.performClick()
+                        next.performClick()
+                        checked++
+                        compose.runOnIdle {
+                            assertEquals(checked, skips)
+                            assertEquals(checked, previousClicks)
+                            assertEquals(checked, nextClicks)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     @Test fun sharedFooterKeepsPhotoAndNavigationReachableWithLargeText() {
         val photo = CameraPhoto.fromOwnedBitmap(Bitmap.createBitmap(40, 30, Bitmap.Config.ARGB_8888))
         val shown = mutableStateOf(true)

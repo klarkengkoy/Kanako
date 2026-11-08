@@ -153,10 +153,9 @@ internal fun TutorialGuide(
                     }
                     // An overlay cannot change the measured height and trigger another overflow calculation.
                     if (scroll.canScrollForward) Surface(Modifier.align(Alignment.BottomEnd)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Rounded.KeyboardArrowDown, null)
-                            Text(stringResource(R.string.tutorial_scroll_more), style = MaterialTheme.typography.labelMedium)
-                        }
+                        Icon(Icons.Rounded.KeyboardArrowDown,
+                            contentDescription = stringResource(R.string.tutorial_scroll_more),
+                            modifier = Modifier.size(24.dp))
                     }
                 }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp),
