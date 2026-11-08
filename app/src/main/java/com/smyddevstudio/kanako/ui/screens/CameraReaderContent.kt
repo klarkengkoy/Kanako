@@ -138,10 +138,10 @@ internal fun CameraReaderContent(
                 horizontalAlignment = Alignment.CenterHorizontally) {
                 if (granted) {
                     Row(modifier = motion.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        IconButton(enabled = tutorialAllows("camera_back"), onClick = onBack, modifier = Modifier.size(48.dp)) {
+                        IconButton(enabled = tutorialAllows("camera_back"), onClick = onBack, modifier = Modifier.size(48.dp).tutorialTarget("camera_back")) {
                             Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.navigate_back), tint = Color.White)
                         }
-                        IconButton(enabled = tutorialAllows("camera_preferences"), onClick = onPreferences, modifier = Modifier.size(48.dp)) {
+                        IconButton(enabled = tutorialAllows("camera_preferences"), onClick = onPreferences, modifier = Modifier.size(48.dp).tutorialTarget("camera_preferences")) {
                             Icon(Icons.Rounded.Settings, stringResource(R.string.camera_appearance), tint = Color.White)
                         }
                     }
@@ -165,7 +165,7 @@ internal fun CameraReaderContent(
                                     Button(onClick = onPermission, enabled = tutorialAllows("camera_permission"), modifier = Modifier.heightIn(min = 48.dp).tutorialTarget("camera_permission")) {
                                         Text(stringResource(permissionLabel))
                                     }
-                                    TextButton(onClick = onBack, enabled = tutorialAllows("camera_back"), modifier = Modifier.heightIn(min = 48.dp)) {
+                                    TextButton(onClick = onBack, enabled = tutorialAllows("camera_back"), modifier = Modifier.heightIn(min = 48.dp).tutorialTarget("camera_not_now", parent = "camera_back")) {
                                         Text(stringResource(R.string.camera_not_now))
                                     }
                                 }
@@ -282,12 +282,12 @@ internal fun CameraReaderTopBar(
             title = { Text(stringResource(title), maxLines = 1, overflow = TextOverflow.Ellipsis) },
             modifier = modifier.fillMaxWidth(),
             navigationIcon = {
-                IconButton(enabled = tutorialAllows("camera_back"), onClick = onBack) {
+                IconButton(enabled = tutorialAllows("camera_back"), onClick = onBack, modifier = Modifier.tutorialTarget("camera_back")) {
                     Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.navigate_back))
                 }
             },
             actions = {
-                IconButton(enabled = tutorialAllows("camera_preferences"), onClick = onPreferences) {
+                IconButton(enabled = tutorialAllows("camera_preferences"), onClick = onPreferences, modifier = Modifier.tutorialTarget("camera_preferences")) {
                     Icon(Icons.Rounded.Settings, stringResource(R.string.camera_appearance))
                 }
             },
@@ -301,12 +301,12 @@ internal fun CameraReaderTopBar(
         Surface(modifier.fillMaxWidth().padding(vertical = 8.dp), shape = RoundedCornerShape(20.dp),
             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f), contentColor = MaterialTheme.colorScheme.onSurface) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(enabled = tutorialAllows("camera_back"), onClick = onBack) {
+                IconButton(enabled = tutorialAllows("camera_back"), onClick = onBack, modifier = Modifier.tutorialTarget("camera_back")) {
                     Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.navigate_back))
                 }
                 Text(stringResource(title), Modifier.weight(1f), style = MaterialTheme.typography.titleMedium,
                     maxLines = 1, overflow = TextOverflow.Ellipsis)
-                IconButton(enabled = tutorialAllows("camera_preferences"), onClick = onPreferences) {
+                IconButton(enabled = tutorialAllows("camera_preferences"), onClick = onPreferences, modifier = Modifier.tutorialTarget("camera_preferences")) {
                     Icon(Icons.Rounded.Settings, stringResource(R.string.camera_appearance))
                 }
             }
