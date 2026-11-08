@@ -1,5 +1,7 @@
 package com.smyddevstudio.kanako.ui.screens
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Box
@@ -21,18 +23,12 @@ import androidx.compose.runtime.LaunchedEffect
 import com.smyddevstudio.kanako.ui.components.LocalTutorialFocus
 import com.smyddevstudio.kanako.ui.components.tutorialTarget
 import com.smyddevstudio.kanako.ui.components.tutorialAllows
-import androidx.compose.ui.semantics.disabled
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.semantics.text
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -68,6 +64,9 @@ import androidx.compose.ui.res.stringResource
 import com.smyddevstudio.kanako.R
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.unit.Constraints
+import kotlin.math.roundToInt
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -112,7 +111,7 @@ fun PreferencesScreen(
         AlertDialog(
             onDismissRequest = { showTileGuide = false },
             title = { Text(stringResource(R.string.quick_settings_guide_title)) },
-            text = { Text(stringResource(R.string.quick_settings_guide_body)) },
+            text = { Text(stringResource(R.string.quick_settings_guide_body), Modifier.verticalScroll(rememberScrollState())) },
             confirmButton = {
                 TextButton(onClick = { showTileGuide = false }) { Text(stringResource(R.string.done)) }
             }
@@ -146,20 +145,21 @@ fun PreferencesScreen(
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         BoxWithConstraints(Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.TopCenter) {
-            val previewMaxHeight = maxHeight * 0.45f
+            val wide = maxWidth >= 840.dp
             val compactPreview = maxHeight < 500.dp || LocalDensity.current.fontScale > 1.3f
-            Column(
-                Modifier.widthIn(max = 720.dp).fillMaxSize().padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+            PreferencesLayout(
+                wide = wide,
+                modifier = Modifier.widthIn(max = if (wide) 1120.dp else 720.dp)
+                    .fillMaxSize().padding(horizontal = 16.dp)
             ) {
                 ReadingPreviewCard(
                     preferences = preferences,
                     compact = compactPreview,
-                    modifier = Modifier.heightIn(max = previewMaxHeight).tutorialTarget("appearance_preview")
+                    modifier = Modifier.tutorialTarget("appearance_preview")
                 )
                 LazyColumn(
                     state = listState,
-                    modifier = Modifier.weight(1f).tutorialTarget("preferences_scroll", hideWhenDimmed = false),
+                    modifier = Modifier.tutorialTarget("preferences_scroll", hideWhenDimmed = false),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     item(key = "appearance_header") {
@@ -349,6 +349,37 @@ fun PreferencesScreen(
 }
 
 @Composable
+private fun PreferencesLayout(
+    wide: Boolean,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    Layout(modifier = modifier, content = content) { measurables, constraints ->
+        val width = constraints.maxWidth
+        val height = constraints.maxHeight
+        val gap = 12.dp.roundToPx()
+        val previewWidth = if (wide) 320.dp.roundToPx() else width
+        val preview = measurables[0].measure(Constraints(
+            minWidth = previewWidth, maxWidth = previewWidth,
+            maxHeight = if (wide) height else (height * 0.45f).roundToInt()
+        ))
+        val spacing = if (wide) gap else minOf(gap, height - preview.height)
+        val controls = measurables[1].measure(Constraints.fixed(
+            width = if (wide) (width - preview.width - spacing).coerceAtLeast(0) else width,
+            height = if (wide) height else (height - preview.height - spacing).coerceAtLeast(0)
+        ))
+        layout(width, height) {
+            preview.placeRelative(0, 0)
+            controls.placeRelative(
+                x = if (wide) preview.width + spacing else 0,
+                y = if (wide) 0 else preview.height + spacing
+            )
+        }
+
+    }
+}
+
+@Composable
 private fun PreferenceChoiceChip(
     selected: Boolean,
     onClick: () -> Unit,
@@ -362,11 +393,8 @@ private fun PreferenceChoiceChip(
         enabled = enabled,
         onClick = onClick,
         label = { Text(label) },
-        modifier = modifier.heightIn(min = 48.dp).clearAndSetSemantics {
+        modifier = modifier.heightIn(min = 48.dp).semantics {
             role = Role.RadioButton
-            this.selected = selected
-            text = AnnotatedString(label)
-            if (enabled) onClick { onClick(); true } else disabled()
         },
         border = null,
         leadingIcon = if (swatch != null) {
