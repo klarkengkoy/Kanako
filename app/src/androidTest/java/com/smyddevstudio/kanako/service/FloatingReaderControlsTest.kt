@@ -12,6 +12,7 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.test.espresso.Espresso.pressBack
 import android.view.View
+import android.view.ViewGroup
 import androidx.compose.ui.platform.LocalView
 import android.graphics.drawable.AnimatedImageDrawable
 import android.widget.ImageView
@@ -219,18 +220,33 @@ class FloatingReaderControlsTest {
     @androidx.test.filters.SdkSuppress(minSdkVersion = 28)
     @Test fun disablingMotionStopsTheNativeAnimationAndShowsTheStaticMascot() {
         val motion = mutableStateOf(true)
-        compose.setContent { LoadingMascot(size = 56.dp, animationsEnabled = motion.value) }
+        var host: View? = null
+        compose.setContent {
+            host = LocalView.current
+            LoadingMascot(size = 56.dp, animationsEnabled = motion.value)
+        }
+        fun imageIn(view: View): ImageView? {
+            if (view is ImageView) return view
+            if (view is ViewGroup) {
+                for (index in 0 until view.childCount) {
+                    imageIn(view.getChildAt(index))?.let { return it }
+                }
+            }
+            return null
+        }
         var animation: AnimatedImageDrawable? = null
         compose.waitUntil(timeoutMillis = 5_000) {
-            onView(isAssignableFrom(ImageView::class.java)).check { view, _ ->
-                animation = (view as ImageView).drawable as? AnimatedImageDrawable
+            compose.runOnIdle {
+                val image = requireNotNull(imageIn(requireNotNull(host)))
+                assertTrue(image.isAttachedToWindow && image.isShown)
+                animation = image.drawable as? AnimatedImageDrawable
             }
             animation?.isRunning == true
         }
         compose.runOnIdle { motion.value = false }
-        compose.runOnIdle { assertFalse(requireNotNull(animation).isRunning) }
-        onView(isAssignableFrom(ImageView::class.java)).check { view, _ ->
-            assertFalse((view as ImageView).drawable is AnimatedImageDrawable)
+        compose.runOnIdle {
+            assertFalse(requireNotNull(animation).isRunning)
+            assertFalse(requireNotNull(imageIn(requireNotNull(host))).drawable is AnimatedImageDrawable)
         }
     }
 
