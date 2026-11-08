@@ -21,6 +21,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import com.smyddevstudio.kanako.ui.components.kanakoPressResponse
+import com.smyddevstudio.kanako.ui.components.rememberKanakoPress
+import com.smyddevstudio.kanako.ui.theme.KanakoUiProfile
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.focus.onFocusChanged
@@ -38,7 +43,6 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Check
@@ -46,22 +50,22 @@ import androidx.compose.material.icons.rounded.FontDownload
 import androidx.compose.material.icons.rounded.Layers
 import androidx.compose.material.icons.rounded.Security
 import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material3.Card
+import com.smyddevstudio.kanako.ui.components.KanakoCard as Card
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.smyddevstudio.kanako.ui.components.KanakoIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.smyddevstudio.kanako.ui.components.KanakoOutlinedButton as OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.smyddevstudio.kanako.ui.components.KanakoTextButton as TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -300,10 +304,10 @@ fun PreferencesScreen(
                         Card(
                             modifier = Modifier.fillMaxWidth().tutorialTarget("tile_guide", clipTo = "preferences_scroll"),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                            shape = RoundedCornerShape(16.dp)
+                            shape = KanakoUiProfile.groupShape
                         ) {
                             Row(
-                                modifier = Modifier.padding(16.dp),
+                                modifier = Modifier.padding(KanakoUiProfile.groupInset),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
@@ -326,7 +330,7 @@ fun PreferencesScreen(
                                     modifier = Modifier.keepFocusedControlVisibleOnResize(windowSize),
                                     enabled = tutorial == null,
                                     onClick = { showTileGuide = true },
-                                    shape = RoundedCornerShape(10.dp)
+                                    shape = KanakoUiProfile.choiceShape
                                 ) {
                                     Text(stringResource(R.string.guide))
                                 }
@@ -419,12 +423,16 @@ private fun PreferenceChoiceChip(
     swatch: Color? = null,
     enabled: Boolean = true
 ) {
+    val interaction = remember { MutableInteractionSource() }
+    val pressure = rememberKanakoPress(interaction, enabled)
     FilterChip(
         selected = selected,
+        interactionSource = interaction,
+        shape = KanakoUiProfile.choiceShape,
         enabled = enabled,
         onClick = onClick,
         label = { Text(label) },
-        modifier = modifier.heightIn(min = 48.dp).semantics {
+        modifier = modifier.heightIn(min = 48.dp).kanakoPressResponse(pressure).semantics {
             role = Role.RadioButton
         },
         border = null,
@@ -477,9 +485,9 @@ private fun PreferenceControlCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(16.dp)
+        shape = KanakoUiProfile.groupShape
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(KanakoUiProfile.groupInset)) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
@@ -500,15 +508,18 @@ private fun PreferenceToggleCard(
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
+    val interaction = remember { MutableInteractionSource() }
     Card(
+        interactionSource = interaction,
         modifier = modifier.fillMaxWidth().toggleable(
-            value = checked, role = Role.Switch, enabled = enabled, onValueChange = onCheckedChange
+            value = checked, role = Role.Switch, enabled = enabled, onValueChange = onCheckedChange,
+            interactionSource = interaction, indication = LocalIndication.current
         ),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(16.dp)
+        shape = KanakoUiProfile.groupShape
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(KanakoUiProfile.groupInset),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {

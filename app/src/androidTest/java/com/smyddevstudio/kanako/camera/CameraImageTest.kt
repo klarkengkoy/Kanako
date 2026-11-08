@@ -12,6 +12,13 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class CameraImageTest {
+    private val readingTypeface by lazy {
+        requireNotNull(androidx.core.content.res.ResourcesCompat.getFont(
+            androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext,
+            com.smyddevstudio.kanako.R.font.nunito_sans_medium
+        ))
+    }
+
     @Test fun captureCropAndRotationApplyExactlyOnce() {
         val original = Bitmap.createBitmap(3, 2, Bitmap.Config.ARGB_8888)
         val source = intArrayOf(Color.RED, Color.GREEN, Color.BLUE, Color.CYAN, Color.MAGENTA, Color.YELLOW)
@@ -104,7 +111,7 @@ class CameraImageTest {
                 listOf(FuriganaSegment("日本語", "にほんご")))
         }
         ScriptType.entries.forEach { script ->
-            val live = layoutCameraAnnotations(lines, 400, 500, 24f, script)
+            val live = layoutCameraAnnotations(lines, 400, 500, 24f, script, readingTypeface = readingTypeface)
             assertEquals(lines.size, live.labels.size)
             live.labels.zip(lines).forEach { (label, line) ->
                 val height = label.bounds.bottom - label.bounds.top
@@ -117,7 +124,7 @@ class CameraImageTest {
                 line.copy(bounds = CameraRect(line.bounds.left * 2, line.bounds.top * 2,
                     line.bounds.right * 2, line.bounds.bottom * 2))
             }
-            val photo = layoutCameraAnnotations(photoLines, 800, 1000, 48f, script)
+            val photo = layoutCameraAnnotations(photoLines, 800, 1000, 48f, script, readingTypeface = readingTypeface)
             assertEquals(live.labels.size, photo.labels.size)
             photo.labels.zip(photoLines).forEach { (label, line) ->
                 val height = label.bounds.bottom - label.bounds.top
@@ -125,8 +132,8 @@ class CameraImageTest {
                 assertTrue(label.bounds.top <= line.bounds.bottom + label.gap + 1)
                 assertTrue(label.bounds.left >= 0 && label.bounds.right <= 800)
             }
-            val isolated = layoutCameraAnnotations(lines.take(1), 400, 500, 24f, script).labels.single()
-            val scaled = layoutCameraAnnotations(photoLines.take(1), 800, 1000, 48f, script).labels.single()
+            val isolated = layoutCameraAnnotations(lines.take(1), 400, 500, 24f, script, readingTypeface = readingTypeface).labels.single()
+            val scaled = layoutCameraAnnotations(photoLines.take(1), 800, 1000, 48f, script, readingTypeface = readingTypeface).labels.single()
             assertEquals(isolated.bounds.left * 2f, scaled.bounds.left.toFloat(), 4f)
             assertEquals(isolated.bounds.top * 2f, scaled.bounds.top.toFloat(), 4f)
         }
@@ -136,8 +143,8 @@ class CameraImageTest {
         val line = CameraReadingLine("A 日本語", CameraRect(0f, 200f, 300f, 230f),
             listOf(FuriganaSegment("A", null), FuriganaSegment("日本語", "にほんご")),
             listOf(CameraTextSpan(2, 5, CameraRect(40f, 200f, 100f, 230f))))
-        val small = layoutCameraAnnotations(listOf(line), 400, 400, 20f, ScriptType.KANA).labels.single()
-        val large = layoutCameraAnnotations(listOf(line), 400, 400, 28f, ScriptType.KANA).labels.single()
+        val small = layoutCameraAnnotations(listOf(line), 400, 400, 20f, ScriptType.KANA, readingTypeface = readingTypeface).labels.single()
+        val large = layoutCameraAnnotations(listOf(line), 400, 400, 28f, ScriptType.KANA, readingTypeface = readingTypeface).labels.single()
         assertEquals(70f, (small.bounds.left + small.bounds.right) / 2f, 1f)
         assertEquals(70f, (large.bounds.left + large.bounds.right) / 2f, 1f)
         assertTrue(large.layouts.single().paint.textSize > small.layouts.single().paint.textSize)
@@ -149,7 +156,7 @@ class CameraImageTest {
             "情報", CameraRect(100f, 40f, 130f, 200f), listOf(FuriganaSegment("情報", "じょうほう"))
         ))
         ScriptType.entries.forEach { script ->
-            val layout = layoutCameraAnnotations(lines, 300, 240, 24f, script)
+            val layout = layoutCameraAnnotations(lines, 300, 240, 24f, script, readingTypeface = readingTypeface)
             assertEquals(1, layout.labels.size)
             val label = layout.labels.single()
             assertTrue(label.vertical)

@@ -10,6 +10,13 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class CameraPhotoAnnotationTest {
+    private val readingTypeface by lazy {
+        requireNotNull(androidx.core.content.res.ResourcesCompat.getFont(
+            androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext,
+            com.smyddevstudio.kanako.R.font.nunito_sans_medium
+        ))
+    }
+
     private val document = listOf(
         CameraReadingLine("市役所", CameraRect(100f, 200f, 180f, 230f),
             listOf(FuriganaSegment("市役所", "しやくしょ"))),
@@ -18,9 +25,9 @@ class CameraPhotoAnnotationTest {
     )
 
     @Test fun realTextMeasurementDefersCrowdedRomajiAndRevealsItAtCloserZoom() {
-        val overview = layoutCameraPhotoAnnotations(document, 500, 400, 36f, ScriptType.ROMAJI)
+        val overview = layoutCameraPhotoAnnotations(document, 500, 400, 36f, ScriptType.ROMAJI, readingTypeface = readingTypeface)
         assertTrue(overview.labels.isEmpty())
-        val closer = layoutCameraPhotoAnnotations(document, 500, 400, 12f, ScriptType.ROMAJI)
+        val closer = layoutCameraPhotoAnnotations(document, 500, 400, 12f, ScriptType.ROMAJI, readingTypeface = readingTypeface)
         assertEquals(2, closer.labels.size)
         assertNull(closer.labels[0].bounds.intersection(closer.labels[1].bounds))
         closer.labels.forEach { label ->
@@ -36,7 +43,7 @@ class CameraPhotoAnnotationTest {
     @Test fun largeJapaneseSourceCharactersGrowReadingsAboveTheChosenFloor() {
         val line = CameraReadingLine("日本語", CameraRect(200f, 300f, 400f, 400f),
             listOf(FuriganaSegment("日本語", "にほんご")))
-        val ruby = layoutCameraPhotoAnnotations(listOf(line), 700, 600, 12f, ScriptType.KANA).labels.single()
+        val ruby = layoutCameraPhotoAnnotations(listOf(line), 700, 600, 12f, ScriptType.KANA, readingTypeface = readingTypeface).labels.single()
         assertEquals(50f, ruby.layouts.single().paint.textSize, 0.01f)
         assertEquals(600, ruby.bounds.left + ruby.bounds.right)
     }
@@ -44,9 +51,9 @@ class CameraPhotoAnnotationTest {
     @Test fun allGroupsRemainAvailableAndSelectingACrowdedGroupShowsOnlyItsReading() {
         val groups = cameraPhotoReadings(document, 500, 400, ScriptType.ROMAJI)
         assertEquals(listOf("市役所", "銀行"), groups.map { it.source })
-        assertTrue(layoutCameraPhotoReadings(groups, groups.map { it.anchor }, 500, 400, 36f).labels.isEmpty())
+        assertTrue(layoutCameraPhotoReadings(groups, groups.map { it.anchor }, 500, 400, 36f, readingTypeface = readingTypeface).labels.isEmpty())
         val selected = layoutCameraPhotoReadings(groups, groups.map { it.anchor }, 500, 400, 36f,
-            selected = groups.first().key)
+            selected = groups.first().key, readingTypeface = readingTypeface)
         assertEquals(1, selected.labels.size)
         assertEquals(groups.first().reading, selected.labels.single().reading)
         assertTrue(selected.labels.single().layouts.all { it.paint.textSize >= 36f })
@@ -57,7 +64,7 @@ class CameraPhotoAnnotationTest {
         val groups = cameraPhotoReadings(document, 500, 400, ScriptType.KANA)
         val viewport = ReadingBounds(80, 140, 300, 340)
         val selected = layoutCameraPhotoReadings(groups, groups.map { it.anchor }, 500, 400, 20f,
-            selected = groups.first().key, selectionClip = viewport)
+            selected = groups.first().key, selectionClip = viewport, readingTypeface = readingTypeface)
         assertTrue(viewport.contains(selected.labels.single().bounds))
     }
 
@@ -125,7 +132,7 @@ class CameraPhotoAnnotationTest {
                 CameraTextSpan(0, 1, CameraRect(10f, 20f, 30f, 40f)),
                 CameraTextSpan(1, 2, CameraRect(60f, 20f, 80f, 40f))), trackingKey = "live:42")
         val group = cameraPhotoReadings(listOf(line), 200, 200, ScriptType.KANA).single()
-        val live = layoutCameraAnnotations(listOf(line), 200, 200, 12f, ScriptType.KANA).labels.single()
+        val live = layoutCameraAnnotations(listOf(line), 200, 200, 12f, ScriptType.KANA, readingTypeface = readingTypeface).labels.single()
         assertEquals("live:42", group.key)
         assertEquals(group.key, live.target.key)
         assertEquals(group.anchor, live.target.anchor)

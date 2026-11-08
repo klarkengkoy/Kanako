@@ -8,6 +8,8 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import com.smyddevstudio.kanako.ui.components.rememberAnimationsEnabled
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
@@ -15,7 +17,7 @@ private val MushroomLightColorScheme = lightColorScheme(
     primary = PrimaryCrimson,
     onPrimary = Color.White,
     primaryContainer = PrimaryCrimsonLight,
-    onPrimaryContainer = PrimaryCrimson,
+    onPrimaryContainer = TextPrimary,
     secondary = ForestGreen,
     onSecondary = Color.White,
     secondaryContainer = IconSage,
@@ -88,10 +90,15 @@ fun KanakoTheme(
         else -> MushroomLightColorScheme
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        shapes = Shapes,
-        typography = Typography,
-        content = content
-    )
+    CompositionLocalProvider(
+        LocalKanakoMotionEnabled provides rememberAnimationsEnabled(),
+        LocalKanakoDarkTheme provides darkTheme
+    ) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            shapes = Shapes,
+            typography = Typography,
+            content = content
+        )
+    }
 }

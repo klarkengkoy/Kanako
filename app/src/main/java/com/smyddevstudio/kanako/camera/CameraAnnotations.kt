@@ -33,7 +33,8 @@ internal data class CameraRuby(
 internal data class CameraAnnotationLayout(val labels: List<CameraRuby>)
 
 internal fun layoutCameraAnnotations(
-    lines: List<CameraReadingLine>, width: Int, height: Int, fontPixels: Float, script: ScriptType
+    lines: List<CameraReadingLine>, width: Int, height: Int, fontPixels: Float, script: ScriptType,
+    readingTypeface: Typeface? = null
 ): CameraAnnotationLayout {
     if (width <= 0 || height <= 0 || !fontPixels.isFinite() || fontPixels <= 0) return CameraAnnotationLayout(emptyList())
     val clip = ReadingBounds(0, 0, width, height)
@@ -41,7 +42,8 @@ internal fun layoutCameraAnnotations(
     val gap = (fontPixels / 16).roundToInt().coerceAtLeast(1)
     val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
         textSize = fontPixels
-        typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
+        typeface = readingTypeface ?: Typeface.create("sans-serif-medium", Typeface.NORMAL)
+        if (readingTypeface != null) setFontVariationSettings("'wght' 500")
     }
     data class Pending(val request: RubyRequest, val layouts: List<StaticLayout>, val reading: String,
         val key: String, val highlight: ReadingBounds)

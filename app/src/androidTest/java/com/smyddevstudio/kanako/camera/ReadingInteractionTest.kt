@@ -41,6 +41,13 @@ import java.util.concurrent.CopyOnWriteArrayList
 
 @RunWith(AndroidJUnit4::class)
 class ReadingInteractionTest {
+    private val readingTypeface by lazy {
+        requireNotNull(androidx.core.content.res.ResourcesCompat.getFont(
+            androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext,
+            com.smyddevstudio.kanako.R.font.nunito_sans_medium
+        ))
+    }
+
     @get:Rule val compose = createComposeRule()
     private val line = CameraReadingLine("読み", CameraRect(100f, 200f, 180f, 240f),
         listOf(FuriganaSegment("読み", "よみ")))
@@ -105,7 +112,7 @@ class ReadingInteractionTest {
     }
 
     @Test fun wholeWordIsSelectableWhileTheReadingStaysAboveKanji() {
-        val ruby = layoutCameraAnnotations(listOf(line), 400, 400, 24f, ScriptType.KANA).labels.single()
+        val ruby = layoutCameraAnnotations(listOf(line), 400, 400, 24f, ScriptType.KANA, readingTypeface = readingTypeface).labels.single()
         assertEquals("よ", ruby.reading)
         assertEquals(100, ruby.target.anchor.left)
         assertEquals(180, ruby.target.anchor.right)

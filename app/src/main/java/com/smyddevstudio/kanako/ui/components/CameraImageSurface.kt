@@ -60,6 +60,7 @@ import com.smyddevstudio.kanako.camera.layoutCameraAnnotations
 import com.smyddevstudio.kanako.model.AnnotationPlateStyle
 import com.smyddevstudio.kanako.model.KanakoPreferences
 import com.smyddevstudio.kanako.ui.theme.CreamBackgroundDark
+import com.smyddevstudio.kanako.ui.theme.rememberReadingTypeface
 import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
@@ -91,8 +92,9 @@ internal fun CameraReadingOverlay(
 ) {
     var size by remember { mutableStateOf(IntSize.Zero) }
     val pixels = with(LocalDensity.current) { preferences.furiganaSize.sizeSp.sp.toPx() }
-    val layout = remember(lines, size, pixels, preferences.scriptType) {
-        layoutCameraAnnotations(lines, size.width, size.height, pixels, preferences.scriptType)
+    val readingTypeface = rememberReadingTypeface()
+    val layout = remember(lines, size, pixels, preferences.scriptType, readingTypeface) {
+        layoutCameraAnnotations(lines, size.width, size.height, pixels, preferences.scriptType, readingTypeface = readingTypeface)
     }
     val groups = remember(lines, size, preferences.scriptType) {
         cameraPhotoReadings(lines, size.width, size.height, preferences.scriptType)
@@ -144,6 +146,7 @@ internal fun CameraPhotoSurface(
     var gesture by remember(photo, size) { mutableStateOf(CameraPhotoGesture()) }
     var selected by rememberSaveable(photo, lines.map { it.text }) { mutableStateOf<String?>(null) }
     val density = LocalDensity.current
+    val readingTypeface = rememberReadingTypeface()
     val direction = LocalLayoutDirection.current
     val insets = WindowInsets.safeDrawing
     val fit = fitCameraImage(photo.width, photo.height, size.width, size.height)
@@ -172,13 +175,13 @@ internal fun CameraPhotoSurface(
         lines.map { ReadingBounds(it.bounds.left.roundToInt(), it.bounds.top.roundToInt(),
             it.bounds.right.roundToInt(), it.bounds.bottom.roundToInt()) }
     }
-    val layoutSource = remember(sourceKey, focused?.key, if (focused != null) visibleClip else null) { Any() }
+    val layoutSource = remember(sourceKey, focused?.key, if (focused != null) visibleClip else null, readingTypeface) { Any() }
     val layoutKey = remember(readings, layoutSource, fontPixels) { Any() }
     val result by produceState<Pair<Any, CameraAnnotationLayout>?>(null, layoutKey) {
         val computed = if (fit == null) CameraAnnotationLayout(emptyList()) else withContext(Dispatchers.Default) {
             val operation = currentCoroutineContext()
             layoutCameraPhotoReadings(readings, obstacles, photo.width, photo.height, fontPixels,
-                selected = focused?.key, selectionClip = visibleClip, checkCancellation = { operation.ensureActive() })
+                selected = focused?.key, selectionClip = visibleClip, readingTypeface = readingTypeface, checkCancellation = { operation.ensureActive() })
         }
         value = layoutSource to computed
     }

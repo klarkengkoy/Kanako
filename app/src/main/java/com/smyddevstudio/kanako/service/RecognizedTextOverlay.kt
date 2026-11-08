@@ -53,6 +53,7 @@ import com.smyddevstudio.kanako.model.KanakoPreferences
 import com.smyddevstudio.kanako.ui.components.FuriganaSegment
 import com.smyddevstudio.kanako.ui.theme.CreamBackgroundDark
 import com.smyddevstudio.kanako.ui.theme.KanakoTheme
+import com.smyddevstudio.kanako.ui.theme.NunitoSans
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -114,7 +115,7 @@ internal fun RecognizedTextOverlayContent(
     val padding = with(density) { 2.dp.roundToPx() }.coerceAtLeast(1)
     val gap = with(density) { 2.dp.roundToPx() }.coerceAtLeast(1)
     val minimumFont = with(density) { preferences.furiganaSize.sizeSp.sp.toPx() }
-    val style = TextStyle(textAlign = TextAlign.Center, fontWeight = FontWeight.Medium)
+    val style = TextStyle(textAlign = TextAlign.Center, fontWeight = FontWeight.Medium, fontFamily = NunitoSans)
     val placements = remember(groups, lines, focused, minimumFont, measurer, density, padding, gap, style, viewport) {
         fun measure(index: Int, font: Float, callout: Boolean = false): GroupedRubyMeasurement<MeasuredScreenReading>? {
             val item = groups[index]

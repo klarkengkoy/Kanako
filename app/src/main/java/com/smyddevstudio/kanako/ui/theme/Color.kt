@@ -2,13 +2,15 @@ package com.smyddevstudio.kanako.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Mushroom Theme Cream & Crimson Palette
-val CreamBackground = Color(0xFFE8F0E3)
+// Mushroom theme sage, cream, and coral palette
+val CreamBackground = Color(0xFFDDEBD5)
 val CreamBackgroundDark = Color(0xFFFFF5E2)
-val CardSurface = Color(0xFFFFFAF0)
+val CardSurface = Color(0xFFF8FCF5)
+internal val WarmCreamSurface = Color(0xFFF5E6CC)
+internal val DarkWarmCreamSurface = Color(0xFF514532)
 val CardSecondary = Color(0xFFD3E3CC)
 val CardSecondaryAlt = Color(0xFFB2C8AA)
-val PrimaryCrimson = Color(0xFFA63E30)
+val PrimaryCrimson = Color(0xFFD13D34)
 val PrimaryCrimsonLight = Color(0xFFFFDAD0)
 val TextPrimary = Color(0xFF2E352B)
 val TextMuted = Color(0xFF53634D)

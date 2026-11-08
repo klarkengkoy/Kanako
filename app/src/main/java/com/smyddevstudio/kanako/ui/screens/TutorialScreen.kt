@@ -14,6 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.font.FontWeight
 import com.smyddevstudio.kanako.service.RecognizedTextSpan
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
@@ -34,6 +35,9 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.smyddevstudio.kanako.R
 import com.smyddevstudio.kanako.model.TutorialPath
 import com.smyddevstudio.kanako.service.GuidedReaderSession
+import com.smyddevstudio.kanako.ui.components.KanakoButton
+import com.smyddevstudio.kanako.ui.components.KanakoCard
+import com.smyddevstudio.kanako.ui.components.KanakoTextButton
 import com.smyddevstudio.kanako.ui.components.tutorialTarget
 import com.smyddevstudio.kanako.ui.components.tutorialAllows
 
@@ -139,12 +143,17 @@ internal fun TutorialScreen(
 }
 
 @Composable
-fun TutorialInvitation(onStart: () -> Unit, onDismiss: () -> Unit, modifier: Modifier = Modifier) {
-    Card(modifier) {
+fun TutorialInvitation(
+    onStart: () -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
+) {
+    KanakoCard(modifier) {
         Column(Modifier.padding(16.dp)) {
             Text(stringResource(R.string.guided_intro_body))
-            Button(onClick = onStart) { Text(stringResource(R.string.guided_start)) }
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.guided_skip)) }
+            KanakoButton(onClick = onStart, enabled = enabled) { Text(stringResource(R.string.guided_start), fontWeight = FontWeight.Bold) }
+            KanakoTextButton(onClick = onDismiss, enabled = enabled) { Text(stringResource(R.string.guided_skip), fontWeight = FontWeight.Bold) }
         }
     }
 }

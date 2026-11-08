@@ -53,12 +53,13 @@ internal fun cameraPhotoReadings(
 
 internal fun layoutCameraPhotoAnnotations(
     lines: List<CameraReadingLine>, width: Int, height: Int, minimumFontPixels: Float, script: ScriptType,
+    readingTypeface: Typeface? = null,
     checkCancellation: () -> Unit = {}
 ): CameraAnnotationLayout = layoutCameraPhotoReadings(
     cameraPhotoReadings(lines, width, height, script, checkCancellation),
     lines.map { ReadingBounds(it.bounds.left.roundToInt(), it.bounds.top.roundToInt(),
         it.bounds.right.roundToInt(), it.bounds.bottom.roundToInt()) },
-    width, height, minimumFontPixels, checkCancellation = checkCancellation
+    width, height, minimumFontPixels, readingTypeface = readingTypeface, checkCancellation = checkCancellation
 )
 
 internal fun layoutCameraPhotoReadings(
@@ -66,6 +67,7 @@ internal fun layoutCameraPhotoReadings(
     width: Int, height: Int, minimumFontPixels: Float,
     selected: String? = null,
     selectionClip: ReadingBounds = ReadingBounds(0, 0, width, height),
+    readingTypeface: Typeface? = null,
     checkCancellation: () -> Unit = {}
 ): CameraAnnotationLayout {
     if (width <= 0 || height <= 0 || !minimumFontPixels.isFinite() || minimumFontPixels <= 0f) {
@@ -77,7 +79,8 @@ internal fun layoutCameraPhotoReadings(
         val item = readings[index]
         val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             textSize = font
-            typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
+            typeface = readingTypeface ?: Typeface.create("sans-serif-medium", Typeface.NORMAL)
+            if (readingTypeface != null) setFontVariationSettings("'wght' 500")
         }
         val padding = (font / 10).roundToInt().coerceAtLeast(1)
         val gap = (font / 16).roundToInt().coerceAtLeast(1)
