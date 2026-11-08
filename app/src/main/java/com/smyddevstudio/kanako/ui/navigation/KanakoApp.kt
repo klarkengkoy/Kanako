@@ -69,6 +69,7 @@ import com.smyddevstudio.kanako.service.KanakoOverlaySession
 import com.smyddevstudio.kanako.ui.screens.TutorialScreen
 import com.smyddevstudio.kanako.ui.screens.TutorialLayout
 import com.smyddevstudio.kanako.ui.screens.tutorialPrompts
+import com.smyddevstudio.kanako.ui.screens.tutorialCanAdvance
 import com.smyddevstudio.kanako.model.TutorialPath
 import com.smyddevstudio.kanako.ui.screens.HomeScreen
 import com.smyddevstudio.kanako.ui.screens.HowItWorksScreen
@@ -165,6 +166,9 @@ fun KanakoApp(
     val lifecycleOwner = LocalLifecycleOwner.current
     var overlayGranted by remember { mutableStateOf(KanakoOverlayService.canDrawOverlays(context)) }
     var accessibilityEnabled by remember { mutableStateOf(KanakoAccessibilityService.isEnabled(context)) }
+    var cameraGranted by remember {
+        mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
+    }
     val accessibilityConnected by KanakoAccessibilityService.connected.collectAsStateWithLifecycle()
     LaunchedEffect(accessibilityConnected) {
         accessibilityEnabled = KanakoAccessibilityService.isEnabled(context)
@@ -183,6 +187,7 @@ fun KanakoApp(
             if (event == Lifecycle.Event.ON_RESUME) {
                 overlayGranted = KanakoOverlayService.canDrawOverlays(context)
                 accessibilityEnabled = KanakoAccessibilityService.isEnabled(context)
+                cameraGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
                 resumeEpoch++
             }
         }
@@ -458,6 +463,13 @@ fun KanakoApp(
         it.allowed = targetKeys
         it.actionLabel = setupActionLabel
     }
+    val canAdvance = tutorialCanAdvance(
+        tutorialStep,
+        tutorialPath,
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && overlayGranted && preferences.hasAcceptedSnapshotDisclosure &&
+            accessibilityEnabled && accessibilityConnected,
+        cameraGranted || backStack.lastOrNull() == Screen.CameraResult || backStack.lastOrNull() == Screen.Gallery
+    )
     CompositionLocalProvider(LocalTutorialFocus provides focus) {
     TutorialLayout(
         step = if (guidedSetup) tutorialStep else null,
@@ -465,23 +477,26 @@ fun KanakoApp(
         prompt = tutorialPrompt,
         onPrevious = ::previousTutorial,
         canPrevious = tutorialStep != 0 || tutorialPrompt > 0,
+        canNext = canAdvance,
         onNext = {
-            if (tutorialStep == 1 && tutorialPath == TutorialPath.CAMERA &&
-                backStack.lastOrNull() != Screen.CameraResult) {
-                finishRoute()
-            } else if (tutorialPrompt < tutorialPrompts(tutorialStep, tutorialPath).lastIndex) tutorialPrompt++
-            else when (tutorialStep) {
-                -1 -> {
-                    setTutorialPosition(1)
-                    if (tutorialPath == TutorialPath.CAMERA) openCamera() else showTutorial()
+            if (canAdvance) {
+                if (tutorialStep == 1 && tutorialPath == TutorialPath.CAMERA &&
+                    backStack.lastOrNull() != Screen.CameraResult) {
+                    finishRoute()
+                } else if (tutorialPrompt < tutorialPrompts(tutorialStep, tutorialPath).lastIndex) tutorialPrompt++
+                else when (tutorialStep) {
+                    -1 -> {
+                        setTutorialPosition(1)
+                        if (tutorialPath == TutorialPath.CAMERA) openCamera() else showTutorial()
+                    }
+                    0 -> { setTutorialPosition(5); openHome() }
+                    1 -> setTutorialPosition(2)
+                    2 -> if (tutorialPath == TutorialPath.FLOATING) setTutorialPosition(6) else finishRoute()
+                    6 -> finishRoute()
+                    3 -> setTutorialPosition(4)
+                    5 -> openTutorialPreferences()
+                    else -> exitGuide(completed = true)
                 }
-                0 -> { setTutorialPosition(5); openHome() }
-                1 -> setTutorialPosition(2)
-                2 -> if (tutorialPath == TutorialPath.FLOATING) setTutorialPosition(6) else finishRoute()
-                6 -> finishRoute()
-                3 -> setTutorialPosition(4)
-                5 -> openTutorialPreferences()
-                else -> exitGuide(completed = true)
             }
         },
         onSkip = { exitGuide() }
@@ -507,7 +522,11 @@ fun KanakoApp(
                     onRequestOverlay = {
                         context.startActivity(KanakoOverlayService.createOverlayPermissionIntent(context))
                     },
-                    onRequestAccessibility = { showDisclosure = true },
+                    onRequestAccessibility = {
+                        if (preferences.hasAcceptedSnapshotDisclosure) {
+                            context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                        } else showDisclosure = true
+                    },
                     onNavigateToPreferences = {
                         if (guidedSetup) openTutorialPreferences() else backStack.add(Screen.Preferences)
                     },
@@ -555,6 +574,7 @@ fun KanakoApp(
             entry<Screen.Camera> {
                 CameraReaderScreen(
                     viewModel = cameraReader,
+                    onCameraPermissionChanged = { cameraGranted = it },
                     preferences = preferences,
                     onPermissionDenied = {
                         coroutineScope.launch {

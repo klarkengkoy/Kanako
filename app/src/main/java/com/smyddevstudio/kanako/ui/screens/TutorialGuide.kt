@@ -41,6 +41,17 @@ internal fun tutorialPrompts(step: Int, path: TutorialPath): List<Int> = when (s
     else -> emptyList()
 }
 
+internal fun tutorialCanAdvance(
+    step: Int,
+    path: TutorialPath,
+    floatingAccessReady: Boolean,
+    cameraAccessReady: Boolean
+): Boolean = when (step) {
+    0 -> false
+    -1, 1, 2, 6 -> if (path == TutorialPath.FLOATING) floatingAccessReady else cameraAccessReady
+    else -> true
+}
+
 @Composable
 internal fun TutorialLayout(
     step: Int?,
@@ -51,6 +62,7 @@ internal fun TutorialLayout(
     prompt: Int = 0,
     onPrevious: () -> Unit = {},
     canPrevious: Boolean = false,
+    canNext: Boolean = true,
     content: @Composable (Modifier) -> Unit
 ) {
     val focus = LocalTutorialFocus.current
@@ -61,7 +73,7 @@ internal fun TutorialLayout(
         val footerConstraints = Constraints(minWidth = width, maxWidth = width, maxHeight = height / 2)
         val footer = if (step == null) null else subcompose("footer") {
             TutorialGuide(step, path, onNext, onSkip, prompt = prompt,
-                onPrevious = onPrevious, canPrevious = canPrevious)
+                onPrevious = onPrevious, canPrevious = canPrevious, canNext = canNext)
         }.single().measure(footerConstraints)
         // Only the camera needs a stable preview aspect ratio across text changes.
         // Other screens reserve exactly the current instruction's natural height.
@@ -99,7 +111,8 @@ internal fun TutorialGuide(
     modifier: Modifier = Modifier,
     prompt: Int = 0,
     onPrevious: () -> Unit = {},
-    canPrevious: Boolean = false
+    canPrevious: Boolean = false,
+    canNext: Boolean = true
 ) {
     val focus = LocalTutorialFocus.current
     val title = when (step) {
@@ -170,7 +183,7 @@ internal fun TutorialGuide(
                         OutlinedIconButton(onClick = onPrevious, enabled = canPrevious, modifier = Modifier.size(48.dp)) {
                             Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.tutorial_previous))
                         }
-                        FilledIconButton(onClick = onNext, modifier = Modifier.size(48.dp)) {
+                        FilledIconButton(onClick = onNext, enabled = canNext, modifier = Modifier.size(48.dp)) {
                             Icon(if (done) Icons.Rounded.Check else Icons.AutoMirrored.Rounded.ArrowForward,
                                 stringResource(if (done) R.string.done else R.string.tutorial_next))
                         }

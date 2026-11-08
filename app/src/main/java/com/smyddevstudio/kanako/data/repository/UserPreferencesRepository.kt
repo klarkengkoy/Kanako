@@ -39,6 +39,7 @@ class UserPreferencesRepository(
         val FAB_OFFSET_Y = intPreferencesKey("fab_offset_y")
         val AUTO_HIDE_ON_KEYBOARD = booleanPreferencesKey("auto_hide_on_keyboard")
         private val AUTO_READ_AFTER_SCROLL = booleanPreferencesKey("auto_read_after_scroll")
+        private val AUTO_READ_DISCLOSURE_ACCEPTED = booleanPreferencesKey("auto_read_disclosure_accepted")
         private val AUTO_READ_OFFER_INITIALIZED = booleanPreferencesKey("auto_read_offer_initialized")
         private val AUTO_READ_OFFER_PENDING = booleanPreferencesKey("auto_read_offer_pending")
         private val SNAPSHOT_DISCLOSURE_ACCEPTED = booleanPreferencesKey("snapshot_disclosure_accepted")
@@ -108,6 +109,8 @@ class UserPreferencesRepository(
             hasSavedFloatingPosition = preferences[FAB_OFFSET_X] != null && preferences[FAB_OFFSET_Y] != null,
             autoHideOnKeyboard = autoHideOnKeyboard,
             autoReadAfterScroll = preferences[AUTO_READ_AFTER_SCROLL] ?: false,
+            hasAcceptedAutoReadDisclosure = preferences[AUTO_READ_DISCLOSURE_ACCEPTED]
+                ?: (preferences[AUTO_READ_AFTER_SCROLL] == true),
             offerAutoRead = preferences[AUTO_READ_OFFER_PENDING] ?: false,
             offerGuidedSetup = preferences[GUIDED_SETUP_PENDING] == true && !completedTutorial,
             hasAcceptedSnapshotDisclosure = preferences[SNAPSHOT_DISCLOSURE_ACCEPTED] ?: false,
@@ -130,6 +133,7 @@ class UserPreferencesRepository(
 
     suspend fun updateAutoReadAfterScroll(enabled: Boolean) {
         dataStore.edit {
+            if (enabled || it[AUTO_READ_AFTER_SCROLL] == true) it[AUTO_READ_DISCLOSURE_ACCEPTED] = true
             it[AUTO_READ_AFTER_SCROLL] = enabled
             it[AUTO_READ_OFFER_PENDING] = false
         }

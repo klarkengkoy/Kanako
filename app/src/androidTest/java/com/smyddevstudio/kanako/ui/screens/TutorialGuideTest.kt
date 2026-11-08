@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -151,6 +152,30 @@ class TutorialGuideTest {
         compose.onNodeWithText(text(R.string.tutorial_highlights_body)).assertDoesNotExist()
         compose.onNodeWithText(text(R.string.guided_skip)).assertIsDisplayed()
         compose.runOnIdle { assertEquals(0, completions) }
+    }
+
+    @Test fun deniedAccessDisablesNextWithoutBlockingPreviousOrSkip() {
+        val ready = mutableStateOf(false)
+        var next = 0
+        var previous = 0
+        var skipped = 0
+        compose.setContent {
+            KanakoTheme {
+                TutorialGuide(-1, TutorialPath.FLOATING, { next++ }, { skipped++ },
+                    canNext = ready.value, canPrevious = true, onPrevious = { previous++ })
+            }
+        }
+        compose.onNodeWithContentDescription(text(R.string.tutorial_next)).assertIsNotEnabled()
+        compose.onNodeWithContentDescription(text(R.string.tutorial_previous)).performClick()
+        compose.onNodeWithText(text(R.string.guided_skip)).performClick()
+        compose.runOnIdle {
+            assertEquals(0, next)
+            assertEquals(1, previous)
+            assertEquals(1, skipped)
+            ready.value = true
+        }
+        compose.onNodeWithContentDescription(text(R.string.tutorial_next)).assertIsEnabled().performClick()
+        compose.runOnIdle { assertEquals(1, next) }
     }
 
     @Test fun setupPromptFollowsTheCurrentHighlightAfterPermissionReturn() {

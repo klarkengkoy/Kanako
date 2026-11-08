@@ -4,8 +4,7 @@
     <string name="accessibility_service_label">かなこの画面読み取り</string>
     <string name="accessibility_service_description">フローティングボタンをタップしたとき、または自動読み取りを有効にして検出した変化が落ち着いたときに、スクリーンショットを1枚撮影し、端末内でふりがなを生成します。画像は認識中だけメモリ内に保持し、保存・アップロードせずに破棄します。ウィンドウ、スクロール、キーボード、パスワード欄の情報を使って古い読みを消し、機密性の高い入力の周辺で撮影を止めます。ユーザー補助から入力欄のテキストは取得しません。</string>
     <string name="snapshot_disclosure_title">かなこに画面の読み取りを許可</string>
-
-    <string name="snapshot_disclosure_body">タップによる読み取りを使うには、Androidのユーザー補助設定でかなこを有効にしてください。読み取りごとに、Android 14以降では現在のアプリ、Android 11〜13では画面全体のスクリーンショットを1枚撮影します。フローティングリーダーのメニューで自動読み取りを別途有効にしない限り、タップするまで読み取りません。文字認識は端末内で行います。画像は認識中だけメモリ内に保持し、保存・アップロードせずに破棄します。\n\nウィンドウ、スクロール、キーボード、パスワード欄の情報を使い、古い読みを消したり機密性の高い入力の周辺で撮影を止めたりします。ユーザー補助から入力欄のテキストは取得しません。画面画像には個人情報が含まれる可能性があるため、処理を許可する内容だけを読み取ってください。\n\n継続的な画面共有は行いません。フローティングボタンの停止やユーザー補助サービスの無効化はいつでもできます。</string>
+    <string name="snapshot_disclosure_body">かなこはユーザー補助を使い、フローティングボタンをタップするとスクリーンショットを撮ります。Android 14以降は現在のアプリ、Android 11～13は画面全体が対象です。\n\n個人情報が写ることがあります。読み取りは端末内で行い、画像は処理後に破棄します。保存・アップロードはしません。機密入力を検出したときやロック中は撮影しません。\n\n自動読み取りには別の同意が必要です。いつでもリーダーを停止するか、ユーザー補助を無効にできます。</string>
     <string name="snapshot_disclosure_continue">同意して続ける</string>
     <string name="snapshot_disclosure_cancel">今はしない</string>
     <string name="reading_ready">タップで読み取り・ダブルタップか長押しでメニュー</string>
@@ -47,8 +46,7 @@
     <string name="quick_settings_guide_title">かなこをクイック設定に追加</string>
     <string name="quick_settings_guide_body">画面の上から2回下へスワイプし、「編集」でかなこのタイルを追加します。タイルをタップするとリーダーを表示・停止できます。</string>
     <string name="auto_read_title">自動読み取りモード</string>
-
-    <string name="auto_read_disclosure">フローティングリーダーの動作中、スクロール、アプリの切り替え、コンテンツの更新が約0.7秒間落ち着いた後、自動でスクリーンショットを撮影します。リーダー開始時やロック解除時も読み取ります。タップは不要です。画像は端末のメモリ内で処理し、保存・アップロードせずに破棄します。\n\n画面録画ではなく、個別のスクリーンショットを使用します。機密性の高い入力やロック画面を検出した場合は撮影を停止します。変化の検出やスクロールへの追従は読み取り元のアプリに依存し、アニメーションを検出できない場合があります。この設定はいつでもオフにできます。</string>
+    <string name="auto_read_disclosure">リーダーがオンの間、スクロールや画面の変化が落ち着いた後、リーダーの起動時、端末のロック解除時に自動でスクリーンショットを撮ります。タップは不要です。\n\n画像は端末内で処理後に破棄し、保存・アップロードはしません。機密入力を検出したときやロック中は撮影しません。いつでもタップ読み取りに戻せます。</string>
     <string name="auto_read_enable">自動読み取りを有効にする</string>
     <string name="camera_title">カメラ</string>
     <string name="camera_open">カメラを開く</string>
@@ -166,8 +164,7 @@
     <string name="tutorial_next">次へ</string>
     <string name="replay_mascot_greeting">かなこのあいさつをもう一度再生</string>
     <string name="guided_intro_title">かなこを試してみよう</string>
-
-    <string name="guided_intro_body">ホームでリーダーを選ぶと、使い方をご案内します。あとでもう一方も試せます。いつでもスキップしたり、先へ進んだりできます。</string>
+    <string name="guided_intro_body">ホームでリーダーを選び、必要なアクセスを許可すると進めます。いつでもスキップできます。もう一方のリーダーも後で試せます。</string>
     <string name="guided_start">チュートリアルを始める</string>
     <string name="guided_skip">チュートリアルをスキップ</string>
     <string name="guided_replay">チュートリアルをもう一度見る</string>
@@ -194,8 +191,7 @@
     <string name="tutorial_controls">読みの表示を操作する</string>
     <string name="tutorial_controls_floating">かなこをタップして読み方を消しましょう。もう一度タップすると読み取れます。</string>
     <string name="tutorial_controls_camera">日本語にカメラを向けて、撮影ボタンをタップしましょう。隣の画像から写真を選ぶこともできます。</string>
-
-    <string name="tutorial_auto_read">Kanakoのメニューでモードをタップし、自動読み取りを選びましょう。試してみたい場合は、説明を読んで同意してください。</string>
+    <string name="tutorial_auto_read">かなこの操作メニューで「モード」をタップし、自動リーダーに切り替えます。同意の確認は初回だけです。</string>
     <string name="tutorial_auto_scroll">自動読み取りモードをオンにしたら、この文章をスクロールして止めてみましょう。少し待つと、タップせずに読み取ります。単語を選んでいる間は、外側をタップするまで新しい読み取りを待ちます。</string>
     <string name="tutorial_preferences">読みやすく調整する</string>
     <string name="tutorial_preferences_body">かな・ローマ字や、読み方の大きさ・色・背景を選べます。どちらの読み取りでも使えます。</string>

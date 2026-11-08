@@ -4,8 +4,7 @@
     <string name="accessibility_service_label">Lecture d’écran Kanako</string>
     <string name="accessibility_service_description">Kanako prend une capture d’écran lorsque vous touchez le bouton flottant, ou une fois les changements détectés stabilisés si vous activez la lecture automatique, pour générer des furigana sur votre appareil. Les images restent en mémoire pendant la reconnaissance, puis sont supprimées ; elles ne sont ni enregistrées ni envoyées. Les métadonnées des fenêtres, du défilement, du clavier et des champs de mot de passe servent à effacer les annotations obsolètes et à bloquer la capture lors de saisies sensibles. Kanako ne lit pas le texte des champs de saisie via l’accessibilité.</string>
     <string name="snapshot_disclosure_title">Lire votre écran avec Kanako</string>
-
-    <string name="snapshot_disclosure_body">Activez Kanako dans les paramètres d’accessibilité Android pour lire en touchant le bouton. Chaque demande prend une capture de l’application actuelle sous Android 14 ou ultérieur, ou de l’écran sous Android 11–13. La lecture démarre au toucher, sauf si vous activez séparément la lecture automatique dans les commandes du lecteur flottant. La reconnaissance s’effectue sur votre appareil. Les images restent en mémoire pendant la reconnaissance, puis sont supprimées ; elles ne sont ni enregistrées ni envoyées.\n\nKanako utilise les métadonnées des fenêtres, du défilement, du clavier et des champs de mot de passe pour effacer les anciennes annotations et bloquer la capture lors de saisies sensibles. Il ne lit pas le texte des champs de saisie via l’accessibilité. Les captures peuvent néanmoins contenir des informations privées : ne faites lire que le contenu que vous souhaitez confier à Kanako.\n\nAucune session de partage d’écran continu n’est créée. Vous pouvez arrêter le bouton flottant ou désactiver le service d’accessibilité à tout moment.</string>
+    <string name="snapshot_disclosure_body">Kanako utilise l’accessibilité pour prendre une capture quand vous touchez son bouton flottant : l’application actuelle sous Android 14+, ou tout l’écran sous Android 11–13.\n\nDes informations privées peuvent apparaître. La lecture reste sur cet appareil ; les captures sont supprimées, jamais enregistrées ni envoyées. La capture est bloquée lors d’une saisie sensible détectée et sur écran verrouillé.\n\nLa lecture automatique demande un accord distinct. Arrêtez le lecteur ou désactivez l’accessibilité à tout moment.</string>
     <string name="snapshot_disclosure_continue">Accepter et continuer</string>
     <string name="snapshot_disclosure_cancel">Plus tard</string>
     <string name="reading_ready">Touchez pour lire · Touchez deux fois ou maintenez pour les commandes</string>
@@ -47,8 +46,7 @@
     <string name="quick_settings_guide_title">Ajouter Kanako aux réglages rapides</string>
     <string name="quick_settings_guide_body">Balayez deux fois vers le bas depuis le haut de l’écran. Touchez Modifier et ajoutez la tuile Kanako. Touchez-la pour afficher ou arrêter le lecteur flottant.</string>
     <string name="auto_read_title">Mode de lecture automatique</string>
-
-    <string name="auto_read_disclosure">Lorsque le lecteur flottant est actif, Kanako prend automatiquement une capture après environ 0,7 seconde de stabilité suivant un défilement, un changement d’application ou de contenu. Il lit aussi au démarrage du lecteur et au déverrouillage de l’appareil. Aucun toucher n’est nécessaire. Les images sont traitées localement en mémoire, puis supprimées ; elles ne sont ni enregistrées ni envoyées.\n\nIl s’agit de captures individuelles, pas d’une session d’enregistrement. La capture est bloquée lors d’une saisie sensible détectée et sur l’écran verrouillé. La stabilité et le suivi du défilement dépendent des événements de l’application source ; les animations peuvent ne pas être détectées. Vous pouvez désactiver cette option à tout moment.</string>
+    <string name="auto_read_disclosure">Quand le lecteur est actif, Kanako prend automatiquement des captures après stabilisation du défilement ou de l’écran, au démarrage du lecteur et au déverrouillage. Aucun toucher n’est nécessaire.\n\nLes images sont traitées sur votre appareil puis supprimées, jamais enregistrées ni envoyées. La capture est bloquée lors d’une saisie sensible détectée et sur écran verrouillé. Revenez à la lecture au toucher à tout moment.</string>
     <string name="auto_read_enable">Activer la lecture automatique</string>
 
     <string name="camera_title">Appareil photo</string>
@@ -167,8 +165,7 @@
     <string name="tutorial_next">Suivant</string>
     <string name="replay_mascot_greeting">Rejouer le salut de Kanako</string>
     <string name="guided_intro_title">Essayons Kanako</string>
-
-    <string name="guided_intro_body">Choisissez un lecteur sur l’accueil pour découvrir son usage. Vous pourrez essayer l’autre ensuite. Passez ou continuez quand vous voulez.</string>
+    <string name="guided_intro_body">Choisissez un lecteur sur l’accueil et accordez ses accès pour continuer. Vous pouvez passer à tout moment et essayer l’autre lecteur ensuite.</string>
     <string name="guided_start">Commencer le tutoriel</string>
     <string name="guided_skip">Passer le tutoriel</string>
     <string name="guided_replay">Revoir le tutoriel</string>
@@ -195,8 +192,7 @@
     <string name="tutorial_controls">Contrôler les lectures</string>
     <string name="tutorial_controls_floating">Touchez Kanako pour effacer les lectures. Touchez à nouveau pour lire.</string>
     <string name="tutorial_controls_camera">Visez du texte japonais et touchez le bouton de capture. Vous pouvez aussi choisir une photo avec l’image à côté.</string>
-
-    <string name="tutorial_auto_read">Ouvrez les commandes de Kanako et touchez Mode pour choisir Lecture auto. Confirmez si vous souhaitez l’essayer.</string>
+    <string name="tutorial_auto_read">Ouvrez les commandes de Kanako et touchez Mode pour activer le lecteur automatique. L’accord n’est demandé que la première fois.</string>
     <string name="tutorial_auto_scroll">Avec le mode de lecture automatique activé, faites défiler ce texte, puis arrêtez-vous. Kanako le lit après une courte pause, sans toucher le bouton. Si vous sélectionnez un mot, il attend que vous touchiez ailleurs avant de relire.</string>
     <string name="tutorial_preferences">Adapter à votre confort</string>
     <string name="tutorial_preferences_body">Choisissez Kana ou Romaji, ou essayez une taille, une couleur ou un fond. Ces réglages servent aux deux lecteurs.</string>

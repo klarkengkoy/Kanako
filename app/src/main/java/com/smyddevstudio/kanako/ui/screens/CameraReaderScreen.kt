@@ -70,7 +70,8 @@ internal fun CameraReaderScreen(
     modifier: Modifier = Modifier,
     preferences: KanakoPreferences = KanakoPreferences(),
     onNavigateToGallery: () -> Unit = {},
-    onPermissionDenied: () -> Unit = onBack
+    onPermissionDenied: () -> Unit = onBack,
+    onCameraPermissionChanged: (Boolean) -> Unit = {}
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -129,6 +130,7 @@ internal fun CameraReaderScreen(
             onPermissionDenied()
         }
     }
+    LaunchedEffect(granted) { onCameraPermissionChanged(granted) }
     LaunchedEffect(tutorialFocus, granted) {
         tutorialFocus?.message = if (granted) null else R.string.camera_state_permission_body
         tutorialFocus?.heading = if (granted) null else R.string.camera_state_permission

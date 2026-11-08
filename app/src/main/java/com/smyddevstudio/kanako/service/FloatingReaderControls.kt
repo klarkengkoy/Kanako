@@ -317,9 +317,9 @@ fun FloatingOverlayContent(
                                     stringResource(R.string.controls_mode, stringResource(
                                         if (preferences.autoReadAfterScroll) R.string.mode_auto_reader else R.string.mode_tap_to_read)),
                                     onClick = {
-                                        if (preferences.autoReadAfterScroll) {
+                                        if (preferences.autoReadAfterScroll || preferences.hasAcceptedAutoReadDisclosure) {
                                             dismiss()
-                                            onUpdateAutoReadAfterScroll(false)
+                                            onUpdateAutoReadAfterScroll(!preferences.autoReadAfterScroll)
                                         } else confirmAutoRead = true
                                     }
                                 )

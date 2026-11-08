@@ -316,6 +316,31 @@ class UserPreferencesRepositoryTest {
     }
 
     @Test
+    fun autoReadConsentIsIndependentAndSurvivesTurningTheModeOff() = runTest(testDispatcher) {
+        repository.acceptSnapshotDisclosure()
+        assertFalse(repository.userPreferencesFlow.first().hasAcceptedAutoReadDisclosure)
+        repository.updateAutoReadAfterScroll(false)
+        assertFalse(repository.userPreferencesFlow.first().hasAcceptedAutoReadDisclosure)
+        repository.updateAutoReadAfterScroll(true)
+        repository.updateAutoReadAfterScroll(false)
+        val restored = UserPreferencesRepository(testDataStore).userPreferencesFlow.first()
+        assertTrue(restored.hasAcceptedAutoReadDisclosure)
+        assertTrue(restored.hasAcceptedSnapshotDisclosure)
+        assertFalse(restored.autoReadAfterScroll)
+        assertFalse(restored.isOverlayActive)
+    }
+
+    @Test
+    fun existingEnabledAutoReadRetainsConsentWhenFirstTurnedOff() = runTest(testDispatcher) {
+        testDataStore.edit { it[booleanPreferencesKey("auto_read_after_scroll")] = true }
+        assertTrue(repository.userPreferencesFlow.first().hasAcceptedAutoReadDisclosure)
+        repository.updateAutoReadAfterScroll(false)
+        val restored = UserPreferencesRepository(testDataStore).userPreferencesFlow.first()
+        assertTrue(restored.hasAcceptedAutoReadDisclosure)
+        assertFalse(restored.autoReadAfterScroll)
+    }
+
+    @Test
     fun screenshotConsentRequiresExplicitAcceptanceAndDoesNotStartAReader() = runTest(testDispatcher) {
         assertFalse(repository.userPreferencesFlow.first().hasAcceptedSnapshotDisclosure)
         repository.acceptSnapshotDisclosure()

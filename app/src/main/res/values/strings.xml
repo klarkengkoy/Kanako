@@ -4,7 +4,7 @@
     <string name="accessibility_service_label">Kanako screen reading</string>
     <string name="accessibility_service_description">Kanako takes one screenshot when you tap the floating control, or after detected changes settle if you enable Auto read mode, to generate furigana on your device. Images are held in memory during recognition, then discarded; they are not saved or uploaded. Window, scroll, keyboard, and password metadata clears outdated annotations and blocks capture around sensitive input. Kanako does not read text from input fields through accessibility.</string>
     <string name="snapshot_disclosure_title">Read your screen with Kanako</string>
-    <string name="snapshot_disclosure_body">Enable Kanako in Android Accessibility settings to use tap-to-read. Each reading request takes one screenshot of the current app on Android 14 or later, or the display on Android 11–13. Reading starts with a tap unless you separately enable Auto read mode in the floating reader’s controls. Recognition runs on your device. Images are held in memory during recognition, then discarded; they are not saved or uploaded.\n\nKanako uses window, scroll, keyboard, and password metadata to clear old annotations and block capture around sensitive input. It does not read input-field text through accessibility. Screen images can still contain private information, so read only content you want Kanako to process.\n\nThere is no continuous screen-sharing session. You can stop the floating control or disable the accessibility service at any time.</string>
+    <string name="snapshot_disclosure_body">Kanako uses Accessibility to take a screenshot when you tap its floating button: the current app on Android 14+, or the whole display on Android 11–13.\n\nImages may contain private information. Reading happens on this device; screenshots are discarded, never saved or uploaded. Capture is blocked for detected sensitive input and locked screens.\n\nAuto-read needs separate approval. Stop the reader or disable Accessibility at any time.</string>
     <string name="snapshot_disclosure_continue">Agree and continue</string>
     <string name="snapshot_disclosure_cancel">Not now</string>
     <string name="reading_ready">Tap to read · Double tap or hold for controls</string>
@@ -46,7 +46,7 @@
     <string name="quick_settings_guide_title">Add Kanako to Quick Settings</string>
     <string name="quick_settings_guide_body">Swipe down twice from the top of your screen. Tap Edit and add the Kanako tile. Tap the tile to show or stop the floating reader.</string>
     <string name="auto_read_title">Auto read mode</string>
-    <string name="auto_read_disclosure">While the floating reader is active, Kanako will automatically take a screenshot after scrolling, app changes, or content updates settle for about 0.7 seconds. It also reads when the reader starts or the device is unlocked. No tap is needed. Images are processed locally in memory, then discarded; they are not saved or uploaded.\n\nThis uses individual screenshots, not a recording session. Capture is blocked around detected sensitive input and on the lock screen. Stability and scroll tracking depend on events from the source app; animations may not be detected. You can turn this option off at any time.</string>
+    <string name="auto_read_disclosure">While the reader is on, Kanako takes screenshots automatically after scrolling or screen changes settle, and when the reader starts or the device unlocks. No tap is needed.\n\nImages are processed on your device, then discarded; they are never saved or uploaded. Capture is blocked for detected sensitive input and locked screens. Switch to Tap to Read at any time.</string>
     <string name="auto_read_enable">Enable Auto read mode</string>
 
     <string name="camera_title">Camera</string>
@@ -165,7 +165,7 @@
     <string name="tutorial_next">Next</string>
     <string name="replay_mascot_greeting">Replay Kanako’s greeting</string>
     <string name="guided_intro_title">Let’s try Kanako</string>
-    <string name="guided_intro_body">Choose a reader on Home and we’ll show you around. You can try the other one next. Skip or continue whenever you like.</string>
+    <string name="guided_intro_body">Choose a reader on Home. Grant its access to continue, or Skip at any time. You can try the other reader next.</string>
     <string name="guided_start">Start tutorial</string>
     <string name="guided_skip">Skip tutorial</string>
     <string name="guided_auto_sample" translatable="false">朝の光が窓から入ります。\n台所で温かいお茶を作りました。\n駅まで静かな道を歩きます。\n公園には赤い花が咲いていました。\n小さな鳥が木の上で歌っています。\n電車の中で新しい本を開きました。\n物語の主人公は海の近くに住んでいます。\n昼休みに友達と食堂へ行きました。\n今日の料理は野菜がたっぷりです。\n午後は図書館で歴史を調べます。\n机の上に青い鉛筆を並べました。\n夕方になると空の色が変わります。\n帰りに店で牛乳と卵を買いました。\n家族と一緒に夕食を楽しみます。\n夜は音楽を聞きながら休みました。\n明日は山へ出かける予定です。</string>
@@ -194,7 +194,7 @@
     <string name="tutorial_controls">Control the readings</string>
     <string name="tutorial_controls_floating">Tap Kanako to clear the readings. Tap again to read.</string>
     <string name="tutorial_controls_camera">Point the camera at Japanese text and tap Capture photo. You can also choose a photo using the picture beside it.</string>
-    <string name="tutorial_auto_read">Open Kanako’s controls and tap Mode to choose Auto Reader. Confirm if you’d like to try it.</string>
+    <string name="tutorial_auto_read">Open Kanako’s controls and tap Mode to switch to Auto Reader. Confirmation is only needed the first time.</string>
     <string name="tutorial_auto_scroll">With Auto read mode on, scroll this sample and stop. Kanako reads it after a short pause—no tap needed. Selecting a word makes new readings wait until you tap away.</string>
     <string name="tutorial_preferences">Make it comfortable</string>
     <string name="tutorial_preferences_body">Choose Kana or Romaji, or try a reading size, color or background. These work for both readers.</string>

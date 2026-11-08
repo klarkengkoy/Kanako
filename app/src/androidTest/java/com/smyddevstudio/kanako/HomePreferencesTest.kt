@@ -435,7 +435,7 @@ class HomePreferencesTest {
         compose.onNodeWithText("かなこ").assertIsDisplayed()
         compose.onNodeWithText("Kanako").assertDoesNotExist()
         compose.onNodeWithText(localized.getString(R.string.camera_open)).performScrollTo().assertIsDisplayed()
-        assertTrue(localized.getString(R.string.snapshot_disclosure_body).contains("保存・アップロードせず"))
+        assertTrue(localized.getString(R.string.snapshot_disclosure_body).contains("保存・アップロードはしません"))
         assertTrue(localized.getString(R.string.camera_state_permission_body).contains("メモリ"))
     }
 

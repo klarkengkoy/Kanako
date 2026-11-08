@@ -508,7 +508,8 @@ class FloatingReaderControlsTest {
                 FloatingOverlayContent(preferences.value, false, { _, _ -> }, {}, {}, {}, {},
                     onUpdateAutoReadAfterScroll = {
                         changes.add(it)
-                        preferences.value = preferences.value.copy(autoReadAfterScroll = it)
+                        preferences.value = preferences.value.copy(autoReadAfterScroll = it,
+                            hasAcceptedAutoReadDisclosure = preferences.value.hasAcceptedAutoReadDisclosure || it)
                     })
             }
         }
@@ -527,6 +528,10 @@ class FloatingReaderControlsTest {
         openMenu()
         compose.onNodeWithText(mode(R.string.mode_auto_reader)).assertIsDisplayed().performScrollTo().performClick()
         compose.runOnIdle { assertEquals(listOf(true, false), changes) }
+        openMenu()
+        compose.onNodeWithText(mode(R.string.mode_tap_to_read)).performScrollTo().performClick()
+        compose.onNodeWithText(context.getString(R.string.auto_read_disclosure)).assertDoesNotExist()
+        compose.runOnIdle { assertEquals(listOf(true, false, true), changes) }
     }
 
     @Test fun photoControlsHaveNoAutoReadSetting() {
