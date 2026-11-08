@@ -193,6 +193,52 @@ class PreferencesScreenTest {
         compose.onNodeWithText("nihongo").assertIsDisplayed()
     }
 
+    @Test fun guideKeepsKeyboardFocusAndStaysVisibleWhenTheWindowNarrows() {
+        val window = mutableStateOf(1000.dp to 600.dp)
+        var inputMode: InputModeManager? = null
+        compose.setContent {
+            inputMode = LocalInputModeManager.current
+            KanakoTheme {
+                PreferencesScreen(onBack = {},
+                    modifier = Modifier.requiredSize(window.value.first, window.value.second))
+            }
+        }
+        compose.runOnIdle { assertTrue(requireNotNull(inputMode).requestInputMode(InputMode.Keyboard)) }
+        val label = context.getString(R.string.guide)
+        compose.onNode(hasScrollToNodeAction()).performScrollToNode(hasText(label))
+        compose.onNodeWithText(label).performSemanticsAction(SemanticsActions.RequestFocus) { it() }
+        compose.onNodeWithText(label).assertIsFocused().assertIsDisplayed()
+        for (size in listOf(840.dp to 600.dp, 839.dp to 600.dp, 320.dp to 480.dp, 1000.dp to 600.dp)) {
+            compose.runOnIdle { window.value = size }
+            compose.onNodeWithText(label).assertIsFocused().assertIsDisplayed()
+        }
+        compose.onNodeWithText(label).performKeyInput { pressKey(Key.Enter) }
+        compose.onNodeWithText(context.getString(R.string.quick_settings_guide_title)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.done)).performClick()
+    }
+
+    @Test fun focusedSettingsStayVisibleWhenTheWindowResizes() {
+        val window = mutableStateOf(1000.dp to 600.dp)
+        var inputMode: InputModeManager? = null
+        compose.setContent {
+            inputMode = LocalInputModeManager.current
+            KanakoTheme {
+                PreferencesScreen(onBack = {},
+                    modifier = Modifier.requiredSize(window.value.first, window.value.second))
+            }
+        }
+        compose.runOnIdle { assertTrue(requireNotNull(inputMode).requestInputMode(InputMode.Keyboard)) }
+        for (id in listOf(R.string.script_romaji, R.string.preferences_keyboard, R.string.privacy_access)) {
+            val label = context.getString(id)
+            compose.onNode(hasScrollToNodeAction()).performScrollToNode(hasText(label))
+            compose.onNodeWithText(label).performSemanticsAction(SemanticsActions.RequestFocus) { it() }
+            for (size in listOf(840.dp to 600.dp, 839.dp to 600.dp, 320.dp to 480.dp, 1000.dp to 600.dp)) {
+                compose.runOnIdle { window.value = size }
+                compose.onNodeWithText(label).assertIsFocused().assertIsDisplayed()
+            }
+        }
+    }
+
     @Test fun wideTutorialKeepsPreviewAndScriptControlsUsable() {
         val preferences = mutableStateOf(KanakoPreferences())
         compose.setContent {

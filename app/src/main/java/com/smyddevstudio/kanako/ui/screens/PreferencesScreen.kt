@@ -19,6 +19,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameNanos
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.runtime.LaunchedEffect
 import com.smyddevstudio.kanako.ui.components.LocalTutorialFocus
 import com.smyddevstudio.kanako.ui.components.tutorialTarget
@@ -145,6 +153,7 @@ fun PreferencesScreen(
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         BoxWithConstraints(Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.TopCenter) {
+            val windowSize = DpSize(maxWidth, maxHeight)
             val wide = maxWidth >= 840.dp
             val compactPreview = maxHeight < 500.dp || LocalDensity.current.fontScale > 1.3f
             PreferencesLayout(
@@ -176,6 +185,7 @@ fun PreferencesScreen(
                                 ScriptType.entries.forEach { script ->
                                     PreferenceChoiceChip(
                                         enabled = tutorialAllows("appearance_script"),
+                                        modifier = Modifier.keepFocusedControlVisibleOnResize(windowSize),
                                         selected = preferences.scriptType == script,
                                         onClick = { onUpdateScriptType(script) },
                                         label = stringResource(script.labelRes)
@@ -191,6 +201,7 @@ fun PreferencesScreen(
                                 FuriganaSize.entries.forEach { size ->
                                     PreferenceChoiceChip(
                                         enabled = tutorialAllows("appearance_size"),
+                                        modifier = Modifier.keepFocusedControlVisibleOnResize(windowSize),
                                         selected = preferences.furiganaSize == size,
                                         onClick = { onUpdateFuriganaSize(size) },
                                         label = stringResource(size.labelRes)
@@ -216,6 +227,7 @@ fun PreferencesScreen(
                                 FuriganaColor.entries.forEach { color ->
                                     PreferenceChoiceChip(
                                         enabled = tutorialAllows("appearance_color"),
+                                        modifier = Modifier.keepFocusedControlVisibleOnResize(windowSize),
                                         selected = preferences.furiganaColor == color,
                                         onClick = { onUpdateFuriganaColor(color) },
                                         label = stringResource(color.labelRes),
@@ -232,6 +244,7 @@ fun PreferencesScreen(
                                 AnnotationPlateStyle.entries.forEach { style ->
                                     PreferenceChoiceChip(
                                         enabled = tutorialAllows("appearance_plate"),
+                                        modifier = Modifier.keepFocusedControlVisibleOnResize(windowSize),
                                         selected = preferences.annotationPlateStyle == style,
                                         onClick = { onUpdateAnnotationPlateStyle(style) },
                                         label = stringResource(style.labelRes)
@@ -251,6 +264,7 @@ fun PreferencesScreen(
                                 FabSize.entries.forEach { size ->
                                     PreferenceChoiceChip(
                                         enabled = tutorialAllows("button_size"),
+                                        modifier = Modifier.keepFocusedControlVisibleOnResize(windowSize),
                                         selected = preferences.fabSize == size,
                                         onClick = { onUpdateFabSize(size) },
                                         label = stringResource(size.labelRes)
@@ -263,6 +277,7 @@ fun PreferencesScreen(
                     item(key = "keyboard_hide") {
                         Box(Modifier.tutorialTarget("keyboard")) {
                         PreferenceToggleCard(
+                            modifier = Modifier.keepFocusedControlVisibleOnResize(windowSize),
                             title = stringResource(R.string.preferences_keyboard),
                             subtitle = stringResource(R.string.preferences_keyboard_check),
                             checked = preferences.autoHideOnKeyboard,
@@ -308,6 +323,7 @@ fun PreferencesScreen(
                                     )
                                 }
                                 OutlinedButton(
+                                    modifier = Modifier.keepFocusedControlVisibleOnResize(windowSize),
                                     enabled = tutorial == null,
                                     onClick = { showTileGuide = true },
                                     shape = RoundedCornerShape(10.dp)
@@ -326,13 +342,13 @@ fun PreferencesScreen(
                         OutlinedButton(
                             onClick = onRequestAccessibility,
                             enabled = tutorial == null,
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                            modifier = Modifier.keepFocusedControlVisibleOnResize(windowSize).fillMaxWidth().padding(horizontal = 16.dp)
                         ) { Text(stringResource(R.string.home_manage_access)) }
                     }
 
                     item(key = "privacy") {
                         TextButton(onClick = onNavigateToPrivacy, enabled = tutorial == null,
-                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                            modifier = Modifier.keepFocusedControlVisibleOnResize(windowSize).fillMaxWidth().heightIn(min = 48.dp)) {
                             Icon(Icons.Rounded.Security, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
                             Text(stringResource(R.string.privacy_access))
@@ -377,6 +393,21 @@ private fun PreferencesLayout(
         }
 
     }
+}
+
+@Composable
+private fun Modifier.keepFocusedControlVisibleOnResize(windowSize: DpSize): Modifier {
+    val requester = remember { BringIntoViewRequester() }
+    val inputMode = LocalInputModeManager.current
+    var focused by remember { mutableStateOf(false) }
+    LaunchedEffect(windowSize) {
+        if (focused && inputMode.inputMode == InputMode.Keyboard) {
+            // Wait for text reflow and the new list viewport to be placed.
+            withFrameNanos { }
+            requester.bringIntoView()
+        }
+    }
+    return this.bringIntoViewRequester(requester).onFocusChanged { focused = it.isFocused }
 }
 
 @Composable
@@ -466,10 +497,11 @@ private fun PreferenceToggleCard(
     subtitle: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().toggleable(
+        modifier = modifier.fillMaxWidth().toggleable(
             value = checked, role = Role.Switch, enabled = enabled, onValueChange = onCheckedChange
         ),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
