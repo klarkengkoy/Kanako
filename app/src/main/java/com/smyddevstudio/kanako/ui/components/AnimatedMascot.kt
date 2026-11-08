@@ -63,6 +63,7 @@ internal fun AnimatedMascot(
     holdLastFrame: Boolean = false,
     showStaticWhileLoading: Boolean = true,
     durationMillis: Int? = null,
+    onPlaybackStarted: () -> Unit = {},
     onFinished: () -> Unit = {}
 ) {
     val imageModifier = modifier.size(size)
@@ -70,7 +71,7 @@ internal fun AnimatedMascot(
         Image(painterResource(staticRes), contentDescription, imageModifier)
     } else {
         MascotPlayer(animationRes, staticRes, playbackKey, loop, animationsEnabled,
-            holdLastFrame, showStaticWhileLoading, durationMillis, onFinished,
+            holdLastFrame, showStaticWhileLoading, durationMillis, onPlaybackStarted, onFinished,
             imageModifier.then(if (contentDescription == null) Modifier else Modifier.semantics {
                 this.contentDescription = contentDescription
             }))
@@ -99,6 +100,7 @@ private fun MascotPlayer(
     holdLastFrame: Boolean,
     showStaticWhileLoading: Boolean,
     durationMillis: Int?,
+    onPlaybackStarted: () -> Unit,
     onFinished: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -117,6 +119,8 @@ private fun MascotPlayer(
     val player = current?.playback
     var finished by remember(request) { mutableStateOf(false) }
     var notified by remember(request) { mutableStateOf(false) }
+    var started by remember(request) { mutableStateOf(false) }
+    val latestPlaybackStarted by rememberUpdatedState(onPlaybackStarted)
     val latestFinished by rememberUpdatedState(onFinished)
     val latestLoop by rememberUpdatedState(loop)
     SideEffect { player?.setLoop(loop) }
@@ -139,7 +143,13 @@ private fun MascotPlayer(
                 player?.setLoop(latestLoop)
                 // An interrupted one-shot stays stopped, but its parent can advance once visible.
                 if (finished && !latestLoop) complete()
-                if (!finished && animationsEnabled) player?.start()
+                if (!finished && animationsEnabled) {
+                    player?.start()
+                    if (player != null && !started) {
+                        started = true
+                        latestPlaybackStarted()
+                    }
+                }
                 if (animationRes != null && !latestLoop &&
                     (!animationsEnabled || (current != null && player == null))) complete()
             } else {

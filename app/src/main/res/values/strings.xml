@@ -24,8 +24,7 @@
     <string name="notification_description">Tap to read, or choose Auto Reader in Kanako’s controls. No continuous screen sharing.</string>
     <string name="floating_control_description">Tap to read or clear furigana. Double tap or touch and hold for controls. Drag to move.</string>
     <string name="clear_annotations">Clear furigana</string>
-    <string name="screen_reader_title">Read Japanese</string>
-    <string name="screen_reader_description">Furigana where you read.</string>
+    <string name="screen_reader_title">Furigana where you read</string>
     <string name="setup_overlay_title">Display over other apps</string>
     <string name="setup_overlay_description">Show Kanako and readings over other apps.</string>
     <string name="setup_accessibility_title">Screen reading access</string>
@@ -38,8 +37,8 @@
     <string name="setup_manage_accessibility">Manage screen reading</string>
     <string name="setup_ready">Floating reader ready</string>
     <string name="setup_incomplete">Finish setup to enable the floating reader</string>
-    <string name="setup_enable">Show floating reader</string>
-    <string name="setup_stop">Stop floating reader</string>
+    <string name="setup_enable">TURN ON</string>
+    <string name="setup_stop">TURN OFF</string>
     <string name="setup_unsupported">Screen reading needs Android 11 or later. You can still use Camera.</string>
     <string name="setup_connecting">Accessibility is enabled but not connected yet. Wait a moment, or turn Kanako off and on in Accessibility settings.</string>
     <string name="setup_start_failed">Could not start the floating reader. Check setup and try again.</string>
@@ -50,8 +49,8 @@
     <string name="auto_read_disclosure">While the floating reader is active, Kanako will automatically take a screenshot after scrolling, app changes, or content updates settle for about 0.7 seconds. It also reads when the reader starts or the device is unlocked. No tap is needed. Images are processed locally in memory, then discarded; they are not saved or uploaded.\n\nThis uses individual screenshots, not a recording session. Capture is blocked around detected sensitive input and on the lock screen. Stability and scroll tracking depend on events from the source app; animations may not be detected. You can turn this option off at any time.</string>
     <string name="auto_read_enable">Enable Auto read mode</string>
 
-    <string name="camera_title">Camera reader</string>
-    <string name="camera_open">Read with camera</string>
+    <string name="camera_title">Camera</string>
+    <string name="camera_open">OPEN CAMERA</string>
     <string name="camera_capture">Capture photo</string>
     <string name="camera_appearance">Reading appearance</string>
     <string name="camera_state_permission">Camera access needed</string>
@@ -89,9 +88,9 @@
     <string name="preferences_keyboard_check">Hide the floating control while typing.</string>
     <string name="preferences_title">Preferences</string>
     <string name="home_reader_active">Floating reader on</string>
-    <string name="home_reader_off">Floating reader off</string>
+    <string name="home_reader_off">Floating reader</string>
     <string name="home_manage_access">Manage access</string>
-    <string name="how_it_works">How it works</string>
+    <string name="how_it_works">How to use</string>
     <string name="home_return">Back to Home</string>
     <string name="done">Done</string>
     <string name="preferences_size">Reading size</string>
@@ -150,7 +149,7 @@
     <string name="help_floating">Floating reader</string>
     <string name="help_troubleshooting">Troubleshooting</string>
     <string name="how_start_title">Start the floating reader</string>
-    <string name="how_start">On Home, set up display-over-apps and screen reading access after reviewing the disclosure. Choose Show floating reader, then open Japanese content in another app. Screen reading needs Android 11 or later.</string>
+    <string name="how_start">On Home, set up display-over-apps and screen reading access after reviewing the disclosure. Choose TURN ON, then open Japanese content in another app. Screen reading needs Android 11 or later.</string>
     <string name="how_stop_title">Move or stop Kanako</string>
     <string name="how_stop">Drag the character to move it. Hold it to open controls and choose Stop floating reader. You can also stop it from Home or the notification.</string>
     <string name="how_capture_scope_title">Screen access and protection</string>
@@ -158,8 +157,8 @@
     <string name="how_recovery_title">When readings do not appear</string>
     <string name="how_recovery">Check screen access on Home. If the service is connecting, wait or turn Kanako off and on in Android Accessibility settings. For a missing recognition model, connect to the internet and retry. In Camera, try focusing, moving closer, or capturing a photo. Tap the floating character to clear readings that no longer line up.</string>
     <string name="home_floating_summary">Read Japanese in other apps.</string>
-    <string name="home_camera_summary">Read printed Japanese with your camera. No screen reading access needed.</string>
-    <string name="home_setup_summary">Two access settings are needed for the floating reader.</string>
+    <string name="home_camera_summary">Read printed Japanese with your camera.</string>
+    <string name="home_setup_summary">Permissions needed</string>
     <string name="home_setup_action">Set up floating reader</string>
     <string name="home_next_step">Open another app, then tap Kanako to read. With Auto read mode enabled, reading starts after detected changes settle.</string>
     <string name="reading_bring_front">Bring reading to front</string>

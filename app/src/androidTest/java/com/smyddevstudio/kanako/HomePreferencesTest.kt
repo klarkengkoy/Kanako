@@ -274,12 +274,64 @@ class HomePreferencesTest {
         compose.runOnIdle { assertEquals(0, starts) }
         compose.onNodeWithText(context.getString(R.string.setup_enable)).assertIsNotEnabled()
         compose.waitUntil(timeoutMillis = 6_000) { starts == 1 }
+        assertTrue(imageViews().none { it.tag == R.drawable.kanako_floating })
         compose.onNodeWithText(context.getString(R.string.setup_stop)).performScrollTo().assertIsEnabled().performClick()
         compose.runOnIdle {
             assertEquals(1, starts)
             assertEquals(1, stops)
             assertFalse(active.value)
         }
+        compose.waitUntil(timeoutMillis = 3_000) { imageViews().any { it.tag == R.drawable.kanako_floating } }
+    }
+
+    @Test fun cameraFlashDefersOneNavigationAndDisablesRepeatTaps() {
+        var opens = 0
+        var openedAt = 0L
+        compose.setContent {
+            KanakoTheme {
+                HomeScreen({}, { opens++; openedAt = android.os.SystemClock.uptimeMillis() }, {},
+                    animationsEnabled = true)
+            }
+        }
+        val camera = compose.onNodeWithText(context.getString(R.string.camera_open)).performScrollTo()
+        val pressedAt = android.os.SystemClock.uptimeMillis()
+        camera.performClick()
+        compose.runOnIdle { assertEquals(0, opens) }
+        camera.assertIsNotEnabled()
+        compose.waitUntil(timeoutMillis = 8_000) { opens == 1 }
+        compose.runOnIdle {
+            assertEquals(1, opens)
+            assertTrue(openedAt - pressedAt >= 1_020L)
+        }
+        camera.assertIsEnabled()
+    }
+
+    @Test fun leavingTheForegroundCancelsPendingCameraNavigation() {
+        var opens = 0
+        val owner = object : androidx.lifecycle.LifecycleOwner {
+            val registry = androidx.lifecycle.LifecycleRegistry(this)
+            override val lifecycle: androidx.lifecycle.Lifecycle get() = registry
+        }
+        compose.runOnUiThread {
+            owner.registry.currentState = androidx.lifecycle.Lifecycle.State.RESUMED
+        }
+        compose.setContent {
+            CompositionLocalProvider(androidx.lifecycle.compose.LocalLifecycleOwner provides owner) {
+                KanakoTheme { HomeScreen({}, { opens++ }, {}, animationsEnabled = true) }
+            }
+        }
+        compose.onNodeWithText(context.getString(R.string.camera_open)).performScrollTo().performClick()
+        compose.waitUntil(timeoutMillis = 5_000) {
+            imageViews().lastOrNull()?.drawable is android.graphics.drawable.Animatable
+        }
+        compose.runOnIdle {
+            owner.registry.currentState = androidx.lifecycle.Lifecycle.State.STARTED
+            owner.registry.currentState = androidx.lifecycle.Lifecycle.State.RESUMED
+        }
+        Thread.sleep(1_800L)
+        compose.waitForIdle()
+        compose.runOnIdle { assertEquals(0, opens) }
+        compose.onNodeWithText(context.getString(R.string.camera_open)).assertIsEnabled()
     }
 
     private fun imageViews(): List<ImageView> {
@@ -338,7 +390,7 @@ class HomePreferencesTest {
         assertEquals(camera.height, reader.height, 0.5f)
         val greeting = compose.onNodeWithContentDescription(context.getString(R.string.replay_mascot_greeting))
         greeting.performScrollTo()
-        fun animation() = imageViews().maxByOrNull { it.width }?.drawable as? AnimatedImageDrawable
+        fun animation() = imageViews().mapNotNull { it.drawable as? AnimatedImageDrawable }.singleOrNull()
         compose.waitUntil(timeoutMillis = 5_000) { animation() != null }
         val original = requireNotNull(animation())
         compose.waitUntil(timeoutMillis = 6_000) { !original.isRunning }

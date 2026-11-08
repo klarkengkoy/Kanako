@@ -4,6 +4,7 @@
     <string name="accessibility_service_label">Lettura dello schermo Kanako</string>
     <string name="accessibility_service_description">Kanako acquisisce uno screenshot quando tocchi il pulsante mobile oppure, se attivi la lettura automatica, quando le modifiche rilevate si stabilizzano, per generare furigana sul dispositivo. Le immagini restano in memoria durante il riconoscimento e poi vengono eliminate; non vengono salvate né caricate online. I metadati di finestre, scorrimento, tastiera e campi password servono a rimuovere annotazioni obsolete e bloccare le acquisizioni durante l’inserimento di dati sensibili. Kanako non legge il testo dei campi di immissione tramite l’accessibilità.</string>
     <string name="snapshot_disclosure_title">Leggi lo schermo con Kanako</string>
+
     <string name="snapshot_disclosure_body">Attiva Kanako nelle impostazioni di accessibilità Android per leggere con un tocco. Ogni richiesta acquisisce uno screenshot dell’app attuale su Android 14 o successivo, oppure dello schermo su Android 11–13. La lettura parte con un tocco, a meno che tu non attivi separatamente la lettura automatica nei comandi del lettore mobile. Il riconoscimento avviene sul dispositivo. Le immagini restano in memoria durante il riconoscimento e poi vengono eliminate; non vengono salvate né caricate online.\n\nKanako usa i metadati di finestre, scorrimento, tastiera e campi password per rimuovere le vecchie annotazioni e bloccare le acquisizioni durante l’inserimento di dati sensibili. Non legge il testo dei campi di immissione tramite l’accessibilità. Le immagini dello schermo possono comunque contenere informazioni private: fai leggere solo i contenuti che desideri far elaborare a Kanako.\n\nNon viene avviata alcuna sessione continua di condivisione dello schermo. Puoi fermare il pulsante mobile o disattivare il servizio di accessibilità in qualsiasi momento.</string>
     <string name="snapshot_disclosure_continue">Accetta e continua</string>
     <string name="snapshot_disclosure_cancel">Non ora</string>
@@ -24,8 +25,7 @@
     <string name="notification_description">Tocca per leggere o scegli Lettura auto nei comandi di Kanako. Nessuna condivisione continua dello schermo.</string>
     <string name="floating_control_description">Tocca per leggere o cancellare i furigana. Tocca due volte o tieni premuto per i comandi. Trascina per spostare.</string>
     <string name="clear_annotations">Cancella furigana</string>
-    <string name="screen_reader_title">Leggi il giapponese</string>
-    <string name="screen_reader_description">Furigana dove leggi.</string>
+    <string name="screen_reader_title">Furigana dove leggi</string>
     <string name="setup_overlay_title">Visualizzazione su altre app</string>
     <string name="setup_overlay_description">Mostra Kanako e le letture sopra le altre app.</string>
     <string name="setup_accessibility_title">Accesso alla lettura dello schermo</string>
@@ -38,8 +38,8 @@
     <string name="setup_manage_accessibility">Gestisci lettura dello schermo</string>
     <string name="setup_ready">Lettore mobile pronto</string>
     <string name="setup_incomplete">Completa la configurazione del lettore mobile</string>
-    <string name="setup_enable">Mostra lettore mobile</string>
-    <string name="setup_stop">Ferma lettore mobile</string>
+    <string name="setup_enable">ATTIVA</string>
+    <string name="setup_stop">DISATTIVA</string>
     <string name="setup_unsupported">La lettura dello schermo richiede Android 11 o successivo. Puoi comunque usare la fotocamera.</string>
     <string name="setup_connecting">L’accessibilità è attiva ma non ancora connessa. Attendi oppure disattiva e riattiva Kanako nelle impostazioni di accessibilità.</string>
     <string name="setup_start_failed">Impossibile avviare il lettore mobile. Controlla la configurazione e riprova.</string>
@@ -47,11 +47,12 @@
     <string name="quick_settings_guide_title">Aggiungi Kanako alle impostazioni rapide</string>
     <string name="quick_settings_guide_body">Scorri due volte verso il basso dalla parte alta dello schermo. Tocca Modifica e aggiungi il riquadro Kanako. Toccalo per mostrare o fermare il lettore mobile.</string>
     <string name="auto_read_title">Modalità di lettura automatica</string>
+
     <string name="auto_read_disclosure">Quando il lettore mobile è attivo, Kanako acquisisce automaticamente uno screenshot dopo circa 0,7 secondi di stabilità in seguito a scorrimenti, cambi di app o aggiornamenti dei contenuti. Legge anche all’avvio del lettore o allo sblocco del dispositivo. Non serve toccare. Le immagini vengono elaborate localmente in memoria e poi eliminate; non vengono salvate né caricate online.\n\nVengono usati singoli screenshot, non una sessione di registrazione. L’acquisizione è bloccata durante l’inserimento rilevato di dati sensibili e sulla schermata di blocco. La stabilità e il tracciamento dello scorrimento dipendono dagli eventi dell’app di origine; le animazioni potrebbero non essere rilevate. Puoi disattivare questa opzione in qualsiasi momento.</string>
     <string name="auto_read_enable">Attiva lettura automatica</string>
 
-    <string name="camera_title">Lettore con fotocamera</string>
-    <string name="camera_open">Leggi con la fotocamera</string>
+    <string name="camera_title">Fotocamera</string>
+    <string name="camera_open">APRI FOTOCAMERA</string>
     <string name="camera_capture">Scatta foto</string>
     <string name="camera_appearance">Aspetto delle letture</string>
     <string name="camera_state_permission">Accesso alla fotocamera necessario</string>
@@ -89,9 +90,9 @@
     <string name="preferences_keyboard_check">Nascondi il pulsante mobile durante la digitazione.</string>
     <string name="preferences_title">Preferenze</string>
     <string name="home_reader_active">Lettore mobile attivo</string>
-    <string name="home_reader_off">Lettore mobile disattivato</string>
+    <string name="home_reader_off">Lettore mobile</string>
     <string name="home_manage_access">Gestisci accessi</string>
-    <string name="how_it_works">Come funziona</string>
+    <string name="how_it_works">Come si usa</string>
     <string name="home_return">Torna alla Home</string>
     <string name="done">Fine</string>
     <string name="preferences_size">Dimensioni delle letture</string>
@@ -150,7 +151,7 @@
     <string name="help_floating">Lettore mobile</string>
     <string name="help_troubleshooting">Risoluzione dei problemi</string>
     <string name="how_start_title">Avvia il lettore mobile</string>
-    <string name="how_start">Nella Home, configura la visualizzazione sopra le app e l’accesso alla lettura dello schermo dopo aver letto l’informativa. Scegli Mostra lettore mobile, poi apri contenuti giapponesi in un’altra app. La lettura dello schermo richiede Android 11 o successivo.</string>
+    <string name="how_start">Nella Home, configura la visualizzazione sopra le app e l’accesso alla lettura dello schermo dopo aver letto l’informativa. Scegli ATTIVA, poi apri contenuti giapponesi in un’altra app. La lettura dello schermo richiede Android 11 o successivo.</string>
     <string name="how_stop_title">Sposta o ferma Kanako</string>
     <string name="how_stop">Trascina il personaggio per spostarlo. Tienilo premuto per aprire i comandi e fermare il lettore mobile. Puoi fermarlo anche dalla Home o dalla notifica.</string>
     <string name="how_capture_scope_title">Accesso allo schermo e protezione</string>
@@ -158,14 +159,15 @@
     <string name="how_recovery_title">Se le letture non compaiono</string>
     <string name="how_recovery">Controlla gli accessi nella Home. Se il servizio si sta connettendo, attendi o disattiva e riattiva Kanako nelle impostazioni di accessibilità Android. Se manca il modello, connettiti a Internet e riprova. Con la fotocamera, prova a mettere a fuoco, avvicinarti o scattare una foto. Tocca il personaggio mobile per cancellare letture non più allineate.</string>
     <string name="home_floating_summary">Leggi il giapponese nelle altre app.</string>
-    <string name="home_camera_summary">Leggi il giapponese stampato con la fotocamera. Non serve l’accesso allo schermo.</string>
-    <string name="home_setup_summary">Il lettore mobile richiede due impostazioni di accesso.</string>
+    <string name="home_camera_summary">Leggi il giapponese stampato con la fotocamera.</string>
+    <string name="home_setup_summary">Autorizzazioni necessarie</string>
     <string name="home_setup_action">Configura lettore mobile</string>
     <string name="home_next_step">Apri un’altra app, poi tocca Kanako per leggere. Con la lettura automatica attiva, la lettura inizia quando le modifiche rilevate si stabilizzano.</string>
     <string name="reading_bring_front">Porta la lettura davanti</string>
     <string name="tutorial_next">Avanti</string>
     <string name="replay_mascot_greeting">Ripeti il saluto di Kanako</string>
     <string name="guided_intro_title">Proviamo Kanako</string>
+
     <string name="guided_intro_body">Scegli un lettore nella schermata iniziale e scopri come usarlo. Puoi provare l’altro dopo. Salta o continua quando vuoi.</string>
     <string name="guided_start">Inizia tutorial</string>
     <string name="guided_skip">Salta tutorial</string>
@@ -193,6 +195,7 @@
     <string name="tutorial_controls">Controlla le letture</string>
     <string name="tutorial_controls_floating">Tocca Kanako per cancellare le letture. Tocca di nuovo per leggere.</string>
     <string name="tutorial_controls_camera">Inquadra del testo giapponese e tocca il pulsante di scatto. Puoi anche scegliere una foto con l’immagine accanto.</string>
+
     <string name="tutorial_auto_read">Apri i comandi di Kanako e tocca Modalità per scegliere Lettura auto. Conferma se vuoi provarla.</string>
     <string name="tutorial_auto_scroll">Con la modalità di lettura automatica attiva, scorri questo testo e fermati. Kanako lo legge dopo una breve pausa, senza toccare il pulsante. Se selezioni una parola, aspetta che tocchi altrove prima di leggere di nuovo.</string>
     <string name="tutorial_preferences">Leggi più comodamente</string>

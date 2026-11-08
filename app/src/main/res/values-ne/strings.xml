@@ -24,8 +24,7 @@
     <string name="notification_description">पढ्न ट्याप गर्नुहोस् वा Kanako का नियन्त्रणहरूमा स्वतः पढाइ छान्नुहोस्। निरन्तर स्क्रिन साझेदारी हुँदैन।</string>
     <string name="floating_control_description">फुरिगाना पढ्न वा हटाउन छुनुहोस्। नियन्त्रणका लागि दुई पटक छुनुहोस् वा थिचिराख्नुहोस्। सार्न तान्नुहोस्।</string>
     <string name="clear_annotations">फुरिगाना हटाउनुहोस्</string>
-    <string name="screen_reader_title">जापानी पढ्नुहोस्</string>
-    <string name="screen_reader_description">तपाईंले पढ्ने ठाउँमै फुरिगाना।</string>
+    <string name="screen_reader_title">तपाईंले पढ्ने ठाउँमै फुरिगाना</string>
     <string name="setup_overlay_title">अन्य एपमाथि देखाउने</string>
     <string name="setup_overlay_description">अन्य एपमाथि Kanako र पढाइ देखाउनुहोस्।</string>
     <string name="setup_accessibility_title">स्क्रिन पढ्ने पहुँच</string>
@@ -38,8 +37,8 @@
     <string name="setup_manage_accessibility">स्क्रिन पढाइ व्यवस्थापन</string>
     <string name="setup_ready">फ्लोटिङ रिडर तयार छ</string>
     <string name="setup_incomplete">फ्लोटिङ रिडरको सेटअप पूरा गर्नुहोस्</string>
-    <string name="setup_enable">फ्लोटिङ रिडर देखाउनुहोस्</string>
-    <string name="setup_stop">फ्लोटिङ रिडर रोक्नुहोस्</string>
+    <string name="setup_enable">चालु गर्नुहोस्</string>
+    <string name="setup_stop">बन्द गर्नुहोस्</string>
     <string name="setup_unsupported">स्क्रिन पढ्न Android 11 वा पछिल्लो संस्करण चाहिन्छ। क्यामेरा भने प्रयोग गर्न सक्नुहुन्छ।</string>
     <string name="setup_connecting">पहुँचयोग्यता सक्रिय छ तर अझै जोडिएको छैन। केही बेर पर्खनुहोस् वा पहुँचयोग्यता सेटिङमा Kanako निष्क्रिय गरी फेरि सक्रिय गर्नुहोस्।</string>
     <string name="setup_start_failed">फ्लोटिङ रिडर सुरु गर्न सकिएन। सेटअप जाँचेर फेरि प्रयास गर्नुहोस्।</string>
@@ -50,8 +49,8 @@
     <string name="auto_read_disclosure">फ्लोटिङ रिडर सक्रिय हुँदा, स्क्रोल, एप परिवर्तन वा सामग्री अद्यावधिकपछि करिब ०.७ सेकेन्डसम्म दृश्य स्थिर भएपछि Kanako ले स्वतः स्क्रिनसट लिन्छ। रिडर सुरु हुँदा वा उपकरणको लक खोल्दा पनि पढ्छ। छुनु पर्दैन। तस्बिरहरू उपकरणकै मेमोरीमा प्रशोधन गरी हटाइन्छन्; तिनलाई सेभ वा अपलोड गरिँदैन।\n\nयसले छुट्टाछुट्टै स्क्रिनसट प्रयोग गर्छ, रेकर्डिङ सत्र होइन। संवेदनशील इनपुट पत्ता लाग्दा र लक स्क्रिनमा स्क्रिनसट रोकिन्छ। स्थिरता र स्क्रोलको अनुगमन स्रोत एपका घटनामा निर्भर हुन्छन्; एनिमेसन पत्ता नलाग्न सक्छ। तपाईंले यो विकल्प कुनै पनि बेला बन्द गर्न सक्नुहुन्छ।</string>
     <string name="auto_read_enable">स्वतः पढ्ने सक्रिय गर्नुहोस्</string>
 
-    <string name="camera_title">क्यामेरा रिडर</string>
-    <string name="camera_open">क्यामेराबाट पढ्नुहोस्</string>
+    <string name="camera_title">क्यामेरा</string>
+    <string name="camera_open">क्यामेरा खोल्नुहोस्</string>
     <string name="camera_capture">फोटो खिच्नुहोस्</string>
     <string name="camera_appearance">पढाइको स्वरूप</string>
     <string name="camera_state_permission">क्यामेराको पहुँच चाहिन्छ</string>
@@ -89,9 +88,9 @@
     <string name="preferences_keyboard_check">टाइप गर्दा फ्लोटिङ बटन लुकाउनुहोस्।</string>
     <string name="preferences_title">प्राथमिकता</string>
     <string name="home_reader_active">फ्लोटिङ रिडर चालु छ</string>
-    <string name="home_reader_off">फ्लोटिङ रिडर बन्द छ</string>
+    <string name="home_reader_off">फ्लोटिङ रिडर</string>
     <string name="home_manage_access">पहुँच व्यवस्थापन</string>
-    <string name="how_it_works">कसरी काम गर्छ</string>
+    <string name="how_it_works">कसरी प्रयोग गर्ने</string>
     <string name="home_return">गृहपृष्ठमा फर्कनुहोस्</string>
     <string name="done">सकियो</string>
     <string name="preferences_size">पढाइको आकार</string>
@@ -150,7 +149,7 @@
     <string name="help_floating">फ्लोटिङ रिडर</string>
     <string name="help_troubleshooting">समस्या समाधान</string>
     <string name="how_start_title">फ्लोटिङ रिडर सुरु गर्नुहोस्</string>
-    <string name="how_start">जानकारी पढेपछि गृहपृष्ठमा अन्य एपमाथि देखाउने र स्क्रिन पढ्ने पहुँच सेटअप गर्नुहोस्। फ्लोटिङ रिडर देखाउने विकल्प छान्नुहोस्, त्यसपछि अर्को एपमा जापानी सामग्री खोल्नुहोस्। स्क्रिन पढ्न Android 11 वा पछिल्लो संस्करण चाहिन्छ।</string>
+    <string name="how_start">जानकारी पढेपछि गृहपृष्ठमा अन्य एपमाथि देखाउने र स्क्रिन पढ्ने पहुँच सेटअप गर्नुहोस्। चालु गर्नुहोस् छान्नुहोस्, त्यसपछि अर्को एपमा जापानी सामग्री खोल्नुहोस्। स्क्रिन पढ्न Android 11 वा पछिल्लो संस्करण चाहिन्छ।</string>
     <string name="how_stop_title">Kanako सार्नुहोस् वा रोक्नुहोस्</string>
     <string name="how_stop">पात्रलाई सार्न तान्नुहोस्। नियन्त्रण खोल्न थिचिराख्नुहोस् र फ्लोटिङ रिडर रोक्ने विकल्प छान्नुहोस्। गृहपृष्ठ वा सूचनाबाट पनि रोक्न सक्नुहुन्छ।</string>
     <string name="how_capture_scope_title">स्क्रिन पहुँच र सुरक्षा</string>
@@ -158,8 +157,8 @@
     <string name="how_recovery_title">पढाइ नदेखिएमा</string>
     <string name="how_recovery">गृहपृष्ठमा स्क्रिन पहुँच जाँच्नुहोस्। सेवा जोडिँदै छ भने पर्खनुहोस् वा Android को पहुँचयोग्यता सेटिङमा Kanako निष्क्रिय गरी फेरि सक्रिय गर्नुहोस्। पहिचान मोडेल नभएमा इन्टरनेटमा जोडिएर फेरि प्रयास गर्नुहोस्। क्यामेरामा फोकस गर्ने, नजिक जाने वा फोटो खिच्ने प्रयास गर्नुहोस्। नमिलेका पढाइ हटाउन फ्लोटिङ पात्र छुनुहोस्।</string>
     <string name="home_floating_summary">अन्य एपमा जापानी पढ्नुहोस्।</string>
-    <string name="home_camera_summary">क्यामेराबाट छापिएको जापानी पढ्नुहोस्। स्क्रिन पढ्ने पहुँच चाहिँदैन।</string>
-    <string name="home_setup_summary">फ्लोटिङ रिडरका लागि दुई पहुँच सेटिङ चाहिन्छन्।</string>
+    <string name="home_camera_summary">क्यामेराबाट छापिएको जापानी पढ्नुहोस्।</string>
+    <string name="home_setup_summary">अनुमति आवश्यक छ</string>
     <string name="home_setup_action">फ्लोटिङ रिडर सेटअप</string>
     <string name="home_next_step">अर्को एप खोल्नुहोस्, त्यसपछि पढ्न Kanako छुनुहोस्। स्वतः पढ्ने सक्रिय भएमा पत्ता लागेका परिवर्तन स्थिर भएपछि पढाइ सुरु हुन्छ।</string>
     <string name="reading_bring_front">पढाइ अगाडि ल्याउनुहोस्</string>

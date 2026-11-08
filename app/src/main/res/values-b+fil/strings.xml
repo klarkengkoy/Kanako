@@ -4,6 +4,7 @@
     <string name="accessibility_service_label">Pagbasa ng screen ng Kanako</string>
     <string name="accessibility_service_description">Kumukuha ang Kanako ng isang screenshot kapag tinap mo ang lumulutang na button, o kapag humupa ang mga natukoy na pagbabago kung naka-on ang awtomatikong pagbasa, para gumawa ng furigana sa iyong device. Nasa memory lang ang mga larawan habang kinikilala ang teksto at pagkatapos ay itinatapon; hindi sine-save o ina-upload ang mga ito. Ginagamit ang metadata ng window, pag-scroll, keyboard, at password field para alisin ang lumang anotasyon at harangin ang pagkuha kapag may sensitibong input. Hindi binabasa ng Kanako ang teksto sa mga input field sa pamamagitan ng accessibility.</string>
     <string name="snapshot_disclosure_title">Basahin ang iyong screen gamit ang Kanako</string>
+
     <string name="snapshot_disclosure_body">I-on ang Kanako sa mga setting ng Accessibility ng Android para makabasa sa isang tap. Bawat kahilingan ay kumukuha ng isang screenshot ng kasalukuyang app sa Android 14 o mas bago, o ng buong screen sa Android 11–13. Nagsisimula ang pagbasa sa pag-tap maliban kung hiwalay mong i-on ang awtomatikong pagbasa sa mga control ng floating reader. Sa iyong device ginagawa ang pagkilala. Nasa memory lang ang mga larawan habang kinikilala ang teksto at pagkatapos ay itinatapon; hindi sine-save o ina-upload ang mga ito.\n\nGinagamit ng Kanako ang metadata ng window, pag-scroll, keyboard, at password field para alisin ang lumang anotasyon at harangin ang pagkuha kapag may sensitibong input. Hindi nito binabasa ang teksto sa mga input field sa pamamagitan ng accessibility. Maaari pa ring may pribadong impormasyon ang mga larawan ng screen, kaya ipabasa lamang ang nilalamang gusto mong iproseso ng Kanako.\n\nWalang tuloy-tuloy na session ng pagbabahagi ng screen. Maaari mong ihinto ang lumulutang na button o i-off ang serbisyo ng accessibility anumang oras.</string>
     <string name="snapshot_disclosure_continue">Sumang-ayon at magpatuloy</string>
     <string name="snapshot_disclosure_cancel">Huwag muna</string>
@@ -24,8 +25,7 @@
     <string name="notification_description">I-tap para magbasa o piliin ang Auto Reader sa mga control ni Kanako. Walang tuloy-tuloy na pagbabahagi ng screen.</string>
     <string name="floating_control_description">I-tap para basahin o burahin ang furigana. I-double tap o pindutin nang matagal para sa mga kontrol. I-drag para ilipat.</string>
     <string name="clear_annotations">Burahin ang furigana</string>
-    <string name="screen_reader_title">Magbasa ng Japanese</string>
-    <string name="screen_reader_description">Furigana saan ka man nagbabasa.</string>
+    <string name="screen_reader_title">Furigana saan ka man nagbabasa</string>
     <string name="setup_overlay_title">Ipakita sa ibabaw ng ibang app</string>
     <string name="setup_overlay_description">Ipakita ang Kanako at mga pagbasa sa ibabaw ng ibang app.</string>
     <string name="setup_accessibility_title">Access sa pagbasa ng screen</string>
@@ -38,8 +38,8 @@
     <string name="setup_manage_accessibility">Pamahalaan ang pagbasa ng screen</string>
     <string name="setup_ready">Handa ang lumulutang na reader</string>
     <string name="setup_incomplete">Tapusin ang setup ng lumulutang na reader</string>
-    <string name="setup_enable">Ipakita ang lumulutang na reader</string>
-    <string name="setup_stop">Ihinto ang lumulutang na reader</string>
+    <string name="setup_enable">I-ON</string>
+    <string name="setup_stop">I-OFF</string>
     <string name="setup_unsupported">Kailangan ng Android 11 o mas bago para sa pagbasa ng screen. Maaari mo pa ring gamitin ang Camera.</string>
     <string name="setup_connecting">Naka-on ang accessibility pero hindi pa nakakonekta. Maghintay sandali, o i-off at i-on muli ang Kanako sa mga setting ng Accessibility.</string>
     <string name="setup_start_failed">Hindi masimulan ang lumulutang na reader. Suriin ang setup at subukan ulit.</string>
@@ -47,11 +47,12 @@
     <string name="quick_settings_guide_title">Idagdag ang Kanako sa Quick Settings</string>
     <string name="quick_settings_guide_body">Mag-swipe pababa nang dalawang beses mula sa itaas ng screen. Pindutin ang Edit at idagdag ang Kanako tile. I-tap ito para ipakita o ihinto ang floating reader.</string>
     <string name="auto_read_title">Auto read mode</string>
+
     <string name="auto_read_disclosure">Habang aktibo ang lumulutang na reader, awtomatikong kukuha ang Kanako ng screenshot kapag naging matatag nang humigit-kumulang 0.7 segundo ang view matapos mag-scroll, lumipat ng app, o magbago ang nilalaman. Nagbabasa rin ito kapag nagsimula ang reader o na-unlock ang device. Hindi kailangang mag-tap. Lokal na pinoproseso sa memory ang mga larawan at pagkatapos ay itinatapon; hindi sine-save o ina-upload ang mga ito.\n\nMga hiwalay na screenshot ang ginagamit, hindi isang session ng pagre-record. Hinaharang ang pagkuha kapag may natukoy na sensitibong input at sa lock screen. Nakadepende ang katatagan at pagsubaybay sa pag-scroll sa mga event mula sa pinagmulang app; maaaring hindi matukoy ang mga animation. Maaari mong i-off ang opsyong ito anumang oras.</string>
     <string name="auto_read_enable">I-on ang awtomatikong pagbasa</string>
 
-    <string name="camera_title">Reader gamit ang camera</string>
-    <string name="camera_open">Magbasa gamit ang camera</string>
+    <string name="camera_title">Camera</string>
+    <string name="camera_open">BUKSAN ANG CAMERA</string>
     <string name="camera_capture">Kumuha ng larawan</string>
     <string name="camera_appearance">Hitsura ng mga pagbasa</string>
     <string name="camera_state_permission">Kailangan ng access sa camera</string>
@@ -89,9 +90,9 @@
     <string name="preferences_keyboard_check">Itago ang lumulutang na button habang nagta-type.</string>
     <string name="preferences_title">Mga kagustuhan</string>
     <string name="home_reader_active">Naka-on ang lumulutang na reader</string>
-    <string name="home_reader_off">Naka-off ang lumulutang na reader</string>
+    <string name="home_reader_off">Lumulutang na reader</string>
     <string name="home_manage_access">Pamahalaan ang access</string>
-    <string name="how_it_works">Paano ito gumagana</string>
+    <string name="how_it_works">Paano gamitin</string>
     <string name="home_return">Bumalik sa Home</string>
     <string name="done">Tapos na</string>
     <string name="preferences_size">Laki ng pagbasa</string>
@@ -150,7 +151,7 @@
     <string name="help_floating">Lumulutang na reader</string>
     <string name="help_troubleshooting">Paglutas ng problema</string>
     <string name="how_start_title">Simulan ang lumulutang na reader</string>
-    <string name="how_start">Sa Home, i-set up ang pagpapakita sa ibabaw ng ibang app at access sa pagbasa ng screen matapos basahin ang paliwanag. Piliin ang Ipakita ang lumulutang na reader, saka magbukas ng Japanese na nilalaman sa ibang app. Kailangan ng Android 11 o mas bago para sa pagbasa ng screen.</string>
+    <string name="how_start">Sa Home, i-set up ang pagpapakita sa ibabaw ng ibang app at access sa pagbasa ng screen matapos basahin ang paliwanag. Piliin ang I-ON, saka magbukas ng Japanese na nilalaman sa ibang app. Kailangan ng Android 11 o mas bago para sa pagbasa ng screen.</string>
     <string name="how_stop_title">Ilipat o ihinto ang Kanako</string>
     <string name="how_stop">I-drag ang karakter para ilipat. Pindutin nang matagal para buksan ang mga kontrol at ihinto ang lumulutang na reader. Maaari mo rin itong ihinto mula sa Home o sa notification.</string>
     <string name="how_capture_scope_title">Access sa screen at proteksyon</string>
@@ -158,14 +159,15 @@
     <string name="how_recovery_title">Kapag walang lumalabas na pagbasa</string>
     <string name="how_recovery">Suriin ang access sa screen sa Home. Kung kumokonekta ang serbisyo, maghintay o i-off at i-on muli ang Kanako sa mga setting ng Accessibility ng Android. Kung wala ang modelo, kumonekta sa internet at subukan ulit. Sa Camera, subukang mag-focus, lumapit, o kumuha ng larawan. I-tap ang lumulutang na karakter para burahin ang mga pagbasa na hindi na nakahanay.</string>
     <string name="home_floating_summary">Magbasa ng Japanese sa ibang app.</string>
-    <string name="home_camera_summary">Basahin ang naka-print na Japanese gamit ang camera. Hindi kailangan ng access sa pagbasa ng screen.</string>
-    <string name="home_setup_summary">Kailangan ng dalawang setting ng access para sa lumulutang na reader.</string>
+    <string name="home_camera_summary">Basahin ang naka-print na Japanese gamit ang camera.</string>
+    <string name="home_setup_summary">Kailangan ng mga pahintulot</string>
     <string name="home_setup_action">I-set up ang lumulutang na reader</string>
     <string name="home_next_step">Magbukas ng ibang app, saka i-tap ang Kanako para magbasa. Kapag naka-on ang awtomatikong pagbasa, magsisimula ang pagbasa kapag humupa ang mga natukoy na pagbabago.</string>
     <string name="reading_bring_front">Ilagay ang pagbasa sa harap</string>
     <string name="tutorial_next">Susunod</string>
     <string name="replay_mascot_greeting">Ulitin ang pagbati ni Kanako</string>
     <string name="guided_intro_title">Subukan natin ang Kanako</string>
+
     <string name="guided_intro_body">Pumili ng reader sa Home at tutulungan ka naming magsimula. Maaari mong subukan ang isa pa pagkatapos. Lumaktaw o magpatuloy kahit kailan.</string>
     <string name="guided_start">Simulan ang tutorial</string>
     <string name="guided_skip">Laktawan ang tutorial</string>
@@ -193,6 +195,7 @@
     <string name="tutorial_controls">Kontrolin ang mga pagbasa</string>
     <string name="tutorial_controls_floating">I-tap ang Kanako para alisin ang mga pagbasa. I-tap ulit para magbasa.</string>
     <string name="tutorial_controls_camera">Itapat ang camera sa tekstong Hapones at i-tap ang capture button. Maaari ka ring pumili ng litrato gamit ang larawan sa tabi nito.</string>
+
     <string name="tutorial_auto_read">Buksan ang mga control ni Kanako at i-tap ang Mode para piliin ang Auto Reader. Kumpirmahin kung gusto mo itong subukan.</string>
     <string name="tutorial_auto_scroll">Kapag naka-on ang Auto read mode, i-scroll ang sample na ito at huminto. Pagkatapos ng maikling sandali, babasahin ito ni Kanako nang hindi mo kailangang mag-tap. Kapag pumili ka ng salita, maghihintay ang bagong pagbasa hanggang mag-tap ka sa labas.</string>
     <string name="tutorial_preferences">Gawing komportable ang pagbasa</string>

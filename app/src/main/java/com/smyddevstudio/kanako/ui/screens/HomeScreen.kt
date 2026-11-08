@@ -1,9 +1,26 @@
 package com.smyddevstudio.kanako.ui.screens
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import com.smyddevstudio.kanako.ui.theme.KanakoUiProfile
 import androidx.compose.ui.semantics.heading
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,27 +42,26 @@ import com.smyddevstudio.kanako.ui.components.tutorialAllows
 import com.smyddevstudio.kanako.ui.components.tutorialTarget
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material.icons.rounded.CameraAlt
+import androidx.compose.material.icons.automirrored.rounded.Help
+import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.HourglassTop
 import androidx.compose.material.icons.rounded.RadioButtonUnchecked
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.Button
+import com.smyddevstudio.kanako.ui.components.KanakoButton as Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
+import com.smyddevstudio.kanako.ui.components.KanakoCard as Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.smyddevstudio.kanako.ui.components.KanakoIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.smyddevstudio.kanako.ui.components.KanakoOutlinedButton as OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.smyddevstudio.kanako.ui.components.KanakoTextButton as TextButton
 import androidx.compose.material3.Surface
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.TopAppBar
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
@@ -55,10 +71,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.tooling.preview.Preview
@@ -66,6 +90,7 @@ import androidx.compose.ui.unit.dp
 import com.smyddevstudio.kanako.R
 import com.smyddevstudio.kanako.model.KanakoPreferences
 import com.smyddevstudio.kanako.model.FabSize
+import com.smyddevstudio.kanako.ui.components.CameraLaunchFlash
 import com.smyddevstudio.kanako.ui.components.AnimatedMascot
 import com.smyddevstudio.kanako.ui.components.rememberAnimationsEnabled
 import androidx.lifecycle.Lifecycle
@@ -73,8 +98,10 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.delay
 import com.smyddevstudio.kanako.ui.theme.KanakoTheme
+import com.smyddevstudio.kanako.ui.theme.LocalKanakoDarkTheme
+import com.smyddevstudio.kanako.ui.theme.WarmCreamSurface
+import com.smyddevstudio.kanako.ui.theme.DarkWarmCreamSurface
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onNavigateToHowItWorks: () -> Unit,
@@ -99,25 +126,53 @@ fun HomeScreen(
 ) {
     val focus = LocalTutorialFocus.current
     val chooser = focus?.step == 0
+    val floatingInteraction = remember { MutableInteractionSource() }
+    val cameraInteraction = remember { MutableInteractionSource() }
     val homeScroll = rememberScrollState()
     var showAccess by rememberSaveable { mutableStateOf(false) }
     var departing by remember { mutableStateOf(false) }
     var awaitingReader by remember { mutableStateOf(false) }
     var departureVersion by remember { mutableIntStateOf(0) }
     var greetingVersion by remember { mutableIntStateOf(0) }
+    var cameraLaunching by remember { mutableStateOf(false) }
+    var cameraPlaybackStarted by remember { mutableStateOf(false) }
+    var cameraPlaybackVersion by remember { mutableIntStateOf(0) }
+    var flashOrigin by remember { mutableStateOf(Offset.Zero) }
+    var homeCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    var cameraMascotCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    val flashProgress = remember { Animatable(0f) }
+    val launchCamera by rememberUpdatedState {
+        if (chooser) onStartTutorialReader(TutorialPath.CAMERA) else onNavigateToCamera()
+    }
     DisposableEffect(tutorialActive, focus?.step) {
-        onDispose { departing = false; awaitingReader = false }
+        onDispose { departing = false; awaitingReader = false; cameraLaunching = false }
     }
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     DisposableEffect(lifecycle) {
         val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_PAUSE) cameraLaunching = false
             if (event == Lifecycle.Event.ON_STOP) {
                 departing = false
                 awaitingReader = false
+                cameraLaunching = false
             }
         }
         lifecycle.addObserver(observer)
         onDispose { lifecycle.removeObserver(observer) }
+    }
+    LaunchedEffect(cameraLaunching, cameraPlaybackStarted, animationsEnabled) {
+        if (cameraLaunching && (cameraPlaybackStarted || !animationsEnabled)) {
+            if (animationsEnabled) {
+                delay(KanakoUiProfile.cameraFlashDelayMillis)
+                flashProgress.animateTo(
+                    1f,
+                    tween(KanakoUiProfile.cameraFlashDuration, easing = LinearEasing)
+                )
+            }
+            if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) launchCamera()
+            cameraLaunching = false
+        }
+        flashProgress.snapTo(0f)
     }
     LaunchedEffect(awaitingReader) {
         if (awaitingReader) {
@@ -130,7 +185,9 @@ fun HomeScreen(
         FabSize.MEDIUM -> 56.dp
         FabSize.LARGE -> 68.dp
     }
-    val readingActionModifier = Modifier.widthIn(max = 320.dp).fillMaxWidth().heightIn(min = 48.dp)
+    val readingActionModifier = Modifier.fillMaxWidth()
+        .heightIn(min = KanakoUiProfile.homeActionHeight)
+    val accessoryColor = if (LocalKanakoDarkTheme.current) DarkWarmCreamSurface else WarmCreamSurface
     val ready = supported && overlayGranted && accessibilityEnabled && accessibilityConnected &&
         preferences.hasAcceptedSnapshotDisclosure
     LaunchedEffect(ready, preferences.isOverlayActive) {
@@ -149,221 +206,361 @@ fun HomeScreen(
             } else homeScroll.scrollTo(0)
         }
     }
-    Box(modifier.fillMaxSize()) {
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.app_name)) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
-                actions = {
-                    IconButton(onClick = onNavigateToPreferences, enabled = tutorialAllows("preferences"), modifier = Modifier.tutorialTarget("preferences")) {
-                        Icon(Icons.Rounded.Settings, contentDescription = stringResource(R.string.preferences_title))
-                    }
-                }
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier.padding(padding).fillMaxWidth()
-                .verticalScroll(homeScroll).padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Column(
-                modifier = Modifier.widthIn(max = 600.dp).fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+    Box(modifier.fillMaxSize().onGloballyPositioned { homeCoordinates = it }) {
+        Scaffold(containerColor = MaterialTheme.colorScheme.background) { padding ->
+            BoxWithConstraints(
+                modifier = Modifier.padding(padding).fillMaxSize(),
+                contentAlignment = Alignment.TopCenter
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                val contentMinHeight = (maxHeight - KanakoUiProfile.homePadding * 2).coerceAtLeast(0.dp)
+                Column(
+                    modifier = Modifier.widthIn(max = 600.dp).fillMaxWidth()
+                        .verticalScroll(homeScroll)
+                        .padding(KanakoUiProfile.homePadding)
+                        .heightIn(min = contentMinHeight),
+                    verticalArrangement = Arrangement.SpaceBetween,
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    val greetingDescription = stringResource(R.string.replay_mascot_greeting)
-                    IconButton(
-                        onClick = { greetingVersion++ },
-                        enabled = focus == null,
-                        modifier = Modifier.size(mascotSize).semantics {
-                            contentDescription = greetingDescription
-                        }
-                    ) {
-                        AnimatedMascot(
-                            animationRes = R.drawable.kanako_welcome_wave,
-                            size = mascotSize,
-                            staticRes = R.drawable.kanako_mascot,
-                            playbackKey = greetingVersion,
-                            animationsEnabled = animationsEnabled,
-                            holdLastFrame = true
-                        )
-                    }
-                    Text(
-                        stringResource(R.string.screen_reader_title),
-                        style = MaterialTheme.typography.headlineSmall,
-                        modifier = Modifier.weight(1f).semantics { heading() }
-                    )
-                }
-                Text(
-                    stringResource(R.string.screen_reader_description),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Card(modifier = Modifier.tutorialTarget("floating_card", hideWhenDimmed = false)
-                    .then(if (chooser) Modifier.clickable(enabled = tutorialAllows("floating_card") && supported) {
-                        onSelectTutorialReader(TutorialPath.FLOATING)
-                    } else Modifier),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
-                    Column(Modifier.fillMaxWidth().animateContentSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text(
-                            stringResource(if (preferences.isOverlayActive) R.string.home_reader_active else R.string.home_reader_off),
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.semantics { heading() }
-                        )
-                        Text(stringResource(R.string.home_floating_summary),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        if (ready && !showAccess) {
-                            FlowRow(
+                    Column(verticalArrangement = Arrangement.spacedBy(KanakoUiProfile.homeCardGap)) {
+                        BoxWithConstraints(Modifier.fillMaxWidth()) {
+                            val density = LocalDensity.current
+                            val pixelLimit = (KanakoUiProfile.homeHeroSourcePixels / density.density).dp
+                            val widthLimit = (maxWidth - KanakoUiProfile.homeHeroTextMinWidth * density.fontScale - 72.dp)
+                                .coerceAtLeast(mascotSize)
+                            val heroSize = minOf(mascotSize * KanakoUiProfile.homeHeroMaxScale, pixelLimit, widthLimit)
+                                .coerceAtLeast(mascotSize)
+                            Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                itemVerticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
-                                AccessStatusBadge(stringResource(R.string.setup_ready), granted = true)
-                                TextButton(onClick = { showAccess = true }, enabled = focus == null,
-                                    modifier = Modifier.weight(1f).wrapContentWidth(Alignment.End).width(IntrinsicSize.Max)) {
-                                    Text(stringResource(R.string.home_manage_access))
+                                val greetingDescription = stringResource(R.string.replay_mascot_greeting)
+                                IconButton(
+                                    onClick = { greetingVersion++ },
+                                    enabled = focus == null,
+                                    modifier = Modifier.size(heroSize).semantics {
+                                        contentDescription = greetingDescription
+                                    }
+                                ) {
+                                    AnimatedMascot(
+                                        animationRes = R.drawable.kanako_welcome_wave,
+                                        size = heroSize,
+                                        staticRes = R.drawable.kanako_mascot,
+                                        playbackKey = greetingVersion,
+                                        animationsEnabled = animationsEnabled,
+                                        holdLastFrame = true
+                                    )
                                 }
-                            }
-                        } else if (!supported) {
-                            Text(stringResource(R.string.setup_unsupported))
-                        } else if (!showAccess) {
-                            Text(stringResource(R.string.home_setup_summary), style = MaterialTheme.typography.bodySmall)
-                            OutlinedButton(onClick = { showAccess = true }, enabled = tutorialAllows("setup_access"),
-                                modifier = Modifier.tutorialTarget("setup_access")) {
-                                Text(stringResource(R.string.home_setup_action))
-                            }
-                        } else {
-                            PermissionRequirement(
-                                title = stringResource(R.string.setup_overlay_title),
-                                description = stringResource(R.string.setup_overlay_description),
-                                granted = overlayGranted,
-                                action = stringResource(R.string.setup_open_overlay),
-                                onAction = onRequestOverlay,
-                                enabled = tutorialAllows("overlay_access"),
-                                actionModifier = Modifier.tutorialTarget("overlay_access")
-                            )
-                            PermissionRequirement(
-                                title = stringResource(R.string.setup_accessibility_title),
-                                description = stringResource(if (accessibilityEnabled && preferences.hasAcceptedSnapshotDisclosure && !accessibilityConnected)
-                                    R.string.setup_accessibility_reconnect else R.string.setup_accessibility_description),
-                                status = stringResource(when {
-                                    !accessibilityEnabled -> R.string.setup_required
-                                    !preferences.hasAcceptedSnapshotDisclosure -> R.string.setup_disclosure_needed
-                                    !accessibilityConnected -> R.string.setup_accessibility_disconnected
-                                    else -> R.string.setup_ready
-                                }),
-                                granted = accessibilityEnabled && accessibilityConnected && preferences.hasAcceptedSnapshotDisclosure,
-                                action = stringResource(
-                                    if (accessibilityEnabled && preferences.hasAcceptedSnapshotDisclosure)
-                                        R.string.setup_manage_accessibility else R.string.setup_open_accessibility
-                                ),
-                                onAction = onRequestAccessibility,
-                                enabled = tutorialAllows("screen_access"),
-                                actionModifier = Modifier.tutorialTarget("screen_access"),
-                                connecting = accessibilityEnabled && preferences.hasAcceptedSnapshotDisclosure && !accessibilityConnected
-                            )
-                            if (ready) {
-                                TextButton(onClick = { showAccess = false }, enabled = focus == null) {
-                                    Text(stringResource(R.string.done))
+                                Row(
+                                    modifier = Modifier.weight(1f),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(
+                                        modifier = Modifier.weight(1f),
+                                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Text(
+                                            stringResource(R.string.app_name),
+                                            style = MaterialTheme.typography.labelLarge,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Text(
+                                            stringResource(R.string.screen_reader_title),
+                                            style = MaterialTheme.typography.headlineMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            modifier = Modifier.semantics { heading() }
+                                        )
+                                    }
+                                    IconButton(
+                                        onClick = onNavigateToPreferences,
+                                        enabled = tutorialAllows("preferences"),
+                                        modifier = Modifier.size(48.dp)
+                                            .background(MaterialTheme.colorScheme.surface, CircleShape)
+                                            .tutorialTarget("preferences")
+                                    ) {
+                                        Icon(Icons.Rounded.Settings, contentDescription = stringResource(R.string.preferences_title))
+                                    }
                                 }
-                            }
-                            if (accessibilityEnabled && !accessibilityConnected) {
-                                Text(stringResource(R.string.setup_connecting), style = MaterialTheme.typography.bodySmall)
                             }
                         }
-                        Button(
-                            onClick = {
-                                if (chooser) onStartTutorialReader(TutorialPath.FLOATING)
-                                else if (preferences.isOverlayActive) onUpdateOverlayActive(false)
-                                else if (!departing && !awaitingReader && ready) {
-                                    departureVersion++
-                                    departing = true
-                                }
-                            },
-                            enabled = tutorialAllows("floating_card", "start_reader") &&
-                                (if (chooser) supported else preferences.isOverlayActive || (ready && !departing && !awaitingReader)),
-                            modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 16.dp).then(readingActionModifier)
-                                .tutorialTarget("start_reader", parent = "floating_card"),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (preferences.isOverlayActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
-                                contentColor = if (preferences.isOverlayActive) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondary
-                            )
-                        ) {
-                            if (!preferences.isOverlayActive) {
-                                AnimatedMascot(
-                                    animationRes = if (departing || awaitingReader) R.drawable.kanako_peek_button else null,
-                                    size = 24.dp,
-                                    durationMillis = 700,
-                                    playbackKey = departureVersion,
-                                    animationsEnabled = animationsEnabled,
-                                    holdLastFrame = true,
-                                    onFinished = {
-                                        if (departing && ready && !preferences.isOverlayActive &&
-                                            lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+                        Box(Modifier.fillMaxWidth()) {
+                            Card(modifier = Modifier.tutorialTarget("floating_card", hideWhenDimmed = false)
+                                .then(if (chooser) Modifier.clickable(interactionSource = floatingInteraction,
+                                    indication = LocalIndication.current, enabled = tutorialAllows("floating_card") && supported) {
+                                    onSelectTutorialReader(TutorialPath.FLOATING)
+                                } else Modifier),
+                                interactionSource = if (chooser) floatingInteraction else null,
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                                Box(Modifier.fillMaxWidth()) {
+                                    Column(Modifier.fillMaxWidth().animateContentSize(
+                                        animationSpec = if (animationsEnabled) tween(KanakoUiProfile.expandDuration) else snap()
+                                    ).padding(KanakoUiProfile.homeCardInset), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                        Row(
+                                            Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                            verticalAlignment = Alignment.Top
                                         ) {
-                                            departing = false
-                                            awaitingReader = true
-                                            onUpdateOverlayActive(true)
+                                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                                val readerState = if (preferences.isOverlayActive)
+                                                    stringResource(R.string.home_reader_active) else null
+                                                Text(
+                                                    stringResource(R.string.home_reader_off),
+                                                    style = MaterialTheme.typography.titleLarge,
+                                                    fontWeight = FontWeight.Bold,
+                                                    modifier = Modifier.semantics {
+                                                        heading()
+                                                        if (readerState != null) stateDescription = readerState
+                                                    }
+                                                )
+                                                Text(stringResource(R.string.home_floating_summary),
+                                                    style = MaterialTheme.typography.bodyMedium,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            }
+                                            Box(Modifier.size(mascotSize)) {
+                                                if (!preferences.isOverlayActive && !awaitingReader) {
+                                                    AnimatedMascot(
+                                                        animationRes = if (departing) R.drawable.kanako_peek_button else null,
+                                                        size = mascotSize,
+                                                        durationMillis = 700,
+                                                        playbackKey = departureVersion,
+                                                        animationsEnabled = animationsEnabled,
+                                                        holdLastFrame = true,
+                                                        onFinished = {
+                                                            if (departing && ready && !preferences.isOverlayActive &&
+                                                                lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+                                                            ) {
+                                                                departing = false
+                                                                awaitingReader = true
+                                                                onUpdateOverlayActive(true)
+                                                            }
+                                                        }
+                                                    )
+                                                }
+                                            }
+                                        }
+                                        if (ready && !showAccess) {
+                                            FlowRow(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                                itemVerticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                AccessStatusBadge(stringResource(R.string.setup_ready), granted = true)
+                                                TextButton(onClick = { showAccess = true }, enabled = focus == null,
+                                                    modifier = Modifier.weight(1f).wrapContentWidth(Alignment.End).width(IntrinsicSize.Max)) {
+                                                    Text(stringResource(R.string.home_manage_access), fontWeight = FontWeight.Bold)
+                                                }
+                                            }
+                                        } else if (!supported) {
+                                            Text(stringResource(R.string.setup_unsupported))
+                                        } else if (!showAccess) {
+                                            Surface(color = accessoryColor, contentColor = MaterialTheme.colorScheme.onSurface,
+                                                shape = CircleShape) {
+                                                Row(
+                                                    Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Icon(Icons.Rounded.Lock, contentDescription = null, modifier = Modifier.size(14.dp))
+                                                    Text(stringResource(R.string.home_setup_summary),
+                                                        style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                                                }
+                                            }
+                                            OutlinedButton(onClick = { showAccess = true }, enabled = tutorialAllows("setup_access"),
+                                                modifier = Modifier.tutorialTarget("setup_access")) {
+                                                Text(stringResource(R.string.home_setup_action), fontWeight = FontWeight.Bold)
+                                            }
+                                        } else {
+                                            PermissionRequirement(
+                                                title = stringResource(R.string.setup_overlay_title),
+                                                description = stringResource(R.string.setup_overlay_description),
+                                                granted = overlayGranted,
+                                                action = stringResource(R.string.setup_open_overlay),
+                                                onAction = onRequestOverlay,
+                                                enabled = tutorialAllows("overlay_access"),
+                                                actionModifier = Modifier.tutorialTarget("overlay_access")
+                                            )
+                                            PermissionRequirement(
+                                                title = stringResource(R.string.setup_accessibility_title),
+                                                description = stringResource(if (accessibilityEnabled && preferences.hasAcceptedSnapshotDisclosure && !accessibilityConnected)
+                                                    R.string.setup_accessibility_reconnect else R.string.setup_accessibility_description),
+                                                status = stringResource(when {
+                                                    !accessibilityEnabled -> R.string.setup_required
+                                                    !preferences.hasAcceptedSnapshotDisclosure -> R.string.setup_disclosure_needed
+                                                    !accessibilityConnected -> R.string.setup_accessibility_disconnected
+                                                    else -> R.string.setup_ready
+                                                }),
+                                                granted = accessibilityEnabled && accessibilityConnected && preferences.hasAcceptedSnapshotDisclosure,
+                                                action = stringResource(
+                                                    if (accessibilityEnabled && preferences.hasAcceptedSnapshotDisclosure)
+                                                        R.string.setup_manage_accessibility else R.string.setup_open_accessibility
+                                                ),
+                                                onAction = onRequestAccessibility,
+                                                enabled = tutorialAllows("screen_access"),
+                                                actionModifier = Modifier.tutorialTarget("screen_access"),
+                                                connecting = accessibilityEnabled && preferences.hasAcceptedSnapshotDisclosure && !accessibilityConnected
+                                            )
+                                            if (ready) {
+                                                TextButton(onClick = { showAccess = false }, enabled = focus == null) {
+                                                    Text(stringResource(R.string.done), fontWeight = FontWeight.Bold)
+                                                }
+                                            }
+                                            if (accessibilityEnabled && !accessibilityConnected) {
+                                                Text(stringResource(R.string.setup_connecting), style = MaterialTheme.typography.bodySmall)
+                                            }
+                                        }
+                                        Button(
+                                            onClick = {
+                                                if (chooser) onStartTutorialReader(TutorialPath.FLOATING)
+                                                else if (preferences.isOverlayActive) onUpdateOverlayActive(false)
+                                                else if (!departing && !awaitingReader && ready) {
+                                                    departureVersion++
+                                                    departing = true
+                                                }
+                                            },
+                                            enabled = tutorialAllows("floating_card", "start_reader") &&
+                                                (if (chooser) supported else preferences.isOverlayActive || (ready && !departing && !awaitingReader)),
+                                            modifier = Modifier.align(Alignment.CenterHorizontally).then(readingActionModifier)
+                                                .tutorialTarget("start_reader", parent = "floating_card"),
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = MaterialTheme.colorScheme.primary,
+                                                contentColor = MaterialTheme.colorScheme.onPrimary
+                                            ),
+                                            contentPadding = PaddingValues(
+                                                horizontal = KanakoUiProfile.homeActionHorizontalPadding,
+                                                vertical = KanakoUiProfile.homeActionVerticalPadding
+                                            )
+                                        ) {
+                                            AnimatedContent(
+                                                targetState = preferences.isOverlayActive,
+                                                transitionSpec = {
+                                                    val duration = if (animationsEnabled) KanakoUiProfile.contentDuration else 0
+                                                    (fadeIn(tween(duration)) togetherWith fadeOut(tween(duration))).using(
+                                                        SizeTransform { _, _ ->
+                                                            if (animationsEnabled) KanakoUiProfile.releaseSpec() else snap()
+                                                        }
+                                                    )
+                                                },
+                                                label = "Reader action"
+                                            ) { active ->
+                                                Text(
+                                                    stringResource(if (active) R.string.setup_stop else R.string.setup_enable),
+                                                    fontWeight = FontWeight.Bold,
+                                                    textAlign = TextAlign.Center
+                                                )
+                                            }
+                                        }
+                                        if (preferences.isOverlayActive) {
+                                            Text(stringResource(R.string.home_next_step),
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         }
                                     }
-                                )
-                                Spacer(Modifier.width(8.dp))
-                            }
-                            AnimatedContent(targetState = preferences.isOverlayActive, label = "Reader action") { active ->
-                                Text(stringResource(if (active) R.string.setup_stop else R.string.setup_enable))
+                                }
                             }
                         }
-                        if (preferences.isOverlayActive) {
-                            Text(stringResource(R.string.home_next_step),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Box(Modifier.fillMaxWidth()) {
+                            Card(modifier = Modifier.tutorialTarget("camera_card", hideWhenDimmed = false)
+                                .then(if (chooser) Modifier.clickable(interactionSource = cameraInteraction,
+                                    indication = LocalIndication.current, enabled = tutorialAllows("camera_card")) {
+                                    onSelectTutorialReader(TutorialPath.CAMERA)
+                                } else Modifier),
+                                interactionSource = if (chooser) cameraInteraction else null,
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                                Box(Modifier.fillMaxWidth()) {
+                                    Column(Modifier.fillMaxWidth().padding(KanakoUiProfile.homeCardInset), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                        Row(
+                                            Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                            verticalAlignment = Alignment.Top
+                                        ) {
+                                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                                Text(stringResource(R.string.camera_title), style = MaterialTheme.typography.titleLarge,
+                                                    fontWeight = FontWeight.Bold, modifier = Modifier.semantics { heading() })
+                                                Text(stringResource(R.string.home_camera_summary), style = MaterialTheme.typography.bodyMedium,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            }
+                                            AnimatedMascot(
+                                                animationRes = if (cameraLaunching) R.drawable.kanako_camera_flash else null,
+                                                staticRes = R.drawable.kanako_camera_first_frame,
+                                                size = mascotSize,
+                                                modifier = Modifier.onGloballyPositioned { cameraMascotCoordinates = it },
+                                                playbackKey = cameraPlaybackVersion,
+                                                animationsEnabled = animationsEnabled,
+                                                onPlaybackStarted = { if (cameraLaunching) cameraPlaybackStarted = true },
+                                                onFinished = { if (cameraLaunching) cameraPlaybackStarted = true }
+                                            )
+                                        }
+                                        Button(
+                                            onClick = {
+                                                val home = homeCoordinates
+                                                val mascot = cameraMascotCoordinates
+                                                flashOrigin = if (home != null && mascot != null && home.isAttached && mascot.isAttached) {
+                                                    home.localPositionOf(mascot, Offset(mascot.size.width / 2f, mascot.size.height / 2f))
+                                                } else Offset.Zero
+                                                cameraPlaybackStarted = false
+                                                cameraPlaybackVersion++
+                                                cameraLaunching = true
+                                            },
+                                            enabled = tutorialAllows("camera_card") && !cameraLaunching,
+                                            modifier = Modifier.align(Alignment.CenterHorizontally).then(readingActionModifier)
+                                                .tutorialTarget("camera_open", parent = "camera_card"),
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = MaterialTheme.colorScheme.primary,
+                                                contentColor = MaterialTheme.colorScheme.onPrimary
+                                            ),
+                                            contentPadding = PaddingValues(
+                                                horizontal = KanakoUiProfile.homeActionHorizontalPadding,
+                                                vertical = KanakoUiProfile.homeActionVerticalPadding
+                                            )
+                                        ) {
+                                            Text(
+                                                stringResource(R.string.camera_open),
+                                                fontWeight = FontWeight.Bold,
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
-                    }
-                }
-                Card(modifier = Modifier.tutorialTarget("camera_card", hideWhenDimmed = false)
-                    .then(if (chooser) Modifier.clickable(enabled = tutorialAllows("camera_card")) {
-                        onSelectTutorialReader(TutorialPath.CAMERA)
-                    } else Modifier),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
-                    Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text(stringResource(R.string.camera_title), style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.semantics { heading() })
-                        Text(stringResource(R.string.home_camera_summary), style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Button(
-                            onClick = { if (chooser) onStartTutorialReader(TutorialPath.CAMERA) else onNavigateToCamera() },
-                            enabled = tutorialAllows("camera_card"),
-                            modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 16.dp).then(readingActionModifier)
-                                .tutorialTarget("camera_open", parent = "camera_card"),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.secondary,
-                                contentColor = MaterialTheme.colorScheme.onSecondary
-                            )
+                        AnimatedVisibility(
+                            visible = showTutorialInvitation,
+                            enter = fadeIn(tween(if (animationsEnabled) KanakoUiProfile.contentDuration else 0)) +
+                                expandVertically(tween(if (animationsEnabled) KanakoUiProfile.expandDuration else 0)),
+                            exit = fadeOut(tween(if (animationsEnabled) KanakoUiProfile.contentDuration else 0)) +
+                                shrinkVertically(tween(if (animationsEnabled) KanakoUiProfile.expandDuration else 0))
                         ) {
-                            Icon(Icons.Rounded.CameraAlt, contentDescription = null, modifier = Modifier.size(24.dp))
-                            Text(
-                                stringResource(R.string.camera_open),
-                                modifier = Modifier.padding(start = 8.dp)
+                            TutorialInvitation(
+                                onStart = onNavigateToTutorial,
+                                onDismiss = onDismissTutorialInvitation,
+                                enabled = showTutorialInvitation
                             )
                         }
                     }
-                }
-                if (showTutorialInvitation) {
-                    TutorialInvitation(onStart = onNavigateToTutorial, onDismiss = onDismissTutorialInvitation)
-                }
-                TextButton(onClick = onNavigateToHowItWorks, enabled = focus == null, modifier = Modifier.align(Alignment.CenterHorizontally)) {
-                    Text(stringResource(R.string.how_it_works))
+                    TextButton(
+                        onClick = onNavigateToHowItWorks,
+                        enabled = focus == null,
+                        modifier = Modifier.padding(top = KanakoUiProfile.homeCardGap)
+                            .heightIn(min = 48.dp).background(accessoryColor, CircleShape)
+                    ) {
+                        Icon(Icons.AutoMirrored.Rounded.Help, contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(start = 8.dp).size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.how_it_works), modifier = Modifier.padding(end = 8.dp), color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }
-    }
+        if (cameraLaunching) {
+            CameraLaunchFlash(
+                origin = flashOrigin,
+                progress = { flashProgress.value },
+                modifier = Modifier.matchParentSize()
+            )
+        }
     }
 }
 
@@ -387,10 +584,10 @@ private fun PermissionRequirement(
     })
     Column(modifier.fillMaxWidth().semantics(mergeDescendants = true) {},
         verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(title, style = MaterialTheme.typography.titleSmall)
+        Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
         Text(description, style = MaterialTheme.typography.bodySmall)
         AccessStatusBadge(statusText, granted = granted, connecting = connecting)
-        OutlinedButton(onClick = onAction, enabled = enabled, modifier = actionModifier) { Text(action) }
+        OutlinedButton(onClick = onAction, enabled = enabled, modifier = actionModifier) { Text(action, fontWeight = FontWeight.Bold) }
     }
 }
 
@@ -403,8 +600,9 @@ private fun AccessStatusBadge(
 ) {
     Surface(
         modifier = modifier,
-        color = if (granted) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-        contentColor = if (granted) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+        color = if (granted) MaterialTheme.colorScheme.secondaryContainer
+            else if (LocalKanakoDarkTheme.current) DarkWarmCreamSurface else WarmCreamSurface,
+        contentColor = if (granted) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface,
         shape = RoundedCornerShape(50)
     ) {
         Row(Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
@@ -418,7 +616,7 @@ private fun AccessStatusBadge(
                 contentDescription = null,
                 modifier = Modifier.size(18.dp)
             )
-            Text(text, style = MaterialTheme.typography.labelMedium)
+            Text(text, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
         }
     }
 }

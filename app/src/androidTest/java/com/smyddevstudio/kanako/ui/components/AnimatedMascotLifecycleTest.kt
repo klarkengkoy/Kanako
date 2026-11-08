@@ -76,6 +76,7 @@ class AnimatedMascotLifecycleTest {
         lateinit var owner: TestOwner
         val request = mutableIntStateOf(0)
         var completions = 0
+        var starts = 0
         compose.runOnIdle {
             owner = TestOwner()
             owner.registry.currentState = Lifecycle.State.STARTED
@@ -85,6 +86,7 @@ class AnimatedMascotLifecycleTest {
                 AnimatedMascot(
                     R.drawable.kanako_peek_button, 56.dp, playbackKey = request.intValue,
                     animationsEnabled = true, holdLastFrame = true, durationMillis = 4_000,
+                    onPlaybackStarted = { starts++ },
                     onFinished = { completions++ }
                 )
             }
@@ -92,13 +94,19 @@ class AnimatedMascotLifecycleTest {
         val interrupted = awaitPlayback()
         compose.runOnIdle { owner.registry.currentState = Lifecycle.State.CREATED }
         compose.runOnIdle { request.intValue++ }
-        compose.runOnIdle { assertEquals(0, completions) }
+        compose.runOnIdle {
+            assertEquals(0, completions)
+            assertEquals(1, starts)
+        }
         compose.runOnIdle { owner.registry.currentState = Lifecycle.State.STARTED }
         val replacement = awaitPlayback()
         compose.runOnIdle {
             assertNotSame(interrupted, replacement)
             assertFalse((interrupted as Animatable).isRunning)
             assertEquals(0, completions)
+            assertEquals(2, starts)
+            owner.registry.currentState = Lifecycle.State.RESUMED
+            assertEquals(2, starts)
         }
         compose.waitUntil(timeoutMillis = 6_000) { completions == 1 }
     }

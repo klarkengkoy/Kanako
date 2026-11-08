@@ -4,6 +4,7 @@
     <string name="accessibility_service_label">Lecture d’écran Kanako</string>
     <string name="accessibility_service_description">Kanako prend une capture d’écran lorsque vous touchez le bouton flottant, ou une fois les changements détectés stabilisés si vous activez la lecture automatique, pour générer des furigana sur votre appareil. Les images restent en mémoire pendant la reconnaissance, puis sont supprimées ; elles ne sont ni enregistrées ni envoyées. Les métadonnées des fenêtres, du défilement, du clavier et des champs de mot de passe servent à effacer les annotations obsolètes et à bloquer la capture lors de saisies sensibles. Kanako ne lit pas le texte des champs de saisie via l’accessibilité.</string>
     <string name="snapshot_disclosure_title">Lire votre écran avec Kanako</string>
+
     <string name="snapshot_disclosure_body">Activez Kanako dans les paramètres d’accessibilité Android pour lire en touchant le bouton. Chaque demande prend une capture de l’application actuelle sous Android 14 ou ultérieur, ou de l’écran sous Android 11–13. La lecture démarre au toucher, sauf si vous activez séparément la lecture automatique dans les commandes du lecteur flottant. La reconnaissance s’effectue sur votre appareil. Les images restent en mémoire pendant la reconnaissance, puis sont supprimées ; elles ne sont ni enregistrées ni envoyées.\n\nKanako utilise les métadonnées des fenêtres, du défilement, du clavier et des champs de mot de passe pour effacer les anciennes annotations et bloquer la capture lors de saisies sensibles. Il ne lit pas le texte des champs de saisie via l’accessibilité. Les captures peuvent néanmoins contenir des informations privées : ne faites lire que le contenu que vous souhaitez confier à Kanako.\n\nAucune session de partage d’écran continu n’est créée. Vous pouvez arrêter le bouton flottant ou désactiver le service d’accessibilité à tout moment.</string>
     <string name="snapshot_disclosure_continue">Accepter et continuer</string>
     <string name="snapshot_disclosure_cancel">Plus tard</string>
@@ -24,8 +25,7 @@
     <string name="notification_description">Touchez pour lire ou choisissez Lecture auto dans les commandes de Kanako. Aucun partage d’écran continu.</string>
     <string name="floating_control_description">Touchez pour lire ou effacer les furigana. Touchez deux fois ou maintenez pour les commandes. Faites glisser pour déplacer.</string>
     <string name="clear_annotations">Effacer les furigana</string>
-    <string name="screen_reader_title">Lire le japonais</string>
-    <string name="screen_reader_description">Des furigana là où vous lisez.</string>
+    <string name="screen_reader_title">Des furigana là où vous lisez</string>
     <string name="setup_overlay_title">Affichage sur d’autres applis</string>
     <string name="setup_overlay_description">Afficher Kanako et les lectures sur les autres applications.</string>
     <string name="setup_accessibility_title">Accès à la lecture d’écran</string>
@@ -38,8 +38,8 @@
     <string name="setup_manage_accessibility">Gérer la lecture d’écran</string>
     <string name="setup_ready">Lecteur flottant prêt</string>
     <string name="setup_incomplete">Terminez la configuration du lecteur flottant</string>
-    <string name="setup_enable">Afficher le lecteur flottant</string>
-    <string name="setup_stop">Arrêter le lecteur flottant</string>
+    <string name="setup_enable">ACTIVER</string>
+    <string name="setup_stop">DÉSACTIVER</string>
     <string name="setup_unsupported">La lecture d’écran nécessite Android 11 ou ultérieur. L’appareil photo reste disponible.</string>
     <string name="setup_connecting">L’accessibilité est activée, mais pas encore connectée. Patientez ou désactivez puis réactivez Kanako dans les paramètres d’accessibilité.</string>
     <string name="setup_start_failed">Impossible de démarrer le lecteur flottant. Vérifiez la configuration et réessayez.</string>
@@ -47,11 +47,12 @@
     <string name="quick_settings_guide_title">Ajouter Kanako aux réglages rapides</string>
     <string name="quick_settings_guide_body">Balayez deux fois vers le bas depuis le haut de l’écran. Touchez Modifier et ajoutez la tuile Kanako. Touchez-la pour afficher ou arrêter le lecteur flottant.</string>
     <string name="auto_read_title">Mode de lecture automatique</string>
+
     <string name="auto_read_disclosure">Lorsque le lecteur flottant est actif, Kanako prend automatiquement une capture après environ 0,7 seconde de stabilité suivant un défilement, un changement d’application ou de contenu. Il lit aussi au démarrage du lecteur et au déverrouillage de l’appareil. Aucun toucher n’est nécessaire. Les images sont traitées localement en mémoire, puis supprimées ; elles ne sont ni enregistrées ni envoyées.\n\nIl s’agit de captures individuelles, pas d’une session d’enregistrement. La capture est bloquée lors d’une saisie sensible détectée et sur l’écran verrouillé. La stabilité et le suivi du défilement dépendent des événements de l’application source ; les animations peuvent ne pas être détectées. Vous pouvez désactiver cette option à tout moment.</string>
     <string name="auto_read_enable">Activer la lecture automatique</string>
 
-    <string name="camera_title">Lecteur par appareil photo</string>
-    <string name="camera_open">Lire avec l’appareil photo</string>
+    <string name="camera_title">Appareil photo</string>
+    <string name="camera_open">OUVRIR L’APPAREIL PHOTO</string>
     <string name="camera_capture">Prendre une photo</string>
     <string name="camera_appearance">Apparence des lectures</string>
     <string name="camera_state_permission">Accès à l’appareil photo requis</string>
@@ -89,7 +90,7 @@
     <string name="preferences_keyboard_check">Masquer le bouton flottant pendant la saisie.</string>
     <string name="preferences_title">Préférences</string>
     <string name="home_reader_active">Lecteur flottant activé</string>
-    <string name="home_reader_off">Lecteur flottant désactivé</string>
+    <string name="home_reader_off">Lecteur flottant</string>
     <string name="home_manage_access">Gérer les accès</string>
     <string name="how_it_works">Mode d’emploi</string>
     <string name="home_return">Retour à l’accueil</string>
@@ -150,7 +151,7 @@
     <string name="help_floating">Lecteur flottant</string>
     <string name="help_troubleshooting">Dépannage</string>
     <string name="how_start_title">Démarrer le lecteur flottant</string>
-    <string name="how_start">Sur l’accueil, configurez l’affichage sur les applications et l’accès à la lecture d’écran après avoir lu la présentation. Choisissez Afficher le lecteur flottant, puis ouvrez du contenu japonais dans une autre application. La lecture d’écran nécessite Android 11 ou ultérieur.</string>
+    <string name="how_start">Sur l’accueil, configurez l’affichage sur les applications et l’accès à la lecture d’écran après avoir lu la présentation. Choisissez ACTIVER, puis ouvrez du contenu japonais dans une autre application. La lecture d’écran nécessite Android 11 ou ultérieur.</string>
     <string name="how_stop_title">Déplacer ou arrêter Kanako</string>
     <string name="how_stop">Faites glisser le personnage pour le déplacer. Maintenez-le pour ouvrir les commandes et arrêter le lecteur flottant. Vous pouvez aussi l’arrêter depuis l’accueil ou la notification.</string>
     <string name="how_capture_scope_title">Accès à l’écran et protection</string>
@@ -158,14 +159,15 @@
     <string name="how_recovery_title">Si les lectures ne s’affichent pas</string>
     <string name="how_recovery">Vérifiez les accès sur l’accueil. Si le service se connecte, patientez ou désactivez puis réactivez Kanako dans les paramètres d’accessibilité Android. Si le modèle manque, connectez-vous à Internet et réessayez. Avec l’appareil photo, faites la mise au point, rapprochez-vous ou prenez une photo. Touchez le personnage flottant pour effacer les lectures mal alignées.</string>
     <string name="home_floating_summary">Lire le japonais dans d’autres applications.</string>
-    <string name="home_camera_summary">Lire le japonais imprimé avec l’appareil photo. Aucun accès à l’écran requis.</string>
-    <string name="home_setup_summary">Deux autorisations sont nécessaires au lecteur flottant.</string>
+    <string name="home_camera_summary">Lire le japonais imprimé avec l’appareil photo.</string>
+    <string name="home_setup_summary">Autorisations requises</string>
     <string name="home_setup_action">Configurer le lecteur flottant</string>
     <string name="home_next_step">Ouvrez une autre application, puis touchez Kanako pour lire. Si la lecture automatique est activée, elle démarre une fois les changements détectés stabilisés.</string>
     <string name="reading_bring_front">Placer la lecture devant</string>
     <string name="tutorial_next">Suivant</string>
     <string name="replay_mascot_greeting">Rejouer le salut de Kanako</string>
     <string name="guided_intro_title">Essayons Kanako</string>
+
     <string name="guided_intro_body">Choisissez un lecteur sur l’accueil pour découvrir son usage. Vous pourrez essayer l’autre ensuite. Passez ou continuez quand vous voulez.</string>
     <string name="guided_start">Commencer le tutoriel</string>
     <string name="guided_skip">Passer le tutoriel</string>
@@ -193,6 +195,7 @@
     <string name="tutorial_controls">Contrôler les lectures</string>
     <string name="tutorial_controls_floating">Touchez Kanako pour effacer les lectures. Touchez à nouveau pour lire.</string>
     <string name="tutorial_controls_camera">Visez du texte japonais et touchez le bouton de capture. Vous pouvez aussi choisir une photo avec l’image à côté.</string>
+
     <string name="tutorial_auto_read">Ouvrez les commandes de Kanako et touchez Mode pour choisir Lecture auto. Confirmez si vous souhaitez l’essayer.</string>
     <string name="tutorial_auto_scroll">Avec le mode de lecture automatique activé, faites défiler ce texte, puis arrêtez-vous. Kanako le lit après une courte pause, sans toucher le bouton. Si vous sélectionnez un mot, il attend que vous touchiez ailleurs avant de relire.</string>
     <string name="tutorial_preferences">Adapter à votre confort</string>

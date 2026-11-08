@@ -4,6 +4,7 @@
     <string name="accessibility_service_label">かなこの画面読み取り</string>
     <string name="accessibility_service_description">フローティングボタンをタップしたとき、または自動読み取りを有効にして検出した変化が落ち着いたときに、スクリーンショットを1枚撮影し、端末内でふりがなを生成します。画像は認識中だけメモリ内に保持し、保存・アップロードせずに破棄します。ウィンドウ、スクロール、キーボード、パスワード欄の情報を使って古い読みを消し、機密性の高い入力の周辺で撮影を止めます。ユーザー補助から入力欄のテキストは取得しません。</string>
     <string name="snapshot_disclosure_title">かなこに画面の読み取りを許可</string>
+
     <string name="snapshot_disclosure_body">タップによる読み取りを使うには、Androidのユーザー補助設定でかなこを有効にしてください。読み取りごとに、Android 14以降では現在のアプリ、Android 11〜13では画面全体のスクリーンショットを1枚撮影します。フローティングリーダーのメニューで自動読み取りを別途有効にしない限り、タップするまで読み取りません。文字認識は端末内で行います。画像は認識中だけメモリ内に保持し、保存・アップロードせずに破棄します。\n\nウィンドウ、スクロール、キーボード、パスワード欄の情報を使い、古い読みを消したり機密性の高い入力の周辺で撮影を止めたりします。ユーザー補助から入力欄のテキストは取得しません。画面画像には個人情報が含まれる可能性があるため、処理を許可する内容だけを読み取ってください。\n\n継続的な画面共有は行いません。フローティングボタンの停止やユーザー補助サービスの無効化はいつでもできます。</string>
     <string name="snapshot_disclosure_continue">同意して続ける</string>
     <string name="snapshot_disclosure_cancel">今はしない</string>
@@ -24,8 +25,7 @@
     <string name="notification_description">タップで読み取り、またはKanakoのメニューで自動読み取りを選べます。継続的な画面共有は行いません。</string>
     <string name="floating_control_description">タップでふりがなを表示・消去。ダブルタップか長押しでメニュー。ドラッグで移動。</string>
     <string name="clear_annotations">ふりがなを消す</string>
-    <string name="screen_reader_title">日本語を読む</string>
-    <string name="screen_reader_description">いつもの画面に、ふりがなを。</string>
+    <string name="screen_reader_title">いつもの画面に、ふりがなを</string>
     <string name="setup_overlay_title">他のアプリの上に表示</string>
     <string name="setup_overlay_description">他のアプリの上にボタンと読みを表示します。</string>
     <string name="setup_accessibility_title">画面読み取り</string>
@@ -38,8 +38,8 @@
     <string name="setup_manage_accessibility">画面読み取りを管理</string>
     <string name="setup_ready">フローティングリーダーの準備完了</string>
     <string name="setup_incomplete">フローティングリーダーを使うには準備が必要です</string>
-    <string name="setup_enable">フローティングリーダーを表示</string>
-    <string name="setup_stop">フローティングリーダーを停止</string>
+    <string name="setup_enable">オンにする</string>
+    <string name="setup_stop">オフにする</string>
     <string name="setup_unsupported">画面読み取りにはAndroid 11以降が必要です。カメラは引き続き使えます。</string>
     <string name="setup_connecting">ユーザー補助は有効ですが、まだ接続されていません。少し待つか、ユーザー補助設定でかなこを一度オフにしてからオンにしてください。</string>
     <string name="setup_start_failed">フローティングリーダーを起動できませんでした。権限を確認して再度お試しください。</string>
@@ -47,10 +47,11 @@
     <string name="quick_settings_guide_title">かなこをクイック設定に追加</string>
     <string name="quick_settings_guide_body">画面の上から2回下へスワイプし、「編集」でかなこのタイルを追加します。タイルをタップするとリーダーを表示・停止できます。</string>
     <string name="auto_read_title">自動読み取りモード</string>
+
     <string name="auto_read_disclosure">フローティングリーダーの動作中、スクロール、アプリの切り替え、コンテンツの更新が約0.7秒間落ち着いた後、自動でスクリーンショットを撮影します。リーダー開始時やロック解除時も読み取ります。タップは不要です。画像は端末のメモリ内で処理し、保存・アップロードせずに破棄します。\n\n画面録画ではなく、個別のスクリーンショットを使用します。機密性の高い入力やロック画面を検出した場合は撮影を停止します。変化の検出やスクロールへの追従は読み取り元のアプリに依存し、アニメーションを検出できない場合があります。この設定はいつでもオフにできます。</string>
     <string name="auto_read_enable">自動読み取りを有効にする</string>
-    <string name="camera_title">カメラリーダー</string>
-    <string name="camera_open">カメラで読む</string>
+    <string name="camera_title">カメラ</string>
+    <string name="camera_open">カメラを開く</string>
     <string name="camera_capture">写真を撮影</string>
     <string name="camera_appearance">読みの見た目</string>
     <string name="camera_state_permission">カメラへのアクセスが必要です</string>
@@ -87,7 +88,7 @@
     <string name="preferences_keyboard_check">キーボード表示中にボタンを隠します。</string>
     <string name="preferences_title">設定</string>
     <string name="home_reader_active">リーダー表示中</string>
-    <string name="home_reader_off">リーダー停止中</string>
+    <string name="home_reader_off">フローティングリーダー</string>
     <string name="home_manage_access">権限を管理</string>
     <string name="how_it_works">使い方</string>
     <string name="home_return">ホームに戻る</string>
@@ -149,7 +150,7 @@
     <string name="help_floating">フローティングリーダー</string>
     <string name="help_troubleshooting">困ったときは</string>
     <string name="how_start_title">リーダーを表示する</string>
-    <string name="how_start">ホームで説明を確認し、重ねて表示と画面読み取りを設定します。「フローティングリーダーを表示」を選び、別のアプリで日本語のコンテンツを開いてください。画面読み取りにはAndroid 11以降が必要です。</string>
+    <string name="how_start">ホームで説明を確認し、重ねて表示と画面読み取りを設定します。「オンにする」を選び、別のアプリで日本語のコンテンツを開いてください。画面読み取りにはAndroid 11以降が必要です。</string>
     <string name="how_stop_title">移動・停止する</string>
     <string name="how_stop">キャラクターをドラッグすると移動できます。長押しでメニューを開き、「フローティングリーダーを停止」を選びます。ホームや通知からも停止できます。</string>
     <string name="how_capture_scope_title">画面へのアクセスと保護</string>
@@ -157,14 +158,15 @@
     <string name="how_recovery_title">読みが表示されないとき</string>
     <string name="how_recovery">ホームで画面へのアクセスを確認してください。接続待ちの場合は少し待つか、Androidのユーザー補助設定でかなこを一度オフにしてからオンにします。認識モデルがない場合はインターネットに接続して再試行してください。カメラではピントを合わせる、近づく、写真を撮る方法をお試しください。読みの位置がずれた場合はキャラクターをタップして消せます。</string>
     <string name="home_floating_summary">他のアプリの日本語を読み取ります。</string>
-    <string name="home_camera_summary">印刷された日本語をカメラで読み取ります。画面読み取りの権限は不要です。</string>
-    <string name="home_setup_summary">フローティングリーダーには2つのアクセス設定が必要です。</string>
+    <string name="home_camera_summary">印刷された日本語をカメラで読み取ります。</string>
+    <string name="home_setup_summary">権限が必要です</string>
     <string name="home_setup_action">フローティングリーダーを設定</string>
     <string name="home_next_step">別のアプリを開き、かなこをタップして読み取ります。自動読み取りが有効な場合は検出した変化が落ち着くと読み取ります。</string>
     <string name="reading_bring_front">読みを手前に表示</string>
     <string name="tutorial_next">次へ</string>
     <string name="replay_mascot_greeting">かなこのあいさつをもう一度再生</string>
     <string name="guided_intro_title">かなこを試してみよう</string>
+
     <string name="guided_intro_body">ホームでリーダーを選ぶと、使い方をご案内します。あとでもう一方も試せます。いつでもスキップしたり、先へ進んだりできます。</string>
     <string name="guided_start">チュートリアルを始める</string>
     <string name="guided_skip">チュートリアルをスキップ</string>
@@ -192,6 +194,7 @@
     <string name="tutorial_controls">読みの表示を操作する</string>
     <string name="tutorial_controls_floating">かなこをタップして読み方を消しましょう。もう一度タップすると読み取れます。</string>
     <string name="tutorial_controls_camera">日本語にカメラを向けて、撮影ボタンをタップしましょう。隣の画像から写真を選ぶこともできます。</string>
+
     <string name="tutorial_auto_read">Kanakoのメニューでモードをタップし、自動読み取りを選びましょう。試してみたい場合は、説明を読んで同意してください。</string>
     <string name="tutorial_auto_scroll">自動読み取りモードをオンにしたら、この文章をスクロールして止めてみましょう。少し待つと、タップせずに読み取ります。単語を選んでいる間は、外側をタップするまで新しい読み取りを待ちます。</string>
     <string name="tutorial_preferences">読みやすく調整する</string>
