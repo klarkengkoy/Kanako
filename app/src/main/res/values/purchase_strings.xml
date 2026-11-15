@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="purchase_title">Your seven-day trial has ended</string>
+    <string name="purchase_test_title">Test purchases</string>
+    <string name="purchase_test_intro">Your trial is unchanged. Use a designated Google Play license-test account and select a test payment method. If Google Play does not label this as a test purchase, cancel.</string>
+    <string name="purchase_intro">The trial does not charge you or start a subscription. Choose how you would like to keep reading with Kanako.</string>
+    <string name="purchase_monthly">Monthly</string>
+    <string name="purchase_yearly">Yearly</string>
+    <string name="purchase_lifetime">Lifetime</string>
+    <string name="purchase_monthly_price">%1$s per month</string>
+    <string name="purchase_yearly_price">%1$s per year</string>
+    <string name="purchase_lifetime_price">%1$s · one-time payment</string>
+    <string name="purchase_subscriptions_terms">Monthly and yearly plans renew automatically until cancelled in Google Play. The full price and billing period are shown above and confirmed before purchase.</string>
+    <string name="purchase_lifetime_terms">Lifetime is a one-time purchase for permanent access to Kanako’s paid reading features. It does not renew.</string>
+    <string name="purchase_restore">Restore purchases</string>
+    <string name="purchase_manage">Manage subscription</string>
+    <string name="purchase_help">Help</string>
+    <string name="purchase_privacy">Privacy policy</string>
+    <string name="purchase_close">Close</string>
+    <string name="purchase_continue">Continue reading</string>
+    <string name="purchase_access_ready">Your paid access is available.</string>
+    <string name="purchase_pending">Your payment is pending. Access will be available after payment is completed and verified.</string>
+    <string name="purchase_loading">Checking Google Play…</string>
+    <string name="purchase_unavailable">Google Play is unavailable. Check your connection and try again.</string>
+    <string name="purchase_products_unavailable">Some plans are unavailable for this Google Play account. Please try again later.</string>
+    <string name="purchase_failed">The purchase could not be completed. No new access has been activated.</string>
+    <string name="purchase_verification_failed">We could not verify your purchase. Use Restore purchases to try again.</string>
+    <string name="purchase_acknowledgement_failed">Your purchase is verified, but confirmation with Google Play needs to be retried. Please restore purchases while online.</string>
+    <string name="purchase_none_found">No active purchase was found for this Google Play account.</string>
+    <string name="purchase_retry">Try again</string>
+</resources>

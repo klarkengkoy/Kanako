@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="account_title">かなこのアカウント</string>
+    <string name="account_welcome">かなこで読もう</string>
+    <string name="account_intro">ログインすると7日間の無料体験が始まり、機種変更後も体験期間と購入を引き継げます。お支払いは不要で、定期購入は始まりません。</string>
+    <string name="account_google">Googleで続行</string>
+    <string name="account_signed_in">%1$s でログイン中</string>
+    <string name="account_trial_ends">無料体験の終了：%1$s</string>
+    <string name="account_paid">有料の読み取り機能をご利用いただけます。</string>
+    <string name="account_checking">アカウントを確認中…</string>
+    <string name="account_setup_needed">このバージョンではまだログインできません。新しいバージョンが公開されたらご利用ください。</string>
+    <string name="account_sign_in_failed">ログインできませんでした。もう一度お試しください。</string>
+    <string name="account_connection_failed">利用状況を確認できませんでした。インターネットに接続して再試行してください。</string>
+    <string name="account_delete_failed">アカウントの削除を確認できませんでした。もう一度お試しください。</string>
+    <string name="account_retry">再試行</string>
+    <string name="account_sign_out">ログアウト</string>
+    <string name="account_delete">アカウントを削除</string>
+    <string name="account_delete_title">かなこのアカウントを削除しますか？</string>
+    <string name="account_delete_body">プライバシーポリシーに従って、かなこのアカウントと関連データを削除します。Googleアカウントの確認が再度必要です。Googleアカウントの削除やGoogle Playの定期購入の解約は行われません。削除前に定期購入を管理してください。</string>
+    <string name="account_delete_body_with_trial_history">かなこのアカウントと関連データを削除します。無料体験の繰り返し利用を防ぐため、この申請から最長12か月間、コード化したアカウント識別子と最初の無料体験の開始・終了日時を保持します。この記録に氏名、メールアドレス、スクリーンショット、購入記録の詳細は含まれません。\n\n続けるにはGoogleアカウントを再確認してください。Googleアカウントの削除やGoogle Playの定期購入の解約は行われません。自動更新を停止するには、別途定期購入を解約してください。</string>
+    <string name="account_delete_confirm">アカウントを削除する</string>
+    <string name="account_cancel">キャンセル</string>
+    <string name="account_manage_subscription">定期購入を管理</string>
+    <string name="account_restore">購入を復元</string>
+    <string name="account_help">ヘルプ</string>
+    <string name="account_privacy">プライバシーポリシー</string>
+    <string name="account_web_delete">ウェブでアカウント削除を申請</string>
+    <string name="account_back">戻る</string>
+    <string name="account_close">閉じる</string>
+    <string name="account_continue">読み取りを続ける</string>
+    <string name="account_check_needed">利用状況を確認して続行してください。</string>
+    <string name="account_policy_unavailable">このページはまだ利用できません。</string>
+    <string name="account_open_failed">ページを開けませんでした。</string>
+    <string name="account_purchase_options">購入プラン</string>
+    <string name="account_no_auto_charge">無料体験が終了しても料金は請求されません。その後にプランを選べます。</string>
+    <string name="account_sign_in_intro">Googleでかなこのアカウントにログインしてください。</string>
+    <string name="account_test_login">テストログイン</string>
+    <string name="account_test_username">ユーザー名</string>
+    <string name="account_test_password">パスワード</string>
+    <string name="account_test_login_failed">ユーザー名またはパスワードが違います。</string>
+    <string name="account_test_session">テストアクセスが有効です。このセッションでは読み取り機能を利用できます。無料体験や購入は作成されません。</string>
+</resources>

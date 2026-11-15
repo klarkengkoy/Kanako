@@ -35,6 +35,9 @@ sealed interface Screen : NavKey {
 
     @Serializable
     data object Preferences : Screen
+
+    @Serializable
+    data object Account : Screen
 }
 
 @Serializable

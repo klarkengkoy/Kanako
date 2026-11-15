@@ -245,7 +245,8 @@ class KanakoAccessibilityService : AccessibilityService() {
             fail(SnapshotFailure.Reason.UNSUPPORTED)
             return
         }
-        if (!snapshotConsentAccepted || !KanakoOverlaySession.isActive.value) {
+        if (!com.smyddevstudio.kanako.data.account.ReadingAccess.allowedNow() ||
+            !snapshotConsentAccepted || !KanakoOverlaySession.isActive.value) {
             fail(SnapshotFailure.Reason.SERVICE_UNAVAILABLE)
             return
         }

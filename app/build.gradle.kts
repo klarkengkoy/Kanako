@@ -7,9 +7,24 @@ import java.util.zip.ZipFile
 
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.google.services) apply false
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.devtools.ksp)
     alias(libs.plugins.jetbrains.kotlin.plugin.serialization)
+}
+
+val accountConfigPresent = file("google-services.json").isFile
+val accountAccessEnforced = providers.gradleProperty("kanakoEnforceReadingAccess").orElse("true").get()
+require(accountAccessEnforced == "true" || accountAccessEnforced == "false")
+if (accountConfigPresent) apply(plugin = "com.google.gms.google-services")
+
+fun accountSetting(name: String, fallback: String = ""): String =
+    providers.gradleProperty(name).orElse(fallback).get()
+
+fun quotedAccountSetting(name: String, fallback: String = ""): String {
+    val value = accountSetting(name, fallback)
+    require(value.none { it == '\n' || it == '\r' }) { "Account settings must be single-line values" }
+    return "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 }
 
 val sudachiTrial = providers.gradleProperty("sudachiTrial").orNull == "true"
@@ -117,6 +132,18 @@ android {
         buildConfigField("String", "SUDACHI_DICTIONARY_VERSION", "\"${dictionarySpec.getProperty("version")}\"")
         buildConfigField("String", "SUDACHI_DICTIONARY_SHA256", "\"${dictionarySpec.getProperty("dictionarySha256")}\"")
         buildConfigField("long", "SUDACHI_DICTIONARY_BYTES", "${dictionarySpec.getProperty("dictionaryBytes")}L")
+        buildConfigField("boolean", "ACCOUNT_CONFIG_PRESENT", accountConfigPresent.toString())
+        buildConfigField("boolean", "ACCOUNT_ACCESS_ENFORCED", accountAccessEnforced)
+        buildConfigField("boolean", "TEST_LOGIN_ENABLED", "false")
+        buildConfigField("String", "ACCOUNT_SERVER_URL", quotedAccountSetting("kanakoAccountServerUrl"))
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", quotedAccountSetting("kanakoGoogleWebClientId"))
+        buildConfigField("String", "PRIVACY_POLICY_URL", quotedAccountSetting("kanakoPrivacyPolicyUrl"))
+        buildConfigField("String", "ACCOUNT_DELETION_URL", quotedAccountSetting("kanakoAccountDeletionUrl"))
+        buildConfigField("String", "SUBSCRIPTION_PRODUCT_ID", quotedAccountSetting("kanakoSubscriptionId", "kanako_premium"))
+        buildConfigField("String", "MONTHLY_BASE_PLAN_ID", quotedAccountSetting("kanakoMonthlyPlanId", "monthly"))
+        buildConfigField("String", "YEARLY_BASE_PLAN_ID", quotedAccountSetting("kanakoYearlyPlanId", "yearly"))
+        buildConfigField("String", "LIFETIME_PRODUCT_ID", quotedAccountSetting("kanakoLifetimeId", "kanako_lifetime"))
+        buildConfigField("String", "LIFETIME_PURCHASE_OPTION_ID", quotedAccountSetting("kanakoLifetimeOptionId", "buy"))
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
@@ -136,11 +163,20 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("boolean", "TEST_LOGIN_ENABLED", "true")
+        }
         release {
+            buildConfigField("boolean", "ACCOUNT_ACCESS_ENFORCED", "true")
             optimization {
                 enable = true
                 packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
             }
+        }
+        create("review") {
+            initWith(getByName("release"))
+            matchingFallbacks += "release"
+            buildConfigField("boolean", "TEST_LOGIN_ENABLED", "true")
         }
     }
     compileOptions {
@@ -183,6 +219,13 @@ tasks.withType<Test>().configureEach {
 }
 
 dependencies {
+    implementation(libs.play.billing)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services)
+    implementation(libs.google.identity)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.sudachi)
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)

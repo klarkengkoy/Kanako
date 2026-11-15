@@ -86,7 +86,7 @@
     <string name="preferences_privacy">Privacy</string>
     <string name="preview_sample_text"><annotation reading="ニホンゴ">日本語</annotation>を<annotation reading="ヨム">読む</annotation></string>
     <string name="preferences_keyboard_check">Nascondi il pulsante mobile durante la digitazione.</string>
-    <string name="preferences_title">Preferenze</string>
+    <string name="preferences_title">Impostazioni</string>
     <string name="home_reader_active">Lettore mobile attivo</string>
     <string name="home_reader_off">Lettore mobile</string>
     <string name="home_manage_access">Gestisci accessi</string>
@@ -142,7 +142,7 @@
     <string name="reading_size_medium">12sp</string>
     <string name="reading_size_large">14sp</string>
     <string name="how_preferences_title">Regola la lettura</string>
-    <string name="how_preferences">Scegli Kana o Romaji, dimensioni, colore e sfondo nelle preferenze. La dimensione è un minimo; le letture automatiche appaiono solo dove c’è spazio. I gruppi di kanji con una lettura sono evidenziati, anche nelle zone affollate. Con la lettura automatica tocca i kanji evidenziati per consultarne la lettura; i tocchi altrove raggiungono l’app. Gli aggiornamenti automatici si sospendono durante la selezione e riprendono quando tocchi il gruppo selezionato, la sua lettura o altrove. Le modifiche al contenuto di origine possono comunque cancellare le evidenziazioni non più valide. Con Tocca per leggere, le letture bloccano i tocchi verso l’app: tocca un gruppo evidenziato per mostrarne solo la lettura, poi toccalo di nuovo o tocca uno spazio vuoto per ripristinare le altre letture. Tocca Kanako per cancellare le letture e usare di nuovo l’app. Nascondi con la tastiera nasconde il personaggio quando la tastiera è visibile. L’acquisizione si sospende quando viene rilevata una tastiera o un campo password, anche se il personaggio resta visibile. L’anteprima fissa mostra solo l’aspetto.</string>
+    <string name="how_preferences">Scegli Kana o Romaji, dimensioni, colore e sfondo nelle impostazioni. La dimensione è un minimo; le letture automatiche appaiono solo dove c’è spazio. I gruppi di kanji con una lettura sono evidenziati, anche nelle zone affollate. Con la lettura automatica tocca i kanji evidenziati per consultarne la lettura; i tocchi altrove raggiungono l’app. Gli aggiornamenti automatici si sospendono durante la selezione e riprendono quando tocchi il gruppo selezionato, la sua lettura o altrove. Le modifiche al contenuto di origine possono comunque cancellare le evidenziazioni non più valide. Con Tocca per leggere, le letture bloccano i tocchi verso l’app: tocca un gruppo evidenziato per mostrarne solo la lettura, poi toccalo di nuovo o tocca uno spazio vuoto per ripristinare le altre letture. Tocca Kanako per cancellare le letture e usare di nuovo l’app. Nascondi con la tastiera nasconde il personaggio quando la tastiera è visibile. L’acquisizione si sospende quando viene rilevata una tastiera o un campo password, anche se il personaggio resta visibile. L’anteprima fissa mostra solo l’aspetto.</string>
     <string name="preview_sample_short"><annotation reading="ニホンゴ">日本語</annotation></string>
     <string name="preferences_appearance_summary">Si applica a entrambi i lettori. L’anteprima mostra solo l’aspetto.</string>
     <string name="privacy_access">Privacy e accesso allo schermo</string>
@@ -196,7 +196,7 @@
     <string name="tutorial_auto_scroll">Con la modalità di lettura automatica attiva, scorri questo testo e fermati. Kanako lo legge dopo una breve pausa, senza toccare il pulsante. Se selezioni una parola, aspetta che tocchi altrove prima di leggere di nuovo.</string>
     <string name="tutorial_preferences">Leggi più comodamente</string>
     <string name="tutorial_preferences_body">Scegli Kana o Romaji, oppure prova dimensioni, colore e sfondo delle letture. Valgono per entrambi i lettori.</string>
-    <string name="tutorial_open_preferences">Tocca Preferenze, l’icona a ingranaggio, per provare le impostazioni di lettura.</string>
+    <string name="tutorial_open_preferences">Tocca Impostazioni, l’icona a ingranaggio, per provare le impostazioni di lettura.</string>
     <string name="tutorial_setup">Prepariamoci</string>
     <string name="tutorial_setup_floating">Configura gli accessi del lettore mobile nella schermata iniziale.</string>
     <string name="tutorial_setup_camera">Tocca %1$s per aprire la fotocamera.</string>

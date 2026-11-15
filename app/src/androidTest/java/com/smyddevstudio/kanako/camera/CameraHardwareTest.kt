@@ -39,6 +39,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
 import com.smyddevstudio.kanako.MainActivity
+import com.smyddevstudio.kanako.KanakoApplication
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import org.junit.Before
+import org.junit.After
 import com.smyddevstudio.kanako.R
 import java.util.concurrent.ConcurrentHashMap
 import org.junit.Assert.*
@@ -51,6 +56,31 @@ import org.junit.runner.RunWith
 @SdkSuppress(minSdkVersion = 28)
 class CameraHardwareTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
+
+    private var startedTestSession = false
+
+    @Before fun enterTestSession() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val accounts = (context.applicationContext as KanakoApplication).accounts
+        runBlocking(Dispatchers.Main) {
+            if (!accounts.state.value.testSession) {
+                assertTrue(
+                    "Use a test-enabled build with Firebase signed out for isolated camera verification",
+                    accounts.testLogin("tester", "tester")
+                )
+                startedTestSession = true
+            }
+        }
+        compose.waitForIdle()
+    }
+
+    @After fun leaveTestSession() {
+        if (startedTestSession) {
+            val context = InstrumentationRegistry.getInstrumentation().targetContext
+            val accounts = (context.applicationContext as KanakoApplication).accounts
+            runBlocking(Dispatchers.Main) { accounts.signOut() }
+        }
+    }
 
     private fun findPreview(view: View): PreviewView? {
         if (view is PreviewView) return view

@@ -19,6 +19,15 @@ internal object KanakoUiProfile {
     const val cameraFlashDuration = 320
     const val cameraFlashGrowFraction = 0.65f
     const val cameraFlashPeakAlpha = 0.85f
+    val dialogOuterPadding = 24.dp
+    val dialogContentPadding = 24.dp
+    val dialogMaxWidth = 560.dp
+    val policyMaxWidth = 680.dp
+    val dialogMaxHeight = 720.dp
+    val dialogSectionGap = 24.dp
+    val dialogParagraphGap = 16.dp
+    val dialogHeadingGap = 8.dp
+    val dialogActionHeight = 56.dp
     val groupRadius = 24.dp
     val groupInset = 16.dp
     val groupShape = RoundedCornerShape(groupRadius)

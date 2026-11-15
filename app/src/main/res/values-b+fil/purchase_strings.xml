@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="purchase_title">Tapos na ang iyong pitong araw na trial</string>
+    <string name="purchase_test_title">Mga test na pagbili</string>
+    <string name="purchase_test_intro">Hindi nagbago ang iyong trial. Gumamit ng itinalagang Google Play license-test account at pumili ng test na paraan ng pagbabayad. Kung hindi sinasabi ng Google Play na test na pagbili ito, kanselahin.</string>
+    <string name="purchase_intro">Walang singil o awtomatikong subscription mula sa trial. Piliin kung paano magpatuloy sa pagbabasa gamit ang Kanako.</string>
+    <string name="purchase_monthly">Buwanan</string>
+    <string name="purchase_yearly">Taunan</string>
+    <string name="purchase_lifetime">Panghabambuhay</string>
+    <string name="purchase_monthly_price">%1$s bawat buwan</string>
+    <string name="purchase_yearly_price">%1$s bawat taon</string>
+    <string name="purchase_lifetime_price">%1$s · isang bayad lamang</string>
+    <string name="purchase_subscriptions_terms">Awtomatikong mare-renew ang buwanan at taunang plano hanggang kanselahin sa Google Play. Nasa itaas ang buong presyo at panahon ng pagsingil, at kukumpirmahin ang mga ito bago bumili.</string>
+    <string name="purchase_lifetime_terms">Ang panghabambuhay na plano ay isang bayad para sa permanenteng access sa mga bayad na feature sa pagbabasa ng Kanako. Hindi ito mare-renew.</string>
+    <string name="purchase_restore">Ibalik ang mga pagbili</string>
+    <string name="purchase_manage">Pamahalaan ang subscription</string>
+    <string name="purchase_help">Tulong</string>
+    <string name="purchase_privacy">Patakaran sa privacy</string>
+    <string name="purchase_close">Isara</string>
+    <string name="purchase_continue">Magpatuloy sa pagbabasa</string>
+    <string name="purchase_access_ready">Available na ang iyong bayad na access.</string>
+    <string name="purchase_pending">Nakabinbin ang iyong bayad. Magiging available ang access kapag nakumpleto at na-verify ang bayad.</string>
+    <string name="purchase_loading">Sinusuri ang Google Play…</string>
+    <string name="purchase_unavailable">Hindi available ang Google Play. Suriin ang koneksyon at subukan ulit.</string>
+    <string name="purchase_products_unavailable">Hindi available ang ilang plano para sa Google Play account na ito. Subukan ulit mamaya.</string>
+    <string name="purchase_failed">Hindi nakumpleto ang pagbili. Walang bagong access na na-activate.</string>
+    <string name="purchase_verification_failed">Hindi namin ma-verify ang iyong pagbili. Subukan ulit gamit ang Ibalik ang mga pagbili.</string>
+    <string name="purchase_acknowledgement_failed">Na-verify ang pagbili, pero kailangang ulitin ang kumpirmasyon sa Google Play. Ibalik ang mga pagbili habang online.</string>
+    <string name="purchase_none_found">Walang nahanap na aktibong pagbili para sa Google Play account na ito.</string>
+    <string name="purchase_retry">Subukan ulit</string>
+</resources>

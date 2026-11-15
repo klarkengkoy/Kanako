@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.SystemClock
+import com.smyddevstudio.kanako.data.account.ReadingAccess
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.mlkit.common.MlKitException
@@ -47,9 +48,10 @@ internal class CameraReaderViewModel : ViewModel() {
     private var photoRequest = 0L
     private var liveRequest = 0L
 
-    fun liveTicket() = gate.liveTicket()
+    fun liveTicket() = if (ReadingAccess.allowedNow()) gate.liveTicket() else null
 
     fun resumeLive() {
+        if (!ReadingAccess.allowedNow()) { returnToLive(); return }
         if (mutableState.value.photo != null) return
         gate.resumeLive()
         liveReadings.reset()
@@ -89,6 +91,7 @@ internal class CameraReaderViewModel : ViewModel() {
     }
 
     fun receiveLive(ticket: Long, started: Long, result: Result<List<CameraReadingLine>>) {
+        if (!ReadingAccess.allowedNow()) { returnToLive(); return }
         if (!gate.acceptsLive(ticket)) return
         val now = SystemClock.elapsedRealtime()
         val lines = liveReadings.update(started, now, result.getOrDefault(emptyList())) ?: return
@@ -111,13 +114,13 @@ internal class CameraReaderViewModel : ViewModel() {
     }
 
     fun capture(session: LiveCameraSession, onCaptured: () -> Unit) {
-        if (!mutableState.value.ready) return
+        if (!ReadingAccess.allowedNow() || !mutableState.value.ready) return
         val ticket = gate.beginCapture() ?: return
         liveReadings.reset()
         expiry?.cancel()
         mutableState.value = mutableState.value.copy(status = CameraReadingStatus.CAPTURING, ready = false, lines = emptyList())
         session.capture captured@{ result ->
-            if (!gate.acceptCapture(ticket)) {
+            if (!ReadingAccess.allowedNow() || !gate.acceptCapture(ticket)) {
                 result.getOrNull()?.close()
                 return@captured
             }
@@ -151,6 +154,7 @@ internal class CameraReaderViewModel : ViewModel() {
     }
 
     fun openPhoto(context: Context, uri: Uri) {
+        if (!ReadingAccess.allowedNow()) { returnToLive(); return }
         photoLoad?.cancel()
         recognition?.cancel()
         expiry?.cancel()
@@ -165,14 +169,14 @@ internal class CameraReaderViewModel : ViewModel() {
         photoLoad = viewModelScope.launch {
             try {
                 val photo = readDevicePhoto(app, uri)
-                if (gate.acceptsPhoto(ticket)) {
+                if (ReadingAccess.allowedNow() && gate.acceptsPhoto(ticket)) {
                     mutableState.value = CameraReaderUiState(status = CameraReadingStatus.PROCESSING, photo = photo)
                     recognizePhoto()
                 } else photo.close()
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {
-                if (gate.acceptsPhoto(ticket)) {
+                if (ReadingAccess.allowedNow() && gate.acceptsPhoto(ticket)) {
                     mutableState.value = CameraReaderUiState(status = CameraReadingStatus.READ_ERROR)
                 }
             }
@@ -180,6 +184,7 @@ internal class CameraReaderViewModel : ViewModel() {
     }
 
     private fun recognizePhoto() {
+        if (!ReadingAccess.allowedNow()) { returnToLive(); return }
         val photo = mutableState.value.photo ?: return
         val ticket = photoTicket
         val request = ++photoRequest
@@ -188,7 +193,7 @@ internal class CameraReaderViewModel : ViewModel() {
         recognition = viewModelScope.launch {
             try {
                 val lines = withContext(Dispatchers.Default) { cameraReadingLines(recognizeCameraPhoto(photo)) }
-                if (gate.acceptsPhoto(ticket) && request == photoRequest) {
+                if (ReadingAccess.allowedNow() && gate.acceptsPhoto(ticket) && request == photoRequest) {
                     mutableState.value = mutableState.value.copy(
                         lines = lines,
                         status = if (lines.hasReadings) CameraReadingStatus.PHOTO else CameraReadingStatus.NO_TEXT
@@ -197,7 +202,7 @@ internal class CameraReaderViewModel : ViewModel() {
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Exception) {
-                if (gate.acceptsPhoto(ticket) && request == photoRequest) {
+                if (ReadingAccess.allowedNow() && gate.acceptsPhoto(ticket) && request == photoRequest) {
                     mutableState.value = mutableState.value.copy(status = recognitionFailure(error), lines = emptyList())
                 }
             }
@@ -233,6 +238,10 @@ private fun recognitionFailure(error: Throwable): CameraReadingStatus =
     else CameraReadingStatus.READ_ERROR
 
 internal suspend fun recognizeCameraPhoto(photo: CameraPhoto): Text = suspendCancellableCoroutine { continuation ->
+    if (!ReadingAccess.allowedNow()) {
+        continuation.resumeWithException(SecurityException("Reading access unavailable"))
+        return@suspendCancellableCoroutine
+    }
     val lease = photo.acquire()
     if (lease == null) {
         continuation.resumeWithException(IllegalStateException("Camera photo was released"))
@@ -243,7 +252,9 @@ internal suspend fun recognizeCameraPhoto(photo: CameraPhoto): Text = suspendCan
                 .addOnCompleteListener(Dispatchers.Default.asExecutor()) { task ->
                     try {
                         if (continuation.isActive) {
-                            if (task.isSuccessful) continuation.resume(task.result)
+                            if (!ReadingAccess.allowedNow())
+                                continuation.resumeWithException(SecurityException("Reading access unavailable"))
+                            else if (task.isSuccessful) continuation.resume(task.result)
                             else continuation.resumeWithException(task.exception ?: IllegalStateException("Recognition failed"))
                         }
                     } finally {

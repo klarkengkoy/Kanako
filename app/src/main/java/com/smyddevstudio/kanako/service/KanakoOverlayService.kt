@@ -143,6 +143,7 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
             )
 
         fun startService(context: Context) {
+            if (!com.smyddevstudio.kanako.data.account.ReadingAccess.allowedNow()) return
             val intent = Intent(context, KanakoOverlayService::class.java).apply {
                 action = ACTION_START_SERVICE
             }
@@ -200,7 +201,8 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
             startForeground(NOTIFICATION_ID, buildForegroundNotification())
         }
 
-        if (!canDrawOverlays(this) || !KanakoAccessibilityService.connected.value ||
+        if (!com.smyddevstudio.kanako.data.account.ReadingAccess.allowedNow() ||
+            !canDrawOverlays(this) || !KanakoAccessibilityService.connected.value ||
             Build.VERSION.SDK_INT < Build.VERSION_CODES.R
         ) {
             stopSelf()
@@ -285,6 +287,7 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
         }
 
         if (intent?.action != ACTION_START_SERVICE ||
+            !com.smyddevstudio.kanako.data.account.ReadingAccess.allowedNow() ||
             !canDrawOverlays(this) || !KanakoAccessibilityService.connected.value ||
             screenCaptureEngine == null
         ) {
@@ -402,6 +405,11 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
     }
 
     private fun requestReading(automatic: Boolean) {
+        if (!com.smyddevstudio.kanako.data.account.ReadingAccess.allowedNow()) {
+            clearReading()
+            stopSelf()
+            return
+        }
         if (KanakoOverlaySession.photoReaderVisible.value) return
         if (automatic && inspectingReading) {
             refreshAfterInspection = autoReader.enabled
@@ -435,7 +443,8 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
             }
             val accepted = engine.readOnce(
                 shouldProcess = {
-                    requestGate.isCurrent(token) &&
+                    com.smyddevstudio.kanako.data.account.ReadingAccess.allowedNow() &&
+                        requestGate.isCurrent(token) &&
                         revision == KanakoScreenContext.revision.value &&
                         !KanakoInputVisibility.hidden.value && !screenCapturePaused &&
                         !KanakoOverlaySession.photoReaderVisible.value
@@ -449,7 +458,8 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
                 }
             ) { result ->
                 setOverlayHidden(inputHidden || screenCapturePaused)
-                if (!requestGate.isCurrent(token) ||
+                if (!com.smyddevstudio.kanako.data.account.ReadingAccess.allowedNow() ||
+                    !requestGate.isCurrent(token) ||
                     revision != KanakoScreenContext.revision.value ||
                     KanakoInputVisibility.hidden.value || screenCapturePaused ||
                     KanakoOverlaySession.photoReaderVisible.value

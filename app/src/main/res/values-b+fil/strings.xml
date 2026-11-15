@@ -86,7 +86,7 @@
     <string name="preferences_privacy">Pagkapribado</string>
     <string name="preview_sample_text"><annotation reading="ニホンゴ">日本語</annotation>を<annotation reading="ヨム">読む</annotation></string>
     <string name="preferences_keyboard_check">Itago ang lumulutang na button habang nagta-type.</string>
-    <string name="preferences_title">Mga kagustuhan</string>
+    <string name="preferences_title">Mga setting</string>
     <string name="home_reader_active">Naka-on ang lumulutang na reader</string>
     <string name="home_reader_off">Lumulutang na reader</string>
     <string name="home_manage_access">Pamahalaan ang access</string>
@@ -142,7 +142,7 @@
     <string name="reading_size_medium">12sp</string>
     <string name="reading_size_large">14sp</string>
     <string name="how_preferences_title">Ayusin ang paraan ng pagbasa</string>
-    <string name="how_preferences">Pumili ng Kana o Romaji, laki, kulay, at background sa Mga kagustuhan. Minimum ang laki; awtomatikong lumalabas ang mga pagbasa kung may sapat na espasyo. Naka-highlight ang mga grupo ng kanji na may pagbasa, kahit siksikan. Sa awtomatikong pagbasa, i-tap ang naka-highlight na kanji para tingnan ang pagbasa nito; napupunta sa app ang mga tap sa ibang lugar. Naka-pause ang awtomatikong pag-refresh habang may napiling pagbasa at nagpapatuloy kapag na-tap ang napiling grupo, ang pagbasa nito, o ibang lugar. Kapag nagbago ang pinagmulang nilalaman, maaari pa ring alisin ang mga lumang highlight. Sa I-tap para magbasa, hinaharang ng mga pagbasa ang mga tap papunta sa app: i-tap ang naka-highlight na grupo para ipakita ang pagbasa nito lamang, pagkatapos ay i-tap itong muli o ang bakanteng lugar para ibalik ang ibang pagbasa. I-tap ang Kanako para alisin ang mga pagbasa at magamit muli ang app. Itinatago ng Itago kapag may keyboard ang karakter habang nakikita ang keyboard. Naka-pause ang pagkuha kapag may natukoy na keyboard o password field, kahit nakikita pa ang karakter. Hitsura lang ang ipinapakita ng nakapirming preview.</string>
+    <string name="how_preferences">Pumili ng Kana o Romaji, laki, kulay, at background sa Mga setting. Minimum ang laki; awtomatikong lumalabas ang mga pagbasa kung may sapat na espasyo. Naka-highlight ang mga grupo ng kanji na may pagbasa, kahit siksikan. Sa awtomatikong pagbasa, i-tap ang naka-highlight na kanji para tingnan ang pagbasa nito; napupunta sa app ang mga tap sa ibang lugar. Naka-pause ang awtomatikong pag-refresh habang may napiling pagbasa at nagpapatuloy kapag na-tap ang napiling grupo, ang pagbasa nito, o ibang lugar. Kapag nagbago ang pinagmulang nilalaman, maaari pa ring alisin ang mga lumang highlight. Sa I-tap para magbasa, hinaharang ng mga pagbasa ang mga tap papunta sa app: i-tap ang naka-highlight na grupo para ipakita ang pagbasa nito lamang, pagkatapos ay i-tap itong muli o ang bakanteng lugar para ibalik ang ibang pagbasa. I-tap ang Kanako para alisin ang mga pagbasa at magamit muli ang app. Itinatago ng Itago kapag may keyboard ang karakter habang nakikita ang keyboard. Naka-pause ang pagkuha kapag may natukoy na keyboard o password field, kahit nakikita pa ang karakter. Hitsura lang ang ipinapakita ng nakapirming preview.</string>
     <string name="preview_sample_short"><annotation reading="ニホンゴ">日本語</annotation></string>
     <string name="preferences_appearance_summary">Para sa parehong reader. Hitsura lang ang ipinapakita ng preview.</string>
     <string name="privacy_access">Pagkapribado at access sa screen</string>
@@ -196,7 +196,7 @@
     <string name="tutorial_auto_scroll">Kapag naka-on ang Auto read mode, i-scroll ang sample na ito at huminto. Pagkatapos ng maikling sandali, babasahin ito ni Kanako nang hindi mo kailangang mag-tap. Kapag pumili ka ng salita, maghihintay ang bagong pagbasa hanggang mag-tap ka sa labas.</string>
     <string name="tutorial_preferences">Gawing komportable ang pagbasa</string>
     <string name="tutorial_preferences_body">Pumili ng Kana o Romaji, o subukan ang laki, kulay at background ng pagbasa. Para ito sa parehong reader.</string>
-    <string name="tutorial_open_preferences">I-tap ang Mga Kagustuhan, ang gear icon, para subukan ang mga setting ng pagbasa.</string>
+    <string name="tutorial_open_preferences">I-tap ang Mga setting, ang gear icon, para subukan ang mga setting ng pagbasa.</string>
     <string name="tutorial_setup">Maghanda muna tayo</string>
     <string name="tutorial_setup_floating">Ayusin ang access ng floating reader sa Home.</string>
     <string name="tutorial_setup_camera">I-tap ang %1$s para buksan ang camera.</string>

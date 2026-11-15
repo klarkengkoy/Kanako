@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="purchase_title">La prova di sette giorni è terminata</string>
+    <string name="purchase_test_title">Acquisti di prova</string>
+    <string name="purchase_test_intro">La prova resta invariata. Usa un account designato per i test delle licenze Google Play e scegli un metodo di pagamento di prova. Se Google Play non indica che si tratta di un acquisto di prova, annulla.</string>
+    <string name="purchase_intro">La prova non comporta addebiti e non avvia alcun abbonamento. Scegli come continuare a leggere con Kanako.</string>
+    <string name="purchase_monthly">Mensile</string>
+    <string name="purchase_yearly">Annuale</string>
+    <string name="purchase_lifetime">A vita</string>
+    <string name="purchase_monthly_price">%1$s al mese</string>
+    <string name="purchase_yearly_price">%1$s all’anno</string>
+    <string name="purchase_lifetime_price">%1$s · pagamento unico</string>
+    <string name="purchase_subscriptions_terms">I piani mensili e annuali si rinnovano automaticamente fino alla disdetta su Google Play. Il prezzo totale e il periodo di fatturazione sono indicati sopra e confermati prima dell’acquisto.</string>
+    <string name="purchase_lifetime_terms">Il piano a vita offre accesso permanente alle funzioni di lettura a pagamento di Kanako con un solo pagamento. Non si rinnova.</string>
+    <string name="purchase_restore">Ripristina acquisti</string>
+    <string name="purchase_manage">Gestisci abbonamento</string>
+    <string name="purchase_help">Aiuto</string>
+    <string name="purchase_privacy">Informativa sulla privacy</string>
+    <string name="purchase_close">Chiudi</string>
+    <string name="purchase_continue">Continua a leggere</string>
+    <string name="purchase_access_ready">Il tuo accesso a pagamento è disponibile.</string>
+    <string name="purchase_pending">Il pagamento è in sospeso. L’accesso sarà disponibile dopo il completamento e la verifica.</string>
+    <string name="purchase_loading">Verifica di Google Play…</string>
+    <string name="purchase_unavailable">Google Play non è disponibile. Controlla la connessione e riprova.</string>
+    <string name="purchase_products_unavailable">Alcuni piani non sono disponibili per questo account Google Play. Riprova più tardi.</string>
+    <string name="purchase_failed">Non è stato possibile completare l’acquisto. Nessun nuovo accesso è stato attivato.</string>
+    <string name="purchase_verification_failed">Non è stato possibile verificare l’acquisto. Riprova con Ripristina acquisti.</string>
+    <string name="purchase_acknowledgement_failed">L’acquisto è verificato, ma la conferma a Google Play deve essere ritentata. Ripristina gli acquisti mentre sei online.</string>
+    <string name="purchase_none_found">Nessun acquisto attivo trovato per questo account Google Play.</string>
+    <string name="purchase_retry">Riprova</string>
+</resources>

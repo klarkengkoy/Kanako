@@ -49,7 +49,7 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.FontDownload
 import androidx.compose.material.icons.rounded.Layers
 import androidx.compose.material.icons.rounded.Security
-import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.AccountCircle
 import com.smyddevstudio.kanako.ui.components.KanakoCard as Card
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CardDefaults
@@ -108,8 +108,8 @@ fun PreferencesScreen(
     onUpdateAnnotationPlateStyle: (AnnotationPlateStyle) -> Unit = {},
     onUpdateFabSize: (FabSize) -> Unit = {},
     onUpdateAutoHideOnKeyboard: (Boolean) -> Unit = {},
-    onRequestAccessibility: () -> Unit = {},
-    onNavigateToPrivacy: () -> Unit = {}
+    onOpenPrivacyPolicy: () -> Unit = {},
+    accountContent: (@Composable () -> Unit)? = null
 ) {
     val tutorial = LocalTutorialFocus.current
     val listState = rememberLazyListState()
@@ -338,24 +338,27 @@ fun PreferencesScreen(
                         }
                     }
 
-                    item(key = "system_header") {
-                        PreferenceSectionHeader(title = stringResource(R.string.preferences_system), icon = Icons.Rounded.Settings)
-                    }
-
-                    item(key = "accessibility") {
-                        OutlinedButton(
-                            onClick = onRequestAccessibility,
-                            enabled = tutorial == null,
-                            modifier = Modifier.keepFocusedControlVisibleOnResize(windowSize).fillMaxWidth().padding(horizontal = 16.dp)
-                        ) { Text(stringResource(R.string.home_manage_access)) }
+                    if (accountContent != null) {
+                        item(key = "account_header") {
+                            PreferenceSectionHeader(title = stringResource(R.string.account_title), icon = Icons.Rounded.AccountCircle)
+                        }
+                        item(key = "account") {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                shape = KanakoUiProfile.groupShape
+                            ) {
+                                Column(Modifier.padding(KanakoUiProfile.groupInset)) { accountContent() }
+                            }
+                        }
                     }
 
                     item(key = "privacy") {
-                        TextButton(onClick = onNavigateToPrivacy, enabled = tutorial == null,
+                        TextButton(onClick = onOpenPrivacyPolicy, enabled = tutorial == null,
                             modifier = Modifier.keepFocusedControlVisibleOnResize(windowSize).fillMaxWidth().heightIn(min = 48.dp)) {
                             Icon(Icons.Rounded.Security, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text(stringResource(R.string.privacy_access))
+                            Text(stringResource(R.string.account_privacy))
                         }
                     }
 

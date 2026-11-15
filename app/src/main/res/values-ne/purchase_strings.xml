@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="purchase_title">तपाईंको सात दिनको परीक्षण अवधि सकियो</string>
+    <string name="purchase_test_title">परीक्षण खरिद</string>
+    <string name="purchase_test_intro">तपाईंको परीक्षण अवधि परिवर्तन हुँदैन। तोकिएको Google Play लाइसेन्स परीक्षण खाता प्रयोग गरी परीक्षण भुक्तानी विधि छान्नुहोस्। Google Play ले परीक्षण खरिद भनेर नदेखाएमा रद्द गर्नुहोस्।</string>
+    <string name="purchase_intro">परीक्षणले शुल्क लिँदैन वा सदस्यता सुरु गर्दैन। Kanako सँग पढिरहन योजना छान्नुहोस्।</string>
+    <string name="purchase_monthly">मासिक</string>
+    <string name="purchase_yearly">वार्षिक</string>
+    <string name="purchase_lifetime">आजीवन</string>
+    <string name="purchase_monthly_price">प्रति महिना %1$s</string>
+    <string name="purchase_yearly_price">प्रति वर्ष %1$s</string>
+    <string name="purchase_lifetime_price">%1$s · एक पटकको भुक्तानी</string>
+    <string name="purchase_subscriptions_terms">मासिक र वार्षिक योजनाहरू Google Play मा रद्द नगरेसम्म स्वतः नवीकरण हुन्छन्। कुल मूल्य र बिलिङ अवधि माथि देखाइएका छन् र खरिद गर्नुअघि पुष्टि गरिन्छ।</string>
+    <string name="purchase_lifetime_terms">आजीवन योजनाले एक पटकको भुक्तानीमा Kanako का सशुल्क पढ्ने सुविधाहरूमा स्थायी पहुँच दिन्छ। यो नवीकरण हुँदैन।</string>
+    <string name="purchase_restore">खरिद पुनर्स्थापना गर्नुहोस्</string>
+    <string name="purchase_manage">सदस्यता व्यवस्थापन गर्नुहोस्</string>
+    <string name="purchase_help">सहायता</string>
+    <string name="purchase_privacy">गोपनीयता नीति</string>
+    <string name="purchase_close">बन्द गर्नुहोस्</string>
+    <string name="purchase_continue">पढ्न जारी राख्नुहोस्</string>
+    <string name="purchase_access_ready">तपाईंको सशुल्क पहुँच उपलब्ध छ।</string>
+    <string name="purchase_pending">तपाईंको भुक्तानी बाँकी छ। भुक्तानी पूरा र प्रमाणित भएपछि पहुँच उपलब्ध हुनेछ।</string>
+    <string name="purchase_loading">Google Play जाँच्दै…</string>
+    <string name="purchase_unavailable">Google Play उपलब्ध छैन। जडान जाँचेर फेरि प्रयास गर्नुहोस्।</string>
+    <string name="purchase_products_unavailable">यो Google Play खाताका लागि केही योजनाहरू उपलब्ध छैनन्। पछि फेरि प्रयास गर्नुहोस्।</string>
+    <string name="purchase_failed">खरिद पूरा हुन सकेन। नयाँ पहुँच सक्रिय गरिएको छैन।</string>
+    <string name="purchase_verification_failed">तपाईंको खरिद प्रमाणित गर्न सकेनौँ। खरिद पुनर्स्थापना गरेर फेरि प्रयास गर्नुहोस्।</string>
+    <string name="purchase_acknowledgement_failed">खरिद प्रमाणित भयो, तर Google Play लाई पुष्टि गर्न फेरि प्रयास गर्नुपर्छ। अनलाइन हुँदा खरिद पुनर्स्थापना गर्नुहोस्।</string>
+    <string name="purchase_none_found">यो Google Play खातामा सक्रिय खरिद भेटिएन।</string>
+    <string name="purchase_retry">फेरि प्रयास गर्नुहोस्</string>
+</resources>

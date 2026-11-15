@@ -42,6 +42,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.smyddevstudio.kanako.R
+import com.smyddevstudio.kanako.BuildConfig
+import com.smyddevstudio.kanako.KanakoApplication
+import com.smyddevstudio.kanako.data.account.ReadingAccess
 import com.smyddevstudio.kanako.service.KanakoAccessibilityService
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -72,6 +75,8 @@ import com.smyddevstudio.kanako.ui.screens.tutorialPrompts
 import com.smyddevstudio.kanako.ui.screens.tutorialCanAdvance
 import com.smyddevstudio.kanako.model.TutorialPath
 import com.smyddevstudio.kanako.ui.screens.HomeScreen
+import com.smyddevstudio.kanako.ui.screens.LoginDialog
+import com.smyddevstudio.kanako.ui.screens.PrivacyPolicyDialog
 import com.smyddevstudio.kanako.ui.screens.HowItWorksScreen
 import com.smyddevstudio.kanako.ui.screens.PreferencesScreen
 import com.smyddevstudio.kanako.ui.screens.CameraReaderScreen
@@ -84,6 +89,35 @@ fun KanakoApp(
     startCaptureRequest: Int = 0
 ) {
     val context = LocalContext.current
+    val accounts = remember(context) { (context.applicationContext as KanakoApplication).accounts }
+    val state by accounts.state.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
+    var showPrivacy by rememberSaveable { mutableStateOf(false) }
+    if (!state.hasSession) {
+        androidx.compose.material3.Surface(
+            modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {}
+        LoginDialog(
+            state = state,
+            testLoginEnabled = BuildConfig.TEST_LOGIN_ENABLED,
+            onSignIn = { context.cameraActivity()?.let { scope.launch { accounts.signIn(it) } } },
+            onTestLogin = accounts::testLogin,
+            onPrivacy = { showPrivacy = true },
+            modifier = modifier
+        )
+        if (showPrivacy) PrivacyPolicyDialog(onDismiss = { showPrivacy = false })
+    } else {
+        KanakoSignedInApp(modifier, startCaptureRequest)
+    }
+}
+
+@Composable
+private fun KanakoSignedInApp(
+    modifier: Modifier,
+    startCaptureRequest: Int
+) {
+    val context = LocalContext.current
     val resources = LocalResources.current
     val repository = remember(context) { UserPreferencesRepository(context) }
     val preferencesFlow = remember(repository) {
@@ -94,6 +128,20 @@ fun KanakoApp(
     val preferences = savedPreferences.copy(isOverlayActive = readerActive)
     val coroutineScope = rememberCoroutineScope()
     val backStack = rememberNavBackStack(Screen.Home)
+    val accounts = remember(context) { (context.applicationContext as KanakoApplication).accounts }
+    val accountState by accounts.state.collectAsStateWithLifecycle()
+    var showAccessPrompt by rememberSaveable { mutableStateOf(false) }
+    var showPrivacy by rememberSaveable { mutableStateOf(false) }
+    if (showPrivacy) PrivacyPolicyDialog(onDismiss = { showPrivacy = false })
+    fun requireReadingAccess(): Boolean {
+        if (ReadingAccess.allowedNow()) return true
+        accounts.refresh()
+        showAccessPrompt = true
+        return false
+    }
+    LaunchedEffect(accountState.canRead) {
+        if (accountState.canRead) showAccessPrompt = false
+    }
     var onboardingInitialized by remember { mutableStateOf(false) }
     var guidedSetup by rememberSaveable { mutableStateOf(false) }
     var lessonOwnsReader by rememberSaveable { mutableStateOf(false) }
@@ -129,14 +177,23 @@ fun KanakoApp(
         onboardingInitialized = true
     }
     val cameraReader: CameraReaderViewModel = viewModel()
+    DisposableEffect(cameraReader) {
+        onDispose {
+            if (!accounts.state.value.hasSession) {
+                cameraReader.returnToLive()
+                cameraReader.clearCaptureThumbnail()
+            }
+        }
+    }
     val photoPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        if (uri != null && backStack.lastOrNull() == Screen.Camera) {
+        if (uri != null && backStack.lastOrNull() == Screen.Camera && requireReadingAccess()) {
             cameraReader.openPhoto(context, uri)
             backStack.add(Screen.CameraResult)
             if (guidedSetup && tutorialPath == TutorialPath.CAMERA && tutorialStep in 1..2) setTutorialPosition(1, 1)
         }
     }
     fun launchPhotoPicker() {
+        if (!requireReadingAccess()) return
         photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
     val hasCameraEntry = Screen.Camera in backStack
@@ -188,6 +245,7 @@ fun KanakoApp(
                 overlayGranted = KanakoOverlayService.canDrawOverlays(context)
                 accessibilityEnabled = KanakoAccessibilityService.isEnabled(context)
                 cameraGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+                accounts.refresh()
                 resumeEpoch++
             }
         }
@@ -201,6 +259,7 @@ fun KanakoApp(
         while (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
     }
     fun startReader() {
+        if (!requireReadingAccess()) { pendingActivation = false; return }
         showDisclosure = false
         pendingActivation = false
         try {
@@ -215,6 +274,8 @@ fun KanakoApp(
             pendingActivation = false
             KanakoOverlayService.stopService(context)
             feedback(R.string.setup_stopped)
+        } else if (!requireReadingAccess()) {
+            pendingActivation = false
         } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
             openHome()
             feedback(R.string.reading_unsupported)
@@ -247,10 +308,12 @@ fun KanakoApp(
     LaunchedEffect(startCaptureRequest) {
         if (startCaptureRequest > 0) {
             openHome()
+            requireReadingAccess()
             feedback(R.string.setup_incomplete)
         }
     }
     fun openCamera() {
+        if (!requireReadingAccess()) return
         val existing = backStack.indexOfLast { it == Screen.Camera || it == Screen.CameraResult }
         if (existing >= 0) {
             while (backStack.lastIndex > existing) backStack.removeAt(backStack.lastIndex)
@@ -290,6 +353,7 @@ fun KanakoApp(
     fun practiceReader(path: TutorialPath, startImmediately: Boolean = false) {
         if ((path == TutorialPath.FLOATING && finishedFloating) ||
             (path == TutorialPath.CAMERA && finishedCamera)) return
+        if (!requireReadingAccess()) return
         tutorialPath = path
         setTutorialPosition(-1)
         val floatingReady = overlayGranted && preferences.hasAcceptedSnapshotDisclosure &&
@@ -432,6 +496,56 @@ fun KanakoApp(
             }
         )
     }
+    LaunchedEffect(accountState.canRead, backStack.lastOrNull()) {
+        if (!ReadingAccess.allowedNow()) {
+            pendingActivation = false
+            cameraReader.returnToLive()
+            cameraReader.clearCaptureThumbnail()
+            if (readerActive) KanakoOverlayService.stopService(context)
+            fun protectedRoute(route: androidx.navigation3.runtime.NavKey?): Boolean =
+                route == Screen.Camera || route == Screen.CameraResult || route == Screen.Gallery ||
+                    route is Screen.Tutorial || route is Screen.SavedImage
+            val blockedTop = protectedRoute(backStack.lastOrNull())
+            for (index in backStack.lastIndex downTo 1) {
+                if (protectedRoute(backStack[index])) backStack.removeAt(index)
+            }
+            if (blockedTop) {
+                guidedSetup = false
+                lessonOwnsReader = false
+                GuidedReaderSession.end()
+                showAccessPrompt = true
+            }
+        }
+    }
+    if (showAccessPrompt && !ReadingAccess.allowedNow()) {
+        AlertDialog(
+            onDismissRequest = { showAccessPrompt = false },
+            title = { Text(stringResource(R.string.account_welcome)) },
+            text = {
+                androidx.compose.foundation.layout.Column(Modifier.verticalScroll(rememberScrollState())) {
+                    Text(stringResource(R.string.account_check_needed))
+                    AccountSettings(
+                        onHelp = {
+                            showAccessPrompt = false
+                            backStack.add(Screen.Help(HelpTopic.PRIVACY))
+                        },
+                        showPurchaseInitially = accountState.needsPurchase
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showAccessPrompt = false }) {
+                    Text(stringResource(R.string.account_close))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showAccessPrompt = false
+                    showPrivacy = true
+                }) { Text(stringResource(R.string.account_privacy)) }
+            }
+        )
+    }
     Box(modifier = modifier.fillMaxSize()) {
     val targetKeys = when (tutorialStep) {
         0 -> buildSet {
@@ -560,7 +674,8 @@ fun KanakoApp(
                 )
             }
             entry<Screen.Tutorial> {
-                if (!guidedSetup) LaunchedEffect(Unit) { openHome() }
+                if (!ReadingAccess.allowedNow()) LaunchedEffect(Unit) { requireReadingAccess() }
+                else if (!guidedSetup) LaunchedEffect(Unit) { openHome() }
                 else if (tutorialStep !in 1..2 && tutorialStep != 6) LaunchedEffect(Unit) { openHome() }
                 else TutorialScreen(
                     step = tutorialStep,
@@ -572,7 +687,7 @@ fun KanakoApp(
                 )
             }
             entry<Screen.Camera> {
-                CameraReaderScreen(
+                if (ReadingAccess.allowedNow()) CameraReaderScreen(
                     viewModel = cameraReader,
                     onCameraPermissionChanged = { cameraGranted = it },
                     preferences = preferences,
@@ -583,13 +698,13 @@ fun KanakoApp(
                     },
                     onBack = { handleBack() },
                     onCaptured = {
-                        if (backStack.lastOrNull() == Screen.Camera) {
+                        if (backStack.lastOrNull() == Screen.Camera && requireReadingAccess()) {
                             backStack.add(Screen.CameraResult)
                             if (guidedSetup && tutorialPath == TutorialPath.CAMERA && tutorialStep in 1..2) setTutorialPosition(1, 1)
                         }
                     },
                     onNavigateToGallery = {
-                        if (backStack.lastOrNull() == Screen.Camera) {
+                        if (backStack.lastOrNull() == Screen.Camera && requireReadingAccess()) {
                             if (isEmbeddedPhotoPickerAvailable()) backStack.add(Screen.Gallery)
                             else launchPhotoPicker()
                         }
@@ -598,7 +713,7 @@ fun KanakoApp(
                 )
             }
             entry<Screen.CameraResult> {
-                CameraResultScreen(
+                if (ReadingAccess.allowedNow()) CameraResultScreen(
                     viewModel = cameraReader,
                     preferences = preferences,
                     onToggleScriptType = {
@@ -612,7 +727,7 @@ fun KanakoApp(
                 )
             }
             entry<Screen.Gallery> {
-                CameraGalleryScreen(
+                if (ReadingAccess.allowedNow()) CameraGalleryScreen(
                     onBack = { handleBack() },
                     onUseSystemPicker = {
                         if (backStack.lastOrNull() == Screen.Gallery) {
@@ -621,7 +736,7 @@ fun KanakoApp(
                         }
                     },
                     onOpen = { uri ->
-                        if (backStack.lastOrNull() == Screen.Gallery) {
+                        if (backStack.lastOrNull() == Screen.Gallery && requireReadingAccess()) {
                             cameraReader.openPhoto(context, uri)
                             backStack.add(Screen.CameraResult)
                             if (guidedSetup && tutorialPath == TutorialPath.CAMERA && tutorialStep in 1..2) setTutorialPosition(1, 1)
@@ -630,7 +745,16 @@ fun KanakoApp(
                 )
             }
             entry<Screen.SavedImage> { image ->
-                SavedCameraImageScreen(Uri.parse(image.uri), image.name, onBack = { handleBack() })
+                if (ReadingAccess.allowedNow())
+                    SavedCameraImageScreen(Uri.parse(image.uri), image.name, onBack = { handleBack() })
+            }
+            entry<Screen.Account> {
+                LaunchedEffect(Unit) {
+                    if (backStack.lastOrNull() == Screen.Account) {
+                        backStack.removeAt(backStack.lastIndex)
+                        if (backStack.lastOrNull() != Screen.Preferences) backStack.add(Screen.Preferences)
+                    }
+                }
             }
             entry<Screen.Preferences> {
                 PreferencesScreen(
@@ -653,8 +777,12 @@ fun KanakoApp(
                     onUpdateAutoHideOnKeyboard = { enabled ->
                         coroutineScope.launch { repository.updateAutoHideOnKeyboard(enabled) }
                     },
-                    onRequestAccessibility = { openHome() },
-                    onNavigateToPrivacy = { backStack.add(Screen.Help(HelpTopic.PRIVACY)) },
+                    onOpenPrivacyPolicy = {
+                        showPrivacy = true
+                    },
+                    accountContent = if (guidedSetup) null else {
+                        { AccountSettings(onHelp = { backStack.add(Screen.Help(HelpTopic.PRIVACY)) }) }
+                    },
                     onBack = { handleBack() }
                 )
             }

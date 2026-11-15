@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="account_title">तपाईंको Kanako खाता</string>
+    <string name="account_welcome">Kanako सँग पढ्नुहोस्</string>
+    <string name="account_intro">सात दिनको परीक्षण सुरु गर्न र फोन परिवर्तन गर्दा परीक्षण तथा खरिद कायम राख्न साइन इन गर्नुहोस्। भुक्तानी आवश्यक छैन र परीक्षणले सदस्यता सुरु गर्दैन।</string>
+    <string name="account_google">Google बाट जारी राख्नुहोस्</string>
+    <string name="account_signed_in">%1$s बाट साइन इन गरिएको छ</string>
+    <string name="account_trial_ends">परीक्षण सकिने समय: %1$s</string>
+    <string name="account_paid">तपाईंको सशुल्क पढ्ने पहुँच उपलब्ध छ।</string>
+    <string name="account_checking">तपाईंको खाता जाँच्दै…</string>
+    <string name="account_setup_needed">यो संस्करणमा साइन इन अझै उपलब्ध छैन। अद्यावधिक संस्करण उपलब्ध भएपछि प्रयोग गर्नुहोस्।</string>
+    <string name="account_sign_in_failed">साइन इन गर्न सकेनौँ। फेरि प्रयास गर्नुहोस्।</string>
+    <string name="account_connection_failed">पढ्ने पहुँच जाँच्न सकेनौँ। इन्टरनेटमा जडान गरेर फेरि प्रयास गर्नुहोस्।</string>
+    <string name="account_delete_failed">खाता मेटिएको पुष्टि गर्न सकेनौँ। फेरि प्रयास गर्नुहोस्।</string>
+    <string name="account_retry">फेरि प्रयास गर्नुहोस्</string>
+    <string name="account_sign_out">साइन आउट</string>
+    <string name="account_delete">खाता मेटाउनुहोस्</string>
+    <string name="account_delete_title">तपाईंको Kanako खाता मेटाउने हो?</string>
+    <string name="account_delete_body">गोपनीयता नीतिअनुसार तपाईंको Kanako खाता र सम्बन्धित डेटा मेटिनेछ। तपाईंले Google खाता फेरि पुष्टि गर्नुपर्नेछ। यसले Google खाता मेटाउँदैन वा Google Play सदस्यता रद्द गर्दैन। खाता मेटाउनुअघि सदस्यता व्यवस्थापन गर्नुहोस्।</string>
+    <string name="account_delete_body_with_trial_history">तपाईंको Kanako खाता र सम्बन्धित डेटा मेटिनेछ। बारम्बार निःशुल्क परीक्षण लिन नदिन, यस अनुरोधबाट बढीमा १२ महिनासम्म खाताको कोड गरिएको पहिचान र सुरुको परीक्षणका मितिहरू राख्छौँ। यस अभिलेखमा तपाईंको नाम, इमेल, स्क्रिनसट वा खरिदको पूर्ण विवरण हुँदैन।\n\nअगाडि बढ्न Google खाता फेरि पुष्टि गर्नुहोस्। यसले Google खाता मेटाउँदैन वा Google Play सदस्यता रद्द गर्दैन। नवीकरण रोक्न सदस्यताहरू छुट्टै रद्द गर्नुहोस्।</string>
+    <string name="account_delete_confirm">मेरो खाता मेटाउनुहोस्</string>
+    <string name="account_cancel">रद्द गर्नुहोस्</string>
+    <string name="account_manage_subscription">सदस्यता व्यवस्थापन गर्नुहोस्</string>
+    <string name="account_restore">खरिद पुनर्स्थापना गर्नुहोस्</string>
+    <string name="account_help">सहायता</string>
+    <string name="account_privacy">गोपनीयता नीति</string>
+    <string name="account_web_delete">अनलाइन खाता मेटाउने अनुरोध गर्नुहोस्</string>
+    <string name="account_back">पछाडि</string>
+    <string name="account_close">बन्द गर्नुहोस्</string>
+    <string name="account_continue">पढ्न जारी राख्नुहोस्</string>
+    <string name="account_check_needed">जारी राख्न पढ्ने पहुँच जाँच्नुहोस्।</string>
+    <string name="account_policy_unavailable">यो पृष्ठ अझै उपलब्ध छैन।</string>
+    <string name="account_open_failed">यो पृष्ठ खोल्न सकेनौँ।</string>
+    <string name="account_purchase_options">खरिद विकल्पहरू</string>
+    <string name="account_no_auto_charge">परीक्षण सकिँदा शुल्क लाग्दैन। त्यसपछि योजना छान्न सक्नुहुन्छ।</string>
+    <string name="account_sign_in_intro">Google बाट आफ्नो Kanako खातामा साइन इन गर्नुहोस्।</string>
+    <string name="account_test_login">परीक्षण लगइन</string>
+    <string name="account_test_username">प्रयोगकर्ता नाम</string>
+    <string name="account_test_password">पासवर्ड</string>
+    <string name="account_test_login_failed">प्रयोगकर्ता नाम वा पासवर्ड गलत छ।</string>
+    <string name="account_test_session">परीक्षण पहुँच सक्रिय छ। यस सत्रमा पढ्न सकिन्छ; कुनै निःशुल्क परीक्षण वा खरिद सुरु हुँदैन।</string>
+</resources>

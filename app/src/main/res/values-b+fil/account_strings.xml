@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="account_title">Iyong Kanako account</string>
+    <string name="account_welcome">Magbasa gamit ang Kanako</string>
+    <string name="account_intro">Mag-sign in para simulan ang pitong araw na trial at mapanatili ang trial at mga pagbili kapag nagpalit ka ng telepono. Walang kailangang bayad, at hindi magsisimula ng subscription ang trial.</string>
+    <string name="account_google">Magpatuloy gamit ang Google</string>
+    <string name="account_signed_in">Naka-sign in bilang %1$s</string>
+    <string name="account_trial_ends">Matatapos ang trial sa %1$s</string>
+    <string name="account_paid">Available na ang iyong bayad na access sa pagbabasa.</string>
+    <string name="account_checking">Sinusuri ang iyong account…</string>
+    <string name="account_setup_needed">Hindi pa available ang pag-sign in sa build na ito. Gumamit ng na-update na build kapag available na.</string>
+    <string name="account_sign_in_failed">Hindi ka namin ma-sign in. Subukan ulit.</string>
+    <string name="account_connection_failed">Hindi namin masuri ang iyong access sa pagbabasa. Kumonekta sa internet at subukan ulit.</string>
+    <string name="account_delete_failed">Hindi makumpirma na nabura ang iyong account. Subukan ulit.</string>
+    <string name="account_retry">Subukan ulit</string>
+    <string name="account_sign_out">Mag-sign out</string>
+    <string name="account_delete">Burahin ang account</string>
+    <string name="account_delete_title">Burahin ang iyong Kanako account?</string>
+    <string name="account_delete_body">Buburahin ang iyong Kanako account at kaugnay na data ayon sa patakaran sa privacy. Kukumpirmahin mong muli ang iyong Google account. Hindi nito buburahin ang Google account o kakanselahin ang Google Play subscription. Pamahalaan ang anumang subscription bago burahin ang account.</string>
+    <string name="account_delete_body_with_trial_history">Buburahin ang iyong Kanako account at kaugnay na data. Para maiwasan ang paulit-ulit na libreng trial, magtatago kami ng naka-code na pagkakakilanlan ng account at mga petsa ng orihinal mong trial nang hanggang 12 buwan mula sa kahilingang ito. Walang pangalan, email, screenshot o buong tala ng pagbili sa rekord na ito.\n\nKumpirmahin muli ang iyong Google account para magpatuloy. Hindi nito buburahin ang Google account o kakanselahin ang Google Play subscription. Hiwalay na kanselahin ang mga subscription para ihinto ang pag-renew.</string>
+    <string name="account_delete_confirm">Burahin ang aking account</string>
+    <string name="account_cancel">Kanselahin</string>
+    <string name="account_manage_subscription">Pamahalaan ang subscription</string>
+    <string name="account_restore">Ibalik ang mga pagbili</string>
+    <string name="account_help">Tulong</string>
+    <string name="account_privacy">Patakaran sa privacy</string>
+    <string name="account_web_delete">Humiling ng pagbura ng account online</string>
+    <string name="account_back">Bumalik</string>
+    <string name="account_close">Isara</string>
+    <string name="account_continue">Magpatuloy sa pagbabasa</string>
+    <string name="account_check_needed">Suriin ang iyong access sa pagbabasa para magpatuloy.</string>
+    <string name="account_policy_unavailable">Hindi pa available ang pahinang ito.</string>
+    <string name="account_open_failed">Hindi mabuksan ang pahinang ito.</string>
+    <string name="account_purchase_options">Mga pagpipilian sa pagbili</string>
+    <string name="account_no_auto_charge">Matatapos ang trial nang walang singil. Maaari kang pumili ng plano pagkatapos.</string>
+    <string name="account_sign_in_intro">Mag-sign in sa iyong Kanako account gamit ang Google.</string>
+    <string name="account_test_login">Test Login</string>
+    <string name="account_test_username">Username</string>
+    <string name="account_test_password">Password</string>
+    <string name="account_test_login_failed">Mali ang username o password.</string>
+    <string name="account_test_session">Aktibo ang test access. Bukas ang pagbabasa para sa session na ito; walang ginawang trial o pagbili.</string>
+</resources>

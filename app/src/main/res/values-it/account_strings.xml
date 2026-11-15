@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="account_title">Il tuo account Kanako</string>
+    <string name="account_welcome">Leggi con Kanako</string>
+    <string name="account_intro">Accedi per iniziare la prova di sette giorni e ritrovare prova e acquisti quando cambi telefono. Non serve alcun pagamento e la prova non avvia un abbonamento.</string>
+    <string name="account_google">Continua con Google</string>
+    <string name="account_signed_in">Accesso effettuato come %1$s</string>
+    <string name="account_trial_ends">La prova termina il %1$s</string>
+    <string name="account_paid">Il tuo accesso a pagamento alla lettura è disponibile.</string>
+    <string name="account_checking">Verifica dell’account…</string>
+    <string name="account_setup_needed">L’accesso non è ancora disponibile in questa versione. Usa una versione aggiornata quando sarà disponibile.</string>
+    <string name="account_sign_in_failed">Accesso non riuscito. Riprova.</string>
+    <string name="account_connection_failed">Non è stato possibile verificare l’accesso alla lettura. Connettiti a Internet e riprova.</string>
+    <string name="account_delete_failed">Non è stato possibile confermare l’eliminazione dell’account. Riprova.</string>
+    <string name="account_retry">Riprova</string>
+    <string name="account_sign_out">Esci</string>
+    <string name="account_delete">Elimina account</string>
+    <string name="account_delete_title">Eliminare il tuo account Kanako?</string>
+    <string name="account_delete_body">Il tuo account Kanako e i dati associati saranno eliminati secondo l’informativa sulla privacy. Dovrai confermare nuovamente il tuo account Google. Questo non elimina l’account Google né annulla un abbonamento Google Play. Gestisci eventuali abbonamenti prima di eliminare l’account.</string>
+    <string name="account_delete_body_with_trial_history">Il tuo account Kanako e i dati associati saranno eliminati. Per evitare prove gratuite ripetute, conserviamo un identificativo codificato e le date della prova originale per un massimo di 12 mesi da questa richiesta. Questo record non contiene nome, email, screenshot o dati completi degli acquisti.\n\nConferma di nuovo il tuo account Google per continuare. L’eliminazione non elimina il tuo account Google né annulla un abbonamento Google Play. Annulla gli abbonamenti separatamente per interrompere i rinnovi.</string>
+    <string name="account_delete_confirm">Elimina il mio account</string>
+    <string name="account_cancel">Annulla</string>
+    <string name="account_manage_subscription">Gestisci abbonamento</string>
+    <string name="account_restore">Ripristina acquisti</string>
+    <string name="account_help">Aiuto</string>
+    <string name="account_privacy">Informativa sulla privacy</string>
+    <string name="account_web_delete">Richiedi l’eliminazione dell’account online</string>
+    <string name="account_back">Indietro</string>
+    <string name="account_close">Chiudi</string>
+    <string name="account_continue">Continua a leggere</string>
+    <string name="account_check_needed">Verifica l’accesso alla lettura per continuare.</string>
+    <string name="account_policy_unavailable">Questa pagina non è ancora disponibile.</string>
+    <string name="account_open_failed">Non è stato possibile aprire questa pagina.</string>
+    <string name="account_purchase_options">Opzioni di acquisto</string>
+    <string name="account_no_auto_charge">La prova termina senza addebiti automatici. Potrai scegliere un piano in seguito.</string>
+    <string name="account_sign_in_intro">Accedi al tuo account Kanako con Google.</string>
+    <string name="account_test_login">Accesso di prova</string>
+    <string name="account_test_username">Nome utente</string>
+    <string name="account_test_password">Password</string>
+    <string name="account_test_login_failed">Nome utente o password errati.</string>
+    <string name="account_test_session">L’accesso di prova è attivo. La lettura è sbloccata per questa sessione; non vengono creati prove gratuite o acquisti.</string>
+</resources>

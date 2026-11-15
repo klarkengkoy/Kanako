@@ -72,7 +72,7 @@ internal class LiveCameraSession(
             }
 
             override fun analyze(image: ImageProxy) {
-                val currentTicket = ticket()
+                val currentTicket = if (com.smyddevstudio.kanako.data.account.ReadingAccess.allowedNow()) ticket() else null
                 val snapshot = synchronized(geometryLock) { transform?.let { Matrix(it) to geometry.get() } }
                 val started = SystemClock.elapsedRealtime()
                 val accepted = synchronized(resourceLock) {
@@ -129,7 +129,7 @@ internal class LiveCameraSession(
     }
 
     fun bind(owner: LifecycleOwner, view: PreviewView): Boolean {
-        if (closed.get() || binding != null ||
+        if (!com.smyddevstudio.kanako.data.account.ReadingAccess.allowedNow() || closed.get() || binding != null ||
             ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) return false
         val created = CameraPreviewBinding(context, imageAnalysis, imageCapture, { matrix ->
             synchronized(geometryLock) {
@@ -147,20 +147,21 @@ internal class LiveCameraSession(
     fun focusAt(point: Offset?) { binding?.focusAt(point?.x, point?.y) }
 
     fun capture(onResult: (Result<CameraPhoto>) -> Unit) {
-        if (closed.get() || ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+        if (!com.smyddevstudio.kanako.data.account.ReadingAccess.allowedNow() || closed.get() || ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             onResult(Result.failure(SecurityException("Camera access unavailable")))
             return
         }
         try {
             imageCapture.takePicture(executor, object : ImageCapture.OnImageCapturedCallback() {
                 override fun onCaptureSuccess(image: ImageProxy) {
-                    if (closed.get()) {
+                    if (closed.get() || !com.smyddevstudio.kanako.data.account.ReadingAccess.allowedNow()) {
                         image.close()
                         return
                     }
                     val result = runCatching { CameraPhoto.fromCapture(image) }
                     main.execute {
-                        if (closed.get()) result.getOrNull()?.close() else onResult(result)
+                        if (closed.get() || !com.smyddevstudio.kanako.data.account.ReadingAccess.allowedNow())
+                            result.getOrNull()?.close() else onResult(result)
                     }
                 }
 

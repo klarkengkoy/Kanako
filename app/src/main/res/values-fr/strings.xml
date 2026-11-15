@@ -86,7 +86,7 @@
     <string name="preferences_privacy">Confidentialité</string>
     <string name="preview_sample_text"><annotation reading="ニホンゴ">日本語</annotation>を<annotation reading="ヨム">読む</annotation></string>
     <string name="preferences_keyboard_check">Masquer le bouton flottant pendant la saisie.</string>
-    <string name="preferences_title">Préférences</string>
+    <string name="preferences_title">Paramètres</string>
     <string name="home_reader_active">Lecteur flottant activé</string>
     <string name="home_reader_off">Lecteur flottant</string>
     <string name="home_manage_access">Gérer les accès</string>
@@ -142,7 +142,7 @@
     <string name="reading_size_medium">12sp</string>
     <string name="reading_size_large">14sp</string>
     <string name="how_preferences_title">Régler le comportement de lecture</string>
-    <string name="how_preferences">Choisissez les kana ou les romaji, la taille, la couleur et le fond dans les préférences. La taille est un minimum ; les lectures automatiques apparaissent seulement là où il y a assez de place. Les groupes de kanji ayant une lecture sont surlignés, même dans les zones denses. En lecture automatique, touchez les kanji surlignés pour consulter leur lecture ; les gestes ailleurs atteignent l’application. Les mises à jour automatiques sont suspendues pendant la sélection et reprennent quand vous touchez le groupe sélectionné, sa lecture ou ailleurs. Un changement du contenu source peut toujours effacer les surlignages périmés. En lecture au toucher, les lectures bloquent les gestes vers l’application : touchez un groupe surligné pour afficher uniquement sa lecture, puis touchez-le à nouveau ou touchez une zone vide pour rétablir les autres lectures. Touchez Kanako pour effacer les lectures et utiliser à nouveau l’application. Masquer avec le clavier masque le personnage lorsque le clavier est visible. La capture est suspendue si un clavier ou un champ de mot de passe est détecté, même si le personnage reste visible. L’aperçu fixe montre uniquement l’apparence.</string>
+    <string name="how_preferences">Choisissez les kana ou les romaji, la taille, la couleur et le fond dans les paramètres. La taille est un minimum ; les lectures automatiques apparaissent seulement là où il y a assez de place. Les groupes de kanji ayant une lecture sont surlignés, même dans les zones denses. En lecture automatique, touchez les kanji surlignés pour consulter leur lecture ; les gestes ailleurs atteignent l’application. Les mises à jour automatiques sont suspendues pendant la sélection et reprennent quand vous touchez le groupe sélectionné, sa lecture ou ailleurs. Un changement du contenu source peut toujours effacer les surlignages périmés. En lecture au toucher, les lectures bloquent les gestes vers l’application : touchez un groupe surligné pour afficher uniquement sa lecture, puis touchez-le à nouveau ou touchez une zone vide pour rétablir les autres lectures. Touchez Kanako pour effacer les lectures et utiliser à nouveau l’application. Masquer avec le clavier masque le personnage lorsque le clavier est visible. La capture est suspendue si un clavier ou un champ de mot de passe est détecté, même si le personnage reste visible. L’aperçu fixe montre uniquement l’apparence.</string>
     <string name="preview_sample_short"><annotation reading="ニホンゴ">日本語</annotation></string>
     <string name="preferences_appearance_summary">S’applique aux deux lecteurs. L’aperçu montre uniquement l’apparence.</string>
     <string name="privacy_access">Confidentialité et accès à l’écran</string>
@@ -196,7 +196,7 @@
     <string name="tutorial_auto_scroll">Avec le mode de lecture automatique activé, faites défiler ce texte, puis arrêtez-vous. Kanako le lit après une courte pause, sans toucher le bouton. Si vous sélectionnez un mot, il attend que vous touchiez ailleurs avant de relire.</string>
     <string name="tutorial_preferences">Adapter à votre confort</string>
     <string name="tutorial_preferences_body">Choisissez Kana ou Romaji, ou essayez une taille, une couleur ou un fond. Ces réglages servent aux deux lecteurs.</string>
-    <string name="tutorial_open_preferences">Touchez Préférences, l’icône en forme d’engrenage, pour essayer les réglages de lecture.</string>
+    <string name="tutorial_open_preferences">Touchez Paramètres, l’icône en forme d’engrenage, pour essayer les réglages de lecture.</string>
     <string name="tutorial_setup">Préparons Kanako</string>
     <string name="tutorial_setup_floating">Configurez les accès du lecteur flottant sur l’accueil.</string>
     <string name="tutorial_setup_camera">Touchez %1$s pour ouvrir la caméra.</string>

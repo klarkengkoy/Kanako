@@ -47,6 +47,8 @@ import com.smyddevstudio.kanako.model.ScriptType
 import com.smyddevstudio.kanako.ui.components.FuriganaSegment
 import com.smyddevstudio.kanako.ui.components.readingSampleSegments
 import com.smyddevstudio.kanako.ui.screens.PreferencesScreen
+import com.smyddevstudio.kanako.ui.screens.AccountSettingsContent
+import com.smyddevstudio.kanako.data.account.AccountState
 import com.smyddevstudio.kanako.ui.theme.KanakoTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -91,7 +93,7 @@ class PreferencesScreenTest {
         compose.onNodeWithText("nihongo").assertIsDisplayed()
         compose.onNodeWithText("にほんご").assertDoesNotExist()
         compose.onNode(hasScrollToNodeAction())
-            .performScrollToNode(hasText(context.getString(R.string.privacy_access)))
+            .performScrollToNode(hasText(context.getString(R.string.account_privacy)))
         compose.onNodeWithText(context.getString(R.string.preferences_preview)).assertIsDisplayed()
         compose.onNodeWithText("nihongo").assertIsDisplayed()
     }
@@ -228,7 +230,7 @@ class PreferencesScreenTest {
             }
         }
         compose.runOnIdle { assertTrue(requireNotNull(inputMode).requestInputMode(InputMode.Keyboard)) }
-        for (id in listOf(R.string.script_romaji, R.string.preferences_keyboard, R.string.privacy_access)) {
+        for (id in listOf(R.string.script_romaji, R.string.preferences_keyboard, R.string.account_privacy)) {
             val label = context.getString(id)
             compose.onNode(hasScrollToNodeAction()).performScrollToNode(hasText(label))
             compose.onNodeWithText(label).performSemanticsAction(SemanticsActions.RequestFocus) { it() }
@@ -339,14 +341,92 @@ class PreferencesScreenTest {
         var privacy = 0
         compose.setContent {
             KanakoTheme {
-                PreferencesScreen(onBack = {}, onNavigateToPrivacy = { privacy++ })
+                PreferencesScreen(onBack = {}, onOpenPrivacyPolicy = { privacy++ })
             }
         }
         compose.onNode(hasScrollToNodeAction())
-            .performScrollToNode(hasText(context.getString(R.string.privacy_access)))
-        compose.onNodeWithText(context.getString(R.string.privacy_access)).performClick()
+            .performScrollToNode(hasText(context.getString(R.string.account_privacy)))
+        compose.onNodeWithText(context.getString(R.string.account_privacy)).performClick()
         compose.onNodeWithText(context.getString(R.string.how_title)).assertDoesNotExist()
         compose.runOnIdle { assertEquals(1, privacy) }
+    }
+
+    @Test fun googleSignInIsInlineWithoutDuplicateSettingsShortcuts() {
+        var signIns = 0
+        compose.setContent {
+            KanakoTheme {
+                PreferencesScreen(
+                    onBack = {},
+                    accountContent = {
+                        AccountSettingsContent(
+                            state = AccountState(configured = true),
+                            onSignIn = { signIns++ },
+                            onSignOut = {}, onDelete = {}, onRetry = {}, onRestore = {},
+                            onManageSubscription = {}, onPurchaseOptions = {}
+                        )
+                    }
+                )
+            }
+        }
+        compose.onNode(hasScrollToNodeAction())
+            .performScrollToNode(hasText(context.getString(R.string.account_google)))
+        compose.onNodeWithText(context.getString(R.string.account_google)).assertIsDisplayed().performClick()
+        compose.runOnIdle { assertEquals(1, signIns) }
+        compose.onNode(hasScrollToNodeAction())
+            .performScrollToNode(hasText(context.getString(R.string.account_privacy)))
+        compose.onNodeWithText(context.getString(R.string.home_manage_access)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.how_title)).assertDoesNotExist()
+    }
+
+    @Test fun inlineAccountDeletionStillRequiresConfirmation() {
+        var deletions = 0
+        compose.setContent {
+            KanakoTheme {
+                PreferencesScreen(
+                    onBack = {},
+                    accountContent = {
+                        AccountSettingsContent(
+                            state = AccountState(configured = true, userId = "reader-a", email = "reader@example.com"),
+                            onSignIn = {}, onSignOut = {}, onDelete = { deletions++ },
+                            onRetry = {}, onRestore = {}, onManageSubscription = {}, onPurchaseOptions = {}
+                        )
+                    }
+                )
+            }
+        }
+        compose.onNode(hasScrollToNodeAction())
+            .performScrollToNode(hasText(context.getString(R.string.account_delete)))
+        compose.onNodeWithText(context.getString(R.string.account_delete)).performClick()
+        compose.onNodeWithText(context.getString(R.string.account_delete_title)).assertIsDisplayed()
+        compose.runOnIdle { assertEquals(0, deletions) }
+        compose.onNodeWithText(context.getString(R.string.account_cancel)).performClick()
+        compose.runOnIdle { assertEquals(0, deletions) }
+        compose.onNodeWithText(context.getString(R.string.account_delete)).performClick()
+        compose.onNodeWithText(context.getString(R.string.account_delete_confirm)).performClick()
+        compose.runOnIdle { assertEquals(1, deletions) }
+    }
+
+    @Test fun paidAccountDeletionDisclosesRetainedTrialHistoryBeforeConfirmation() {
+        var deletions = 0
+        compose.setContent {
+            KanakoTheme {
+                AccountSettingsContent(
+                    state = AccountState(configured = true, accessServiceConfigured = true,
+                        userId = "reader-a", email = "reader@example.com"),
+                    onSignIn = {}, onSignOut = {}, onDelete = { deletions++ },
+                    onRetry = {}, onRestore = {}, onManageSubscription = {}, onPurchaseOptions = {}
+                )
+            }
+        }
+        compose.onNodeWithText(context.getString(R.string.account_delete)).performClick()
+        compose.onNodeWithText(context.getString(R.string.account_delete_body_with_trial_history))
+            .assertExists()
+        compose.runOnIdle { assertEquals(0, deletions) }
+        compose.onNodeWithText(context.getString(R.string.account_cancel)).performClick()
+        compose.runOnIdle { assertEquals(0, deletions) }
+        compose.onNodeWithText(context.getString(R.string.account_delete)).performClick()
+        compose.onNodeWithText(context.getString(R.string.account_delete_confirm)).performClick()
+        compose.runOnIdle { assertEquals(1, deletions) }
     }
 
     @Test fun defaultAppearanceAndReadingControlsMatchTheRepositoryDefaults() {

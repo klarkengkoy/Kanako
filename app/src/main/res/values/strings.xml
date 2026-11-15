@@ -86,7 +86,7 @@
     <string name="preferences_privacy">Privacy</string>
     <string name="preview_sample_text"><annotation reading="ニホンゴ">日本語</annotation>を<annotation reading="ヨム">読む</annotation></string>
     <string name="preferences_keyboard_check">Hide the floating control while typing.</string>
-    <string name="preferences_title">Preferences</string>
+    <string name="preferences_title">Settings</string>
     <string name="home_reader_active">Floating reader on</string>
     <string name="home_reader_off">Floating reader</string>
     <string name="home_manage_access">Manage access</string>
@@ -142,7 +142,7 @@
     <string name="reading_size_medium">12sp</string>
     <string name="reading_size_large">14sp</string>
     <string name="how_preferences_title">Adjust reading behavior</string>
-    <string name="how_preferences">Choose Kana or Romaji, reading size, color, and plates in Preferences. The size is a minimum; automatic readings appear only where there is room. Highlights mark kanji groups with readings, including crowded ones. In Auto read mode, tap highlighted kanji to inspect their readings; touches elsewhere reach the app. Automatic refresh pauses during selection and resumes when you tap the selected group, its reading, or elsewhere. Source changes can still clear outdated highlights. In Tap to read, readings block app touches: tap a highlighted group to show only its reading, then tap it again or tap empty space to restore the other labels. Tap Kanako to clear readings and use the app again. Hide button while typing hides Kanako when the keyboard is visible. Capture pauses while a keyboard or password field is detected, even when Kanako stays visible. The fixed preview shows appearance only.</string>
+    <string name="how_preferences">Choose Kana or Romaji, reading size, color, and plates in Settings. The size is a minimum; automatic readings appear only where there is room. Highlights mark kanji groups with readings, including crowded ones. In Auto read mode, tap highlighted kanji to inspect their readings; touches elsewhere reach the app. Automatic refresh pauses during selection and resumes when you tap the selected group, its reading, or elsewhere. Source changes can still clear outdated highlights. In Tap to read, readings block app touches: tap a highlighted group to show only its reading, then tap it again or tap empty space to restore the other labels. Tap Kanako to clear readings and use the app again. Hide button while typing hides Kanako when the keyboard is visible. Capture pauses while a keyboard or password field is detected, even when Kanako stays visible. The fixed preview shows appearance only.</string>
     <string name="preview_sample_short"><annotation reading="ニホンゴ">日本語</annotation></string>
     <string name="preferences_appearance_summary">Applies to both readers. The preview shows appearance only.</string>
     <string name="privacy_access">Privacy and screen access</string>
@@ -198,7 +198,7 @@
     <string name="tutorial_auto_scroll">With Auto read mode on, scroll this sample and stop. Kanako reads it after a short pause—no tap needed. Selecting a word makes new readings wait until you tap away.</string>
     <string name="tutorial_preferences">Make it comfortable</string>
     <string name="tutorial_preferences_body">Choose Kana or Romaji, or try a reading size, color or background. These work for both readers.</string>
-    <string name="tutorial_open_preferences">Tap Preferences (the gear icon) to try the reading settings.</string>
+    <string name="tutorial_open_preferences">Tap Settings (the gear icon) to try the reading settings.</string>
     <string name="tutorial_setup">Let’s get ready</string>
     <string name="tutorial_setup_floating">Set up floating-reader access on Home.</string>
     <string name="tutorial_setup_camera">Tap %1$s to open the camera.</string>

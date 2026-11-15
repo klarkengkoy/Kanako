@@ -58,7 +58,8 @@ class KanakoQuickSettingsTileService : TileService() {
         serviceScope.launch {
             if (KanakoOverlaySession.isActive.value) {
                 KanakoOverlayService.stopService(this@KanakoQuickSettingsTileService)
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
+            } else if (com.smyddevstudio.kanako.data.account.ReadingAccess.allowedNow() &&
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
                 KanakoOverlayService.canDrawOverlays(this@KanakoQuickSettingsTileService) &&
                 KanakoAccessibilityService.connected.value &&
                 preferencesRepository.userPreferencesFlow.first().hasAcceptedSnapshotDisclosure
