@@ -1,5 +1,10 @@
 <resources>
+    <string name="language_button">Wika: %1$s</string>
+    <string name="language_follow_device">Sundin ang wika ng device</string>
+    <string name="language_menu_expanded">Nakabukas</string>
+    <string name="language_menu_collapsed">Nakasara</string>
     <string name="app_name">Kanako</string>
+    <string name="home_app_name">Kanako Kanji Reader</string>
     <string name="quick_settings_tile_label">Kanako</string>
     <string name="accessibility_service_label">Pagbasa ng screen ng Kanako</string>
     <string name="accessibility_service_description">Kumukuha ang Kanako ng isang screenshot kapag tinap mo ang lumulutang na button, o kapag humupa ang mga natukoy na pagbabago kung naka-on ang awtomatikong pagbasa, para gumawa ng furigana sa iyong device. Nasa memory lang ang mga larawan habang kinikilala ang teksto at pagkatapos ay itinatapon; hindi sine-save o ina-upload ang mga ito. Ginagamit ang metadata ng window, pag-scroll, keyboard, at password field para alisin ang lumang anotasyon at harangin ang pagkuha kapag may sensitibong input. Hindi binabasa ng Kanako ang teksto sa mga input field sa pamamagitan ng accessibility.</string>
@@ -24,7 +29,7 @@
     <string name="notification_description">I-tap para magbasa o piliin ang Auto Reader sa mga control ni Kanako. Walang tuloy-tuloy na pagbabahagi ng screen.</string>
     <string name="floating_control_description">I-tap para basahin o burahin ang furigana. I-double tap o pindutin nang matagal para sa mga kontrol. I-drag para ilipat.</string>
     <string name="clear_annotations">Burahin ang furigana</string>
-    <string name="screen_reader_title">Furigana saan ka man nagbabasa</string>
+    <string name="screen_reader_title">Bawas hula.\nMas maraming basa.</string>
     <string name="setup_overlay_title">Ipakita sa ibabaw ng ibang app</string>
     <string name="setup_overlay_description">Ipakita ang Kanako at mga pagbasa sa ibabaw ng ibang app.</string>
     <string name="setup_accessibility_title">Access sa pagbasa ng screen</string>

@@ -1,5 +1,10 @@
 <resources>
+    <string name="language_button">भाषा: %1$s</string>
+    <string name="language_follow_device">उपकरणको भाषा प्रयोग गर्नुहोस्</string>
+    <string name="language_menu_expanded">खोलिएको</string>
+    <string name="language_menu_collapsed">बन्द गरिएको</string>
     <string name="app_name">Kanako</string>
+    <string name="home_app_name">Kanako कान्जी रिडर</string>
     <string name="quick_settings_tile_label">Kanako</string>
     <string name="accessibility_service_label">Kanako स्क्रिन पढाइ</string>
     <string name="accessibility_service_description">तपाईंले फ्लोटिङ बटन छुँदा, वा स्वतः पढ्ने सुविधा सक्रिय भएमा पत्ता लागेका परिवर्तनहरू स्थिर भएपछि, Kanako ले तपाईंको उपकरणमै फुरिगाना बनाउन एउटा स्क्रिनसट लिन्छ। पहिचान भइरहँदा तस्बिरहरू मेमोरीमा रहन्छन् र त्यसपछि हटाइन्छन्; तिनलाई सेभ वा अपलोड गरिँदैन। विन्डो, स्क्रोल, किबोर्ड र पासवर्ड फिल्डका मेटाडाटाले पुराना टिप्पणी हटाउन र संवेदनशील इनपुट हुँदा स्क्रिनसट रोक्न मद्दत गर्छन्। Kanako ले पहुँचयोग्यता सेवाबाट इनपुट फिल्डको पाठ पढ्दैन।</string>
@@ -24,7 +29,7 @@
     <string name="notification_description">पढ्न ट्याप गर्नुहोस् वा Kanako का नियन्त्रणहरूमा स्वतः पढाइ छान्नुहोस्। निरन्तर स्क्रिन साझेदारी हुँदैन।</string>
     <string name="floating_control_description">फुरिगाना पढ्न वा हटाउन छुनुहोस्। नियन्त्रणका लागि दुई पटक छुनुहोस् वा थिचिराख्नुहोस्। सार्न तान्नुहोस्।</string>
     <string name="clear_annotations">फुरिगाना हटाउनुहोस्</string>
-    <string name="screen_reader_title">तपाईंले पढ्ने ठाउँमै फुरिगाना</string>
+    <string name="screen_reader_title">कम अनुमान।\nधेरै पढाइ।</string>
     <string name="setup_overlay_title">अन्य एपमाथि देखाउने</string>
     <string name="setup_overlay_description">अन्य एपमाथि Kanako र पढाइ देखाउनुहोस्।</string>
     <string name="setup_accessibility_title">स्क्रिन पढ्ने पहुँच</string>

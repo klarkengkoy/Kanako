@@ -1,5 +1,10 @@
 <resources>
+    <string name="language_button">Language: %1$s</string>
+    <string name="language_follow_device">Follow device language</string>
+    <string name="language_menu_expanded">Expanded</string>
+    <string name="language_menu_collapsed">Collapsed</string>
     <string name="app_name">Kanako</string>
+    <string name="home_app_name">Kanako Kanji Reader</string>
     <string name="quick_settings_tile_label">Kanako</string>
     <string name="accessibility_service_label">Kanako screen reading</string>
     <string name="accessibility_service_description">Kanako takes one screenshot when you tap the floating control, or after detected changes settle if you enable Auto read mode, to generate furigana on your device. Images are held in memory during recognition, then discarded; they are not saved or uploaded. Window, scroll, keyboard, and password metadata clears outdated annotations and blocks capture around sensitive input. Kanako does not read text from input fields through accessibility.</string>
@@ -24,7 +29,7 @@
     <string name="notification_description">Tap to read, or choose Auto Reader in Kanako’s controls. No continuous screen sharing.</string>
     <string name="floating_control_description">Tap to read or clear furigana. Double tap or touch and hold for controls. Drag to move.</string>
     <string name="clear_annotations">Clear furigana</string>
-    <string name="screen_reader_title">Furigana where you read</string>
+    <string name="screen_reader_title">Less guessing.\nMore reading.</string>
     <string name="setup_overlay_title">Display over other apps</string>
     <string name="setup_overlay_description">Show Kanako and readings over other apps.</string>
     <string name="setup_accessibility_title">Screen reading access</string>

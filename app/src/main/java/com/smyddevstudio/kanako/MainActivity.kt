@@ -2,7 +2,7 @@ package com.smyddevstudio.kanako
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import com.smyddevstudio.kanako.ui.navigation.KanakoApp
 import com.smyddevstudio.kanako.ui.theme.KanakoTheme
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_START_CAPTURE_FROM_TILE =
             "com.smyddevstudio.kanako.extra.START_CAPTURE_FROM_TILE"

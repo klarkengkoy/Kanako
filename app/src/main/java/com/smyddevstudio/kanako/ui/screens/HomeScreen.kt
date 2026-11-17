@@ -92,6 +92,7 @@ import com.smyddevstudio.kanako.model.KanakoPreferences
 import com.smyddevstudio.kanako.model.FabSize
 import com.smyddevstudio.kanako.ui.components.CameraLaunchFlash
 import com.smyddevstudio.kanako.ui.components.AnimatedMascot
+import com.smyddevstudio.kanako.ui.components.HomeLanguagePicker
 import com.smyddevstudio.kanako.ui.components.rememberAnimationsEnabled
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -225,7 +226,7 @@ fun HomeScreen(
                         BoxWithConstraints(Modifier.fillMaxWidth()) {
                             val density = LocalDensity.current
                             val pixelLimit = (KanakoUiProfile.homeHeroSourcePixels / density.density).dp
-                            val widthLimit = (maxWidth - KanakoUiProfile.homeHeroTextMinWidth * density.fontScale - 72.dp)
+                            val widthLimit = (maxWidth - KanakoUiProfile.homeHeroTextMinWidth * density.fontScale - 16.dp)
                                 .coerceAtLeast(mascotSize)
                             val heroSize = minOf(mascotSize * KanakoUiProfile.homeHeroMaxScale, pixelLimit, widthLimit)
                                 .coerceAtLeast(mascotSize)
@@ -251,36 +252,42 @@ fun HomeScreen(
                                         holdLastFrame = true
                                     )
                                 }
-                                Row(
+                                Column(
                                     modifier = Modifier.weight(1f),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
-                                    Column(
-                                        modifier = Modifier.weight(1f),
-                                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
                                     ) {
-                                        Text(
-                                            stringResource(R.string.app_name),
-                                            style = MaterialTheme.typography.labelLarge,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                        Text(
-                                            stringResource(R.string.screen_reader_title),
-                                            style = MaterialTheme.typography.headlineMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            modifier = Modifier.semantics { heading() }
-                                        )
+                                        IconButton(
+                                            onClick = onNavigateToPreferences,
+                                            enabled = tutorialAllows("preferences"),
+                                            modifier = Modifier.size(48.dp)
+                                                .background(MaterialTheme.colorScheme.surface, CircleShape)
+                                                .tutorialTarget("preferences")
+                                        ) {
+                                            Icon(Icons.Rounded.Settings, contentDescription = stringResource(R.string.preferences_title))
+                                        }
+                                        HomeLanguagePicker(enabled = focus == null)
                                     }
-                                    IconButton(
-                                        onClick = onNavigateToPreferences,
-                                        enabled = tutorialAllows("preferences"),
-                                        modifier = Modifier.size(48.dp)
-                                            .background(MaterialTheme.colorScheme.surface, CircleShape)
-                                            .tutorialTarget("preferences")
+                                    Text(
+                                        stringResource(R.string.home_app_name),
+                                        style = MaterialTheme.typography.labelLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    FlowRow(
+                                        modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = true) { heading() },
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
-                                        Icon(Icons.Rounded.Settings, contentDescription = stringResource(R.string.preferences_title))
+                                        stringResource(R.string.screen_reader_title).lines().forEach { sentence ->
+                                            Text(
+                                                sentence,
+                                                style = MaterialTheme.typography.headlineMedium,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -623,6 +630,7 @@ private fun AccessStatusBadge(
 
 @Preview(showBackground = true)
 @Preview(name = "Japanese", locale = "ja")
+@Preview(name = "Wide Home", widthDp = 840, heightDp = 640)
 @Composable
 fun HomeScreenPreview() {
     KanakoTheme { HomeScreen({}, {}, {}) }

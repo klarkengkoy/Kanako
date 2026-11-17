@@ -1,5 +1,10 @@
 <resources>
+    <string name="language_button">Langue : %1$s</string>
+    <string name="language_follow_device">Suivre la langue de l’appareil</string>
+    <string name="language_menu_expanded">Développé</string>
+    <string name="language_menu_collapsed">Réduit</string>
     <string name="app_name">Kanako</string>
+    <string name="home_app_name">Kanako · Lecteur de kanji</string>
     <string name="quick_settings_tile_label">Kanako</string>
     <string name="accessibility_service_label">Lecture d’écran Kanako</string>
     <string name="accessibility_service_description">Kanako prend une capture d’écran lorsque vous touchez le bouton flottant, ou une fois les changements détectés stabilisés si vous activez la lecture automatique, pour générer des furigana sur votre appareil. Les images restent en mémoire pendant la reconnaissance, puis sont supprimées ; elles ne sont ni enregistrées ni envoyées. Les métadonnées des fenêtres, du défilement, du clavier et des champs de mot de passe servent à effacer les annotations obsolètes et à bloquer la capture lors de saisies sensibles. Kanako ne lit pas le texte des champs de saisie via l’accessibilité.</string>
@@ -24,7 +29,7 @@
     <string name="notification_description">Touchez pour lire ou choisissez Lecture auto dans les commandes de Kanako. Aucun partage d’écran continu.</string>
     <string name="floating_control_description">Touchez pour lire ou effacer les furigana. Touchez deux fois ou maintenez pour les commandes. Faites glisser pour déplacer.</string>
     <string name="clear_annotations">Effacer les furigana</string>
-    <string name="screen_reader_title">Des furigana là où vous lisez</string>
+    <string name="screen_reader_title">Moins de doutes.\nPlus de lecture.</string>
     <string name="setup_overlay_title">Affichage sur d’autres applis</string>
     <string name="setup_overlay_description">Afficher Kanako et les lectures sur les autres applications.</string>
     <string name="setup_accessibility_title">Accès à la lecture d’écran</string>

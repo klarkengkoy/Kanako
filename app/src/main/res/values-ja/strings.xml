@@ -1,5 +1,10 @@
 <resources>
+    <string name="language_button">言語：%1$s</string>
+    <string name="language_follow_device">端末の言語に合わせる</string>
+    <string name="language_menu_expanded">展開中</string>
+    <string name="language_menu_collapsed">折りたたみ</string>
     <string name="app_name">かなこ</string>
+    <string name="home_app_name">かなこ 漢字リーダー</string>
     <string name="quick_settings_tile_label">かなこ</string>
     <string name="accessibility_service_label">かなこの画面読み取り</string>
     <string name="accessibility_service_description">フローティングボタンをタップしたとき、または自動読み取りを有効にして検出した変化が落ち着いたときに、スクリーンショットを1枚撮影し、端末内でふりがなを生成します。画像は認識中だけメモリ内に保持し、保存・アップロードせずに破棄します。ウィンドウ、スクロール、キーボード、パスワード欄の情報を使って古い読みを消し、機密性の高い入力の周辺で撮影を止めます。ユーザー補助から入力欄のテキストは取得しません。</string>
@@ -24,7 +29,7 @@
     <string name="notification_description">タップで読み取り、またはKanakoのメニューで自動読み取りを選べます。継続的な画面共有は行いません。</string>
     <string name="floating_control_description">タップでふりがなを表示・消去。ダブルタップか長押しでメニュー。ドラッグで移動。</string>
     <string name="clear_annotations">ふりがなを消す</string>
-    <string name="screen_reader_title">いつもの画面に、ふりがなを</string>
+    <string name="screen_reader_title">迷わずに。\nもっと読もう。</string>
     <string name="setup_overlay_title">他のアプリの上に表示</string>
     <string name="setup_overlay_description">他のアプリの上にボタンと読みを表示します。</string>
     <string name="setup_accessibility_title">画面読み取り</string>

@@ -1,5 +1,10 @@
 <resources>
+    <string name="language_button">Lingua: %1$s</string>
+    <string name="language_follow_device">Usa la lingua del dispositivo</string>
+    <string name="language_menu_expanded">Espanso</string>
+    <string name="language_menu_collapsed">Compresso</string>
     <string name="app_name">Kanako</string>
+    <string name="home_app_name">Kanako · Lettore di kanji</string>
     <string name="quick_settings_tile_label">Kanako</string>
     <string name="accessibility_service_label">Lettura dello schermo Kanako</string>
     <string name="accessibility_service_description">Kanako acquisisce uno screenshot quando tocchi il pulsante mobile oppure, se attivi la lettura automatica, quando le modifiche rilevate si stabilizzano, per generare furigana sul dispositivo. Le immagini restano in memoria durante il riconoscimento e poi vengono eliminate; non vengono salvate né caricate online. I metadati di finestre, scorrimento, tastiera e campi password servono a rimuovere annotazioni obsolete e bloccare le acquisizioni durante l’inserimento di dati sensibili. Kanako non legge il testo dei campi di immissione tramite l’accessibilità.</string>
@@ -24,7 +29,7 @@
     <string name="notification_description">Tocca per leggere o scegli Lettura auto nei comandi di Kanako. Nessuna condivisione continua dello schermo.</string>
     <string name="floating_control_description">Tocca per leggere o cancellare i furigana. Tocca due volte o tieni premuto per i comandi. Trascina per spostare.</string>
     <string name="clear_annotations">Cancella furigana</string>
-    <string name="screen_reader_title">Furigana dove leggi</string>
+    <string name="screen_reader_title">Meno dubbi.\nPiù lettura.</string>
     <string name="setup_overlay_title">Visualizzazione su altre app</string>
     <string name="setup_overlay_description">Mostra Kanako e le letture sopra le altre app.</string>
     <string name="setup_accessibility_title">Accesso alla lettura dello schermo</string>
