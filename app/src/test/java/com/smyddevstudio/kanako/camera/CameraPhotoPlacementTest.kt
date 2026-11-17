@@ -14,7 +14,7 @@ class CameraPhotoPlacementTest {
         val request = PhotoRubyRequest(ReadingBounds(200, 400, 280, 500))
         val placed = placeCameraPhotoReadings(listOf(request), clip, listOf(request.anchor), 12f,
             measure = { _, font -> measured(font) }).single()!!
-        assertEquals(50f, placed.fontPixels, 0.001f)
+        assertEquals(24f, placed.fontPixels, 0.001f)
         assertNull(placed.bounds.intersection(request.anchor))
         assertEquals(request.anchor.left + request.anchor.right, placed.bounds.left + placed.bounds.right)
     }
@@ -47,7 +47,7 @@ class CameraPhotoPlacementTest {
         )
         val result = placeCameraPhotoReadings(requests, clip, requests.map { it.anchor }, 10f,
             measure = { _, font -> measured(font, 3f) }).map { requireNotNull(it) }
-        assertTrue(result.all { it.fontPixels in 10f..50f })
+        assertTrue(result.all { it.fontPixels in 10f..20f })
         assertTrue(result.any { it.fontPixels > 10f })
         assertNull(result[0].bounds.intersection(result[1].bounds))
     }

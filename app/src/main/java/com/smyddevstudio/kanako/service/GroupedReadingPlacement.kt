@@ -1,5 +1,7 @@
 package com.smyddevstudio.kanako.service
 
+import com.smyddevstudio.kanako.model.preferredReadingFontPixels
+
 internal data class GroupedRubyRequest(val anchor: ReadingBounds, val vertical: Boolean = false, val clip: ReadingBounds? = null)
 
 internal data class GroupedRubyMeasurement<T>(
@@ -21,7 +23,8 @@ internal fun <T> placeGroupedReadings(
     sourceText: List<ReadingBounds>,
     minimumFontPixels: Float,
     measure: (Int, Float) -> GroupedRubyMeasurement<T>?,
-    checkCancellation: () -> Unit = {}
+    checkCancellation: () -> Unit = {},
+    sizeScale: Float = 1f
 ): List<GroupedRubyPlacement<T>?> {
     if (clip.isEmpty || !minimumFontPixels.isFinite() || minimumFontPixels <= 0f) {
         return List(requests.size) { null }
@@ -50,7 +53,7 @@ internal fun <T> placeGroupedReadings(
         var best = minimum[index]?.takeIf { fits(index, it) } ?: return@forEachIndexed
         val sourceSize = if (request.vertical) request.anchor.right - request.anchor.left
             else request.anchor.bottom - request.anchor.top
-        val natural = maxOf(minimumFontPixels, sourceSize * 0.5f)
+        val natural = preferredReadingFontPixels(minimumFontPixels, sourceSize.toFloat(), sizeScale)
         if (natural > minimumFontPixels) {
             val grown = measured(index, natural)
             if (grown != null && fits(index, grown)) best = grown

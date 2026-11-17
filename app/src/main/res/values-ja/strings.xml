@@ -178,7 +178,7 @@
     <string name="gallery_title">ギャラリー</string>
     <string name="gallery_image_missing">この写真は利用できません。移動や削除されたか、アクセスの有効期限が切れた可能性があります。</string>
     <string name="gallery_image_description">保存したKanako画像：%1$s</string>
-    <string name="preferences_photo_size_summary">写真では、これが読みの最小サイズになります。日本語の文字に合わせて大きくなります。表示する空間が足りない場合はズームしてください。</string>
+    <string name="preferences_photo_size_summary">両方のリーダーで使う最小サイズです。日本語の文字の大きさに合わせて読みが大きくなります。</string>
     <string name="gallery_image_hint">ピンチでズーム・ドラッグで移動・ダブルタップでリセット</string>
     <string name="camera_comparison_original">元の画像</string>
     <string name="camera_comparison_readings">読み</string>

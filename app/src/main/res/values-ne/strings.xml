@@ -179,7 +179,7 @@
     <string name="gallery_title">ग्यालरी</string>
     <string name="gallery_image_missing">यो फोटो उपलब्ध छैन। यसलाई सारिएको वा मेटिएको हुन सक्छ, वा यसको पहुँचको म्याद सकिएको हुन सक्छ।</string>
     <string name="gallery_image_description">सेभ गरिएको Kanako तस्बिर: %1$s</string>
-    <string name="preferences_photo_size_summary">तस्बिरहरूमा यो पढाइको न्यूनतम आकार हो। जापानी अक्षरअनुसार पढाइ ठूलो हुन सक्छ। थप ठाउँ चाहिँदा जुम गर्नुहोस्।</string>
+    <string name="preferences_photo_size_summary">दुवै रिडरमा यो न्यूनतम आकार हो। जापानी अक्षरको आकारअनुसार पढाइ ठूलो हुन सक्छ।</string>
     <string name="gallery_image_hint">जुम गर्न चिमोट्नुहोस् · सार्न तान्नुहोस् · रिसेट गर्न दुई पटक छुनुहोस्</string>
     <string name="camera_comparison_original">मूल</string>
     <string name="camera_comparison_readings">पठन</string>

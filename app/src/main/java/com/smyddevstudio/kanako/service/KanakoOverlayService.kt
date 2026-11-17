@@ -1,6 +1,5 @@
 package com.smyddevstudio.kanako.service
 
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 
 import android.app.Notification
@@ -554,7 +553,6 @@ class KanakoOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner,
                     val tutorialSelection = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
                     RecognizedTextOverlayContent(
                         tutorialContrast = tutorial.active,
-                        modifier = Modifier.alpha(if (tutorial.active && !tutorial.highlightPractice) 0.35f else 1f),
                         lines = lines,
                         preferences = preferences,
                         origin = annotationOrigin.value,

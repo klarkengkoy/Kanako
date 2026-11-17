@@ -179,7 +179,7 @@
     <string name="gallery_title">Galerie</string>
     <string name="gallery_image_missing">Cette photo est indisponible. Elle a peut-être été déplacée ou supprimée, ou son accès a expiré.</string>
     <string name="gallery_image_description">Image Kanako enregistrée : %1$s</string>
-    <string name="preferences_photo_size_summary">Dans les photos, il s’agit de la taille minimale des lectures. Elles peuvent grandir avec le texte japonais. Zoomez si elles ont besoin de plus de place.</string>
+    <string name="preferences_photo_size_summary">Dans les deux lecteurs, c’est la taille minimale. Les lectures peuvent grandir avec le texte japonais.</string>
     <string name="gallery_image_hint">Pincez pour zoomer · Glissez pour déplacer · Touchez deux fois pour réinitialiser</string>
     <string name="camera_comparison_original">Original</string>
     <string name="camera_comparison_readings">Lectures</string>

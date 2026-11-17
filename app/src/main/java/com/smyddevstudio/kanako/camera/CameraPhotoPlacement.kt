@@ -16,7 +16,8 @@ internal fun <T> placeCameraPhotoReadings(
     sourceText: List<ReadingBounds>,
     minimumFontPixels: Float,
     measure: (Int, Float) -> PhotoRubyMeasurement<T>?,
-    checkCancellation: () -> Unit = {}
+    checkCancellation: () -> Unit = {},
+    sizeScale: Float = 1f
 ): List<PhotoRubyPlacement<T>?> = placeGroupedReadings(
-    requests, clip, sourceText, minimumFontPixels, measure, checkCancellation
+    requests, clip, sourceText, minimumFontPixels, measure, checkCancellation, sizeScale
 )

@@ -181,7 +181,7 @@
     <string name="gallery_title">Gallery</string>
     <string name="gallery_image_missing">This photo is unavailable. It may have been moved, deleted, or its access may have expired.</string>
     <string name="gallery_image_description">Saved Kanako image: %1$s</string>
-    <string name="preferences_photo_size_summary">In photos, this is the minimum reading size. Readings can grow with the Japanese text. Zoom in when readings need more space.</string>
+    <string name="preferences_photo_size_summary">In both readers, this is the minimum size. Readings can grow with the Japanese text.</string>
     <string name="gallery_image_hint">Pinch to zoom · Drag to move · Double tap to reset</string>
     <string name="camera_comparison_original">Original</string>
     <string name="camera_comparison_readings">Readings</string>

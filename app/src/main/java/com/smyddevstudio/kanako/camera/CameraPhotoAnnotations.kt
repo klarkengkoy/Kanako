@@ -12,6 +12,8 @@ import android.text.StaticLayout
 import android.text.TextPaint
 import com.smyddevstudio.kanako.data.tokenizer.JapaneseTextTokenizer
 import com.smyddevstudio.kanako.model.ScriptType
+import com.smyddevstudio.kanako.model.preferredReadingFontPixels
+import com.smyddevstudio.kanako.ui.theme.ReadingAppearanceTokens
 import com.smyddevstudio.kanako.service.ReadingBounds
 import com.smyddevstudio.kanako.service.ReadingTarget
 import com.smyddevstudio.kanako.service.readingWords
@@ -54,12 +56,16 @@ internal fun cameraPhotoReadings(
 internal fun layoutCameraPhotoAnnotations(
     lines: List<CameraReadingLine>, width: Int, height: Int, minimumFontPixels: Float, script: ScriptType,
     readingTypeface: Typeface? = null,
+    sizeScale: Float = 1f,
+    paddingPixels: Int? = null,
+    gapPixels: Int? = null,
     checkCancellation: () -> Unit = {}
 ): CameraAnnotationLayout = layoutCameraPhotoReadings(
     cameraPhotoReadings(lines, width, height, script, checkCancellation),
     lines.map { ReadingBounds(it.bounds.left.roundToInt(), it.bounds.top.roundToInt(),
         it.bounds.right.roundToInt(), it.bounds.bottom.roundToInt()) },
-    width, height, minimumFontPixels, readingTypeface = readingTypeface, checkCancellation = checkCancellation
+    width, height, minimumFontPixels, readingTypeface = readingTypeface,
+    sizeScale = sizeScale, paddingPixels = paddingPixels, gapPixels = gapPixels, checkCancellation = checkCancellation
 )
 
 internal fun layoutCameraPhotoReadings(
@@ -68,6 +74,9 @@ internal fun layoutCameraPhotoReadings(
     selected: String? = null,
     selectionClip: ReadingBounds = ReadingBounds(0, 0, width, height),
     readingTypeface: Typeface? = null,
+    sizeScale: Float = 1f,
+    paddingPixels: Int? = null,
+    gapPixels: Int? = null,
     checkCancellation: () -> Unit = {}
 ): CameraAnnotationLayout {
     if (width <= 0 || height <= 0 || !minimumFontPixels.isFinite() || minimumFontPixels <= 0f) {
@@ -82,15 +91,16 @@ internal fun layoutCameraPhotoReadings(
             typeface = readingTypeface ?: Typeface.create("sans-serif-medium", Typeface.NORMAL)
             if (readingTypeface != null) setFontVariationSettings("'wght' 500")
         }
-        val padding = (font / 10).roundToInt().coerceAtLeast(1)
-        val gap = (font / 16).roundToInt().coerceAtLeast(1)
+        val padding = paddingPixels?.coerceAtLeast(1) ?: (font / 10).roundToInt().coerceAtLeast(1)
+        val gap = gapPixels?.coerceAtLeast(1) ?: (font / 16).roundToInt().coerceAtLeast(1)
         val available = (if (callout) selectionClip.right - selectionClip.left else width) - padding * 2
         if (available <= 0) return null
         val text = if (item.vertical && !callout) item.reading.toList().joinToString("\n") else item.reading
         val desired = ceil(Layout.getDesiredWidth(text, paint).toDouble())
         if (!desired.isFinite() || (!callout && desired > available)) return null
         val layout = StaticLayout.Builder.obtain(text, 0, text.length, paint, desired.toInt().coerceIn(1, available))
-            .setAlignment(Layout.Alignment.ALIGN_CENTER).setIncludePad(false).build()
+            .setAlignment(Layout.Alignment.ALIGN_CENTER).setIncludePad(false)
+            .setLineSpacing(0f, ReadingAppearanceTokens.lineHeightMultiplier).build()
         return PhotoRubyMeasurement(layout.width + padding * 2, layout.height + padding * 2, gap,
             MeasuredPhotoReading(listOf(layout), padding))
     }
@@ -105,7 +115,7 @@ internal fun layoutCameraPhotoReadings(
         val item = readings[selectedIndex]
         val anchor = item.anchor.intersection(selectionClip) ?: return CameraAnnotationLayout(emptyList())
         val sourceSize = if (item.vertical) item.anchor.right - item.anchor.left else item.anchor.bottom - item.anchor.top
-        val natural = maxOf(minimumFontPixels, sourceSize * 0.5f)
+        val natural = preferredReadingFontPixels(minimumFontPixels, sourceSize.toFloat(), sizeScale)
         var size = measure(selectedIndex, natural, callout = true)
             ?: measure(selectedIndex, minimumFontPixels, callout = true) ?: return CameraAnnotationLayout(emptyList())
         if (size.height > selectionClip.bottom - selectionClip.top) {
@@ -117,7 +127,7 @@ internal fun layoutCameraPhotoReadings(
     }
     val placements = placeCameraPhotoReadings(
         readings.map { PhotoRubyRequest(it.anchor, it.vertical) }, clip, sourceText, minimumFontPixels,
-        measure = { index, font -> measure(index, font) }, checkCancellation = checkCancellation
+        measure = { index, font -> measure(index, font) }, checkCancellation = checkCancellation, sizeScale = sizeScale
     )
     return CameraAnnotationLayout(placements.mapIndexedNotNull { index, placement ->
         placement?.let { ruby(index, it.bounds, it.measurement) }

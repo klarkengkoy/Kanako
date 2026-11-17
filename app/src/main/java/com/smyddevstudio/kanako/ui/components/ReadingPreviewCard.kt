@@ -24,11 +24,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.smyddevstudio.kanako.R
 import com.smyddevstudio.kanako.data.tokenizer.JapaneseTextTokenizer
-import com.smyddevstudio.kanako.model.AnnotationPlateStyle
 import com.smyddevstudio.kanako.model.FabSize
 import com.smyddevstudio.kanako.model.KanakoPreferences
 import com.smyddevstudio.kanako.model.ScriptType
-import com.smyddevstudio.kanako.ui.theme.CreamBackgroundDark
+import com.smyddevstudio.kanako.ui.theme.readingAppearance
+import androidx.compose.ui.unit.sp
 
 @Composable
 internal fun ReadingSample(
@@ -42,18 +42,13 @@ internal fun ReadingSample(
     val segments = remember(text, preferences.scriptType) {
         readingSampleSegments(text, preferences.scriptType)
     }
-    val background = when (preferences.annotationPlateStyle) {
-        AnnotationPlateStyle.CLEAR -> androidx.compose.ui.graphics.Color.Transparent
-        AnnotationPlateStyle.WASHI_CAPSULE -> CreamBackgroundDark
-        AnnotationPlateStyle.HIGH_CONTRAST -> MaterialTheme.colorScheme.inverseSurface
-        AnnotationPlateStyle.SUBTLE -> MaterialTheme.colorScheme.surfaceVariant
-    }
+    val appearance = readingAppearance(preferences)
     FuriganaText(
         segments = segments,
-        furiganaSize = preferences.furiganaSize,
-        furiganaColorEnum = preferences.furiganaColor,
+        furiganaFontSize = preferences.furiganaSize.sizeSp.sp,
+        furiganaColor = appearance.text,
         kanjiColor = MaterialTheme.colorScheme.onSurface,
-        readingPlateColor = background,
+        readingPlateColor = appearance.plate,
         modifier = modifier.padding(12.dp)
     )
 }

@@ -179,7 +179,7 @@
     <string name="gallery_title">Galeriya</string>
     <string name="gallery_image_missing">Hindi available ang larawang ito. Maaaring nailipat, nabura, o nag-expire ang access dito.</string>
     <string name="gallery_image_description">Na-save na larawan ng Kanako: %1$s</string>
-    <string name="preferences_photo_size_summary">Sa mga larawan, ito ang pinakamaliit na laki ng pagbasa. Maaari itong lumaki kasabay ng tekstong Hapon. Mag-zoom in kung kailangan ng dagdag na espasyo.</string>
+    <string name="preferences_photo_size_summary">Minimum na laki ito sa parehong reader. Maaaring lumaki ang mga pagbasa kasabay ng tekstong Hapones.</string>
     <string name="gallery_image_hint">Kurutin para mag-zoom · I-drag para ilipat · I-double tap para i-reset</string>
     <string name="camera_comparison_original">Orihinal</string>
     <string name="camera_comparison_readings">Mga pagbasa</string>

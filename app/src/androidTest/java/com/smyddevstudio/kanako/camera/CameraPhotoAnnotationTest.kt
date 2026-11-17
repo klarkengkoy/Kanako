@@ -2,6 +2,8 @@ package com.smyddevstudio.kanako.camera
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.smyddevstudio.kanako.model.ScriptType
+import com.smyddevstudio.kanako.model.FuriganaSize
+import com.smyddevstudio.kanako.model.readingScale
 import com.smyddevstudio.kanako.service.ReadingBounds
 import com.smyddevstudio.kanako.ui.components.FuriganaSegment
 import org.junit.Assert.*
@@ -44,7 +46,7 @@ class CameraPhotoAnnotationTest {
         val line = CameraReadingLine("日本語", CameraRect(200f, 300f, 400f, 400f),
             listOf(FuriganaSegment("日本語", "にほんご")))
         val ruby = layoutCameraPhotoAnnotations(listOf(line), 700, 600, 12f, ScriptType.KANA, readingTypeface = readingTypeface).labels.single()
-        assertEquals(50f, ruby.layouts.single().paint.textSize, 0.01f)
+        assertEquals(24f, ruby.layouts.single().paint.textSize, 0.01f)
         assertEquals(600, ruby.bounds.left + ruby.bounds.right)
     }
 
@@ -136,6 +138,10 @@ class CameraPhotoAnnotationTest {
         assertEquals("live:42", group.key)
         assertEquals(group.key, live.target.key)
         assertEquals(group.anchor, live.target.anchor)
+        val photo = layoutCameraPhotoAnnotations(listOf(line), 200, 200, 12f, ScriptType.KANA,
+            readingTypeface = readingTypeface).labels.single()
+        assertEquals(photo.bounds, live.bounds)
+        assertEquals(photo.layouts.single().paint.textSize, live.layouts.single().paint.textSize, 0.01f)
         assertEquals(1, group.outlines.size)
     }
 
@@ -149,5 +155,20 @@ class CameraPhotoAnnotationTest {
         }.exceptionOrNull()
         assertTrue(error is kotlinx.coroutines.CancellationException)
         assertEquals(2, checks)
+    }
+
+    @Test fun liveAndPhotoApplyTheSelectedSizeToSourceRelativeGrowth() {
+        val line = CameraReadingLine("日本語", CameraRect(200f, 300f, 400f, 330f),
+            listOf(FuriganaSegment("日本語", "にほんご")))
+        for ((size, expected) in listOf(
+            FuriganaSize.SMALL to 12.5f, FuriganaSize.MEDIUM to 15f, FuriganaSize.LARGE to 17.5f
+        )) {
+            val live = layoutCameraAnnotations(listOf(line), 700, 600, size.sizeSp.toFloat(), ScriptType.KANA,
+                readingTypeface = readingTypeface, sizeScale = size.readingScale).labels.single()
+            val photo = layoutCameraPhotoAnnotations(listOf(line), 700, 600, size.sizeSp.toFloat(), ScriptType.KANA,
+                readingTypeface = readingTypeface, sizeScale = size.readingScale).labels.single()
+            assertEquals(expected, live.layouts.single().paint.textSize, 0.01f)
+            assertEquals(expected, photo.layouts.single().paint.textSize, 0.01f)
+        }
     }
 }

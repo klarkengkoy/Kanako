@@ -28,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
@@ -46,7 +45,6 @@ import androidx.compose.ui.semantics.text
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.sp
-import androidx.compose.material3.MaterialTheme
 import com.smyddevstudio.kanako.R
 import com.smyddevstudio.kanako.service.ReadingTarget
 import com.smyddevstudio.kanako.camera.CameraAnnotationColors
@@ -57,9 +55,10 @@ import com.smyddevstudio.kanako.camera.CameraReadingLine
 import com.smyddevstudio.kanako.camera.drawCameraAnnotations
 import com.smyddevstudio.kanako.camera.fitCameraImage
 import com.smyddevstudio.kanako.camera.layoutCameraAnnotations
-import com.smyddevstudio.kanako.model.AnnotationPlateStyle
 import com.smyddevstudio.kanako.model.KanakoPreferences
-import com.smyddevstudio.kanako.ui.theme.CreamBackgroundDark
+import com.smyddevstudio.kanako.model.readingScale
+import com.smyddevstudio.kanako.ui.theme.readingAppearance
+import com.smyddevstudio.kanako.ui.theme.ReadingAppearanceTokens
 import com.smyddevstudio.kanako.ui.theme.rememberReadingTypeface
 import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
@@ -68,16 +67,14 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 
 @Composable
-private fun annotationColors(preferences: KanakoPreferences): CameraAnnotationColors {
-    val plate = when (preferences.annotationPlateStyle) {
-        AnnotationPlateStyle.CLEAR -> Color.Transparent
-        AnnotationPlateStyle.WASHI_CAPSULE -> CreamBackgroundDark
-        AnnotationPlateStyle.HIGH_CONTRAST -> MaterialTheme.colorScheme.inverseSurface
-        AnnotationPlateStyle.SUBTLE -> MaterialTheme.colorScheme.surfaceVariant
-    }
-    val text = if (preferences.annotationPlateStyle == AnnotationPlateStyle.HIGH_CONTRAST)
-        MaterialTheme.colorScheme.inverseOnSurface else Color(preferences.furiganaColor.colorHex)
-    return CameraAnnotationColors(text.toArgb(), plate.toArgb())
+private fun annotationColors(preferences: KanakoPreferences, scale: Float = 1f): CameraAnnotationColors {
+    val appearance = readingAppearance(preferences)
+    val density = LocalDensity.current
+    return CameraAnnotationColors(
+        appearance.text.toArgb(), appearance.plate.toArgb(),
+        cornerRadius = with(density) { ReadingAppearanceTokens.cornerRadius.toPx() } / scale,
+        shadowRadius = with(density) { ReadingAppearanceTokens.clearShadowBlur.toPx() } / scale
+    )
 }
 
 @Composable
@@ -93,8 +90,13 @@ internal fun CameraReadingOverlay(
     var size by remember { mutableStateOf(IntSize.Zero) }
     val pixels = with(LocalDensity.current) { preferences.furiganaSize.sizeSp.sp.toPx() }
     val readingTypeface = rememberReadingTypeface()
-    val layout = remember(lines, size, pixels, preferences.scriptType, readingTypeface) {
-        layoutCameraAnnotations(lines, size.width, size.height, pixels, preferences.scriptType, readingTypeface = readingTypeface)
+    val density = LocalDensity.current
+    val padding = with(density) { ReadingAppearanceTokens.padding.roundToPx() }.coerceAtLeast(1)
+    val gap = with(density) { ReadingAppearanceTokens.gap.roundToPx() }.coerceAtLeast(1)
+    val sizeScale = preferences.furiganaSize.readingScale
+    val layout = remember(lines, size, pixels, preferences.scriptType, readingTypeface, padding, gap, sizeScale) {
+        layoutCameraAnnotations(lines, size.width, size.height, pixels, preferences.scriptType,
+            readingTypeface = readingTypeface, sizeScale = sizeScale, paddingPixels = padding, gapPixels = gap)
     }
     val groups = remember(lines, size, preferences.scriptType) {
         cameraPhotoReadings(lines, size.width, size.height, preferences.scriptType)
@@ -154,6 +156,9 @@ internal fun CameraPhotoSurface(
     val left = (size.width - photo.width * scale) / 2f + gesture.x
     val top = (size.height - photo.height * scale) / 2f + gesture.y
     val fontPixels = with(density) { preferences.furiganaSize.sizeSp.sp.toPx() } / scale
+    val padding = (with(density) { ReadingAppearanceTokens.padding.toPx() } / scale).roundToInt().coerceAtLeast(1)
+    val gap = (with(density) { ReadingAppearanceTokens.gap.toPx() } / scale).roundToInt().coerceAtLeast(1)
+    val sizeScale = preferences.furiganaSize.readingScale
     val visibleClip = ReadingBounds(
         kotlin.math.ceil((insets.getLeft(density, direction) - left) / scale).toInt().coerceIn(0, photo.width),
         kotlin.math.ceil((maxOf(topOverlayHeight, insets.getTop(density)) - top) / scale).toInt().coerceIn(0, photo.height),
@@ -176,19 +181,19 @@ internal fun CameraPhotoSurface(
             it.bounds.right.roundToInt(), it.bounds.bottom.roundToInt()) }
     }
     val layoutSource = remember(sourceKey, focused?.key, if (focused != null) visibleClip else null, readingTypeface) { Any() }
-    val layoutKey = remember(readings, layoutSource, fontPixels) { Any() }
+    val layoutKey = remember(readings, layoutSource, fontPixels, padding, gap, sizeScale) { Any() }
     val result by produceState<Pair<Any, CameraAnnotationLayout>?>(null, layoutKey) {
         val computed = if (fit == null) CameraAnnotationLayout(emptyList()) else withContext(Dispatchers.Default) {
             val operation = currentCoroutineContext()
             layoutCameraPhotoReadings(readings, obstacles, photo.width, photo.height, fontPixels,
-                selected = focused?.key, selectionClip = visibleClip, readingTypeface = readingTypeface, checkCancellation = { operation.ensureActive() })
+                selected = focused?.key, selectionClip = visibleClip, readingTypeface = readingTypeface,
+                sizeScale = sizeScale, paddingPixels = padding, gapPixels = gap,
+                checkCancellation = { operation.ensureActive() })
         }
         value = layoutSource to computed
     }
     val layout = result?.takeIf { it.first === layoutSource }?.second ?: CameraAnnotationLayout(emptyList())
-    val colors = annotationColors(preferences)
-    val calloutColors = CameraAnnotationColors(MaterialTheme.colorScheme.inverseOnSurface.toArgb(),
-        MaterialTheme.colorScheme.inverseSurface.toArgb())
+    val colors = annotationColors(preferences, scale)
     val highlightStroke = with(density) { 1.dp.toPx() } / scale
     val currentReadings by rememberUpdatedState(readings)
     val currentShowReadings by rememberUpdatedState(showReadings)
@@ -258,7 +263,7 @@ internal fun CameraPhotoSurface(
                 drawBitmap(bitmap, 0f, 0f, null)
                 if (showReadings) {
                     drawCameraPhotoHighlights(this, readings, focused?.key, highlightStroke)
-                    drawCameraAnnotations(this, layout, if (focused != null) calloutColors else colors)
+                    drawCameraAnnotations(this, layout, colors)
                 }
             }
         }

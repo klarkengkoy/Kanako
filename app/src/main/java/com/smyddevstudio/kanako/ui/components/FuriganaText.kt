@@ -14,7 +14,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -23,7 +25,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.smyddevstudio.kanako.model.FuriganaColor
 import com.smyddevstudio.kanako.model.FuriganaSize
-import com.smyddevstudio.kanako.ui.theme.readableReadingColor
+import com.smyddevstudio.kanako.ui.theme.resolveReadingAppearance
+import com.smyddevstudio.kanako.ui.theme.ReadingAppearanceTokens
+import com.smyddevstudio.kanako.ui.theme.NunitoSans
 import com.smyddevstudio.kanako.ui.theme.KanakoTheme
 import com.smyddevstudio.kanako.ui.theme.PrimaryCrimson
 import com.smyddevstudio.kanako.ui.theme.PrimaryCrimsonLight
@@ -136,6 +140,8 @@ fun FuriganaSegmentItem(
         modifier
     }
 
+    val appearance = resolveReadingAppearance(furiganaColor, readingPlateColor)
+    val shadowBlur = with(LocalDensity.current) { ReadingAppearanceTokens.clearShadowBlur.toPx() }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Bottom,
@@ -145,12 +151,15 @@ fun FuriganaSegmentItem(
             Text(
                 text = segment.reading,
                 fontSize = furiganaFontSize,
-                modifier = Modifier.background(readingPlateColor, RoundedCornerShape(6.dp))
-                    .padding(horizontal = if (readingPlateColor == Color.Transparent) 0.dp else 4.dp),
-                color = readableReadingColor(
-                    furiganaColor,
-                    if (readingPlateColor != Color.Transparent) readingPlateColor
-                    else if (segment.isHighlighted) highlightColor else MaterialTheme.colorScheme.background
+                modifier = Modifier.background(appearance.plate, RoundedCornerShape(ReadingAppearanceTokens.cornerRadius))
+                    .padding(ReadingAppearanceTokens.padding),
+                color = appearance.text,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontFamily = NunitoSans,
+                    letterSpacing = 0.sp,
+                    platformStyle = PlatformTextStyle(includeFontPadding = false),
+                    lineHeight = furiganaFontSize * ReadingAppearanceTokens.lineHeightMultiplier,
+                    shadow = appearance.shadow(shadowBlur)
                 ),
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,

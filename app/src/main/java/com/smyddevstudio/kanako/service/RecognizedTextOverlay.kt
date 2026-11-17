@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
@@ -35,6 +34,7 @@ import androidx.compose.ui.semantics.text
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -50,8 +50,11 @@ import com.smyddevstudio.kanako.R
 import com.smyddevstudio.kanako.data.tokenizer.JapaneseTextTokenizer
 import com.smyddevstudio.kanako.model.AnnotationPlateStyle
 import com.smyddevstudio.kanako.model.KanakoPreferences
+import com.smyddevstudio.kanako.model.preferredReadingFontPixels
+import com.smyddevstudio.kanako.model.readingScale
 import com.smyddevstudio.kanako.ui.components.FuriganaSegment
-import com.smyddevstudio.kanako.ui.theme.CreamBackgroundDark
+import com.smyddevstudio.kanako.ui.theme.readingAppearance
+import com.smyddevstudio.kanako.ui.theme.ReadingAppearanceTokens
 import com.smyddevstudio.kanako.ui.theme.KanakoTheme
 import com.smyddevstudio.kanako.ui.theme.NunitoSans
 import kotlinx.coroutines.Dispatchers
@@ -112,18 +115,22 @@ internal fun RecognizedTextOverlayContent(
         selected = key
         onInspectionChanged(key != null)
     }
-    val padding = with(density) { 2.dp.roundToPx() }.coerceAtLeast(1)
-    val gap = with(density) { 2.dp.roundToPx() }.coerceAtLeast(1)
+    val appearance = readingAppearance(preferences)
+    val padding = with(density) { ReadingAppearanceTokens.padding.roundToPx() }.coerceAtLeast(1)
+    val gap = with(density) { ReadingAppearanceTokens.gap.roundToPx() }.coerceAtLeast(1)
     val minimumFont = with(density) { preferences.furiganaSize.sizeSp.sp.toPx() }
-    val style = TextStyle(textAlign = TextAlign.Center, fontWeight = FontWeight.Medium, fontFamily = NunitoSans)
-    val placements = remember(groups, lines, focused, minimumFont, measurer, density, padding, gap, style, viewport) {
+    val sizeScale = preferences.furiganaSize.readingScale
+    val style = TextStyle(textAlign = TextAlign.Center, fontWeight = FontWeight.Medium, fontFamily = NunitoSans,
+        letterSpacing = 0.sp, platformStyle = PlatformTextStyle(includeFontPadding = false),
+        shadow = appearance.shadow(with(density) { ReadingAppearanceTokens.clearShadowBlur.toPx() }))
+    val placements = remember(groups, lines, focused, minimumFont, sizeScale, measurer, density, padding, gap, style, viewport) {
         fun measure(index: Int, font: Float, callout: Boolean = false): GroupedRubyMeasurement<MeasuredScreenReading>? {
             val item = groups[index]
             val available = item.clip.right - item.clip.left - padding * 2
             if (available <= 0) return null
             val reading = item.reading
             val content = if (reading.vertical && !callout) reading.reading.toList().joinToString("\n") else reading.reading
-            val textStyle = with(density) { style.copy(fontSize = font.toSp(), lineHeight = (font * 1.2f).toSp()) }
+            val textStyle = with(density) { style.copy(fontSize = font.toSp(), lineHeight = (font * ReadingAppearanceTokens.lineHeightMultiplier).toSp()) }
             val natural = measurer.measure(content, textStyle, softWrap = false)
             if (!callout && natural.size.width > available) return null
             val layout = if (callout) measurer.measure(content, textStyle,
@@ -136,7 +143,7 @@ internal fun RecognizedTextOverlayContent(
             val reading = focused.reading
             val sourceSize = if (reading.vertical) reading.anchor.right - reading.anchor.left
                 else reading.anchor.bottom - reading.anchor.top
-            val natural = measure(index, maxOf(minimumFont, sourceSize * 0.5f), callout = true)
+            val natural = measure(index, preferredReadingFontPixels(minimumFont, sourceSize.toFloat(), sizeScale), callout = true)
             val size = natural?.takeIf { it.height <= focused.clip.bottom - focused.clip.top }
                 ?: measure(index, minimumFont, callout = true)
             val bounds = size?.let { placeReadingCallout(reading.anchor.intersection(focused.clip) ?: reading.anchor,
@@ -147,7 +154,7 @@ internal fun RecognizedTextOverlayContent(
         } else {
             placeGroupedReadings(groups.map { GroupedRubyRequest(it.reading.anchor, it.reading.vertical, it.clip) },
                 viewport, lines.map { ReadingBounds(it.bounds.left, it.bounds.top, it.bounds.right, it.bounds.bottom) },
-                minimumFont, measure = { index, font -> measure(index, font) })
+                minimumFont, measure = { index, font -> measure(index, font) }, sizeScale = sizeScale)
         }
     }
     // Crowded source groups remain useful even when no automatic label fits.
@@ -182,17 +189,6 @@ internal fun RecognizedTextOverlayContent(
             onDismiss = { select(null) }
         ))
     }
-    val plateColor = if (tutorialContrast) MaterialTheme.colorScheme.surface else when (preferences.annotationPlateStyle) {
-        AnnotationPlateStyle.CLEAR -> Color.Transparent
-        AnnotationPlateStyle.WASHI_CAPSULE -> CreamBackgroundDark
-        AnnotationPlateStyle.HIGH_CONTRAST -> MaterialTheme.colorScheme.inverseSurface
-        AnnotationPlateStyle.SUBTLE -> MaterialTheme.colorScheme.surfaceVariant
-    }
-    val rubyColor = if (tutorialContrast) MaterialTheme.colorScheme.onSurface
-        else if (preferences.annotationPlateStyle == AnnotationPlateStyle.HIGH_CONTRAST)
-        MaterialTheme.colorScheme.inverseOnSurface else Color(preferences.furiganaColor.colorHex)
-    val selectedPlate = MaterialTheme.colorScheme.inverseSurface
-    val selectedText = MaterialTheme.colorScheme.inverseOnSurface
     val selectLabel = stringResource(R.string.photo_reading_select)
     val clearLabel = stringResource(R.string.photo_reading_clear)
     val selectedDescription = focused?.let {
@@ -230,10 +226,10 @@ internal fun RecognizedTextOverlayContent(
                 (clip.right - origin.x).toFloat(), (clip.bottom - origin.y).toFloat()) {
                 val left = (rect.left - origin.x).toFloat()
                 val top = (rect.top - origin.y).toFloat()
-                drawRoundRect(if (focused != null) selectedPlate else plateColor, Offset(left, top),
-                    Size((rect.right - rect.left).toFloat(), (rect.bottom - rect.top).toFloat()), CornerRadius(4.dp.toPx()))
+                drawRoundRect(appearance.plate, Offset(left, top),
+                    Size((rect.right - rect.left).toFloat(), (rect.bottom - rect.top).toFloat()), CornerRadius(ReadingAppearanceTokens.cornerRadius.toPx()))
                 val measured = placement.measurement.content
-                drawText(measured.layout, color = if (focused != null) selectedText else rubyColor,
+                drawText(measured.layout, color = appearance.text,
                     topLeft = Offset(left + measured.padding, top + measured.padding))
             }
         }
