@@ -14,3 +14,12 @@
 .externalNativeBuild
 .cxx
 local.properties
+/app/google-services.json
+/server/node_modules/
+/server/.env*
+/firebase-debug.log*
+/firestore-debug.log*
+/hs_err_pid*.log
+/replay_pid*.log
+/legal/site-draft/
+/legal/site/
