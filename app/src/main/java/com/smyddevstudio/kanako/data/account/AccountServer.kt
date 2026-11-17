@@ -106,8 +106,8 @@ internal class AccountServer(private val baseUrl: String) {
                 .build())
             continuation.invokeOnCancellation { call.cancel() }
             call.enqueue(object : Callback {
-                override fun onFailure(call: Call, error: IOException) {
-                    if (continuation.isActive) continuation.resumeWithException(error)
+                override fun onFailure(call: Call, e: IOException) {
+                    if (continuation.isActive) continuation.resumeWithException(e)
                 }
 
                 override fun onResponse(call: Call, response: Response) {
@@ -115,7 +115,7 @@ internal class AccountServer(private val baseUrl: String) {
                         if (!continuation.isActive) return
                         try {
                             if (!it.isSuccessful) throw AccountServerException(it.code)
-                            val content = it.body ?: throw IOException("Empty account response")
+                            val content = it.body
                             val limit = 64 * 1_024L
                             if (content.contentLength() > limit) throw IOException("Account response too large")
                             val source = content.source()
