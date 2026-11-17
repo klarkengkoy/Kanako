@@ -36,4 +36,10 @@
     <string name="account_test_session">審査用アカウント</string>
     <string name="account_trial_not_started">無料体験：未開始</string>
     <string name="account_trial_expired">無料体験：%1$sに終了</string>
+    <string name="account_status_checking">確認中</string>
+    <string name="account_trial_active">無料お試し</string>
+    <string name="account_status_expired">期限切れ</string>
+    <string name="account_valid_until">有効期限</string>
+    <string name="account_trial_end_label">お試し終了日時</string>
+    <string name="account_trial_ended_label">お試し終了日時</string>
 </resources>

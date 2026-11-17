@@ -1,11 +1,12 @@
 package com.smyddevstudio.kanako.ui.screens
 
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -13,11 +14,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -84,8 +88,9 @@ internal fun AccountSettingsContent(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         if (state.testSession && !signInOnly) {
-            Text(stringResource(R.string.account_test_session))
-            KanakoTextButton(onClick = onSignOut) {
+            AccountStatusSummary(state)
+            KanakoOutlinedButton(onClick = onSignOut, enabled = !busy,
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
                 Text(stringResource(R.string.account_sign_out))
             }
         } else if (state.userId == null || signInOnly) {
@@ -143,25 +148,7 @@ internal fun AccountSettingsContent(
                     style = MaterialTheme.typography.titleMedium
                 )
             }
-            state.grant?.takeIf { it.isFresh(state.elapsedMillis) }?.let { grant ->
-                if (state.subscriptionNeedsRefresh) {
-                    Text(stringResource(R.string.account_checking))
-                } else if (grant.hasPaidAccess(state.elapsedMillis)) {
-                    Text(stringResource(when (grant.plan) {
-                        PurchasePlan.MONTHLY -> R.string.account_monthly_active
-                        PurchasePlan.YEARLY -> R.string.account_yearly_active
-                        PurchasePlan.LIFETIME -> R.string.account_lifetime
-                        null -> if (grant.paidAccess == PaidAccess.Lifetime)
-                            R.string.account_lifetime else R.string.account_paid
-                    }), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                } else if (grant.trialAvailable) {
-                    Text(stringResource(R.string.account_trial_not_started))
-                } else {
-                    Text(stringResource(if (grant.trialRemaining(state.elapsedMillis) > 0)
-                        R.string.account_trial_ends else R.string.account_trial_expired,
-                        formatAccessDeadline(grant.trialEndsAtMillis)))
-                }
-            }
+            AccountStatusSummary(state)
             if (state.hasFreshGrant && !state.hasPaidAccess && !state.subscriptionNeedsRefresh) {
                 KanakoButton(onClick = onPurchaseOptions, enabled = !busy,
                     modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
@@ -173,19 +160,27 @@ internal fun AccountSettingsContent(
                     Text(stringResource(R.string.account_manage_subscription))
                 }
             }
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                KanakoTextButton(onClick = onSignOut, enabled = !busy) {
-                    Text(stringResource(R.string.account_sign_out))
-                }
-                KanakoTextButton(onClick = { confirmDelete = true }, enabled = !busy) {
-                    Text(stringResource(R.string.account_delete), color = MaterialTheme.colorScheme.error)
-                }
+            KanakoOutlinedButton(onClick = onSignOut, enabled = !busy,
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                Text(stringResource(R.string.account_sign_out))
+            }
+            HorizontalDivider(Modifier.padding(vertical = 4.dp))
+            KanakoOutlinedButton(
+                onClick = { confirmDelete = true },
+                enabled = !busy,
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = if (busy) 0.38f else 1f))
+            ) {
+                Text(stringResource(R.string.account_delete))
             }
         }
         if (busy) {
             LinearProgressIndicator(Modifier.fillMaxWidth())
-            Text(stringResource(if (billing.verifying) R.string.purchase_verifying else R.string.account_checking),
-                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
+            if (billing.verifying || state.userId == null || signInOnly) {
+                Text(stringResource(if (billing.verifying) R.string.purchase_verifying else R.string.account_checking),
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
+            }
         }
         if (billing.pendingPurchase) Text(stringResource(R.string.purchase_pending))
         billing.issue?.takeUnless { billing.verifying || !billing.showFeedback }?.let { issue ->
@@ -236,8 +231,76 @@ internal fun AccountSettingsContent(
     }
 }
 
+@Composable
+private fun AccountStatusSummary(
+    state: AccountState,
+    modifier: Modifier = Modifier
+) {
+    val grant = state.grant?.takeIf { state.hasFreshGrant }
+    val subscription = grant?.paidAccess as? PaidAccess.Subscription
+    val trialActive = grant?.trialRemaining(state.elapsedMillis)?.let { it > 0 } == true
+    val checking = grant == null || state.subscriptionNeedsRefresh
+    val expired = !checking && !state.hasPaidAccess && !state.testSession &&
+        grant.trialAvailable == false && !trialActive
+    val status = when {
+        checking -> R.string.account_status_checking
+        state.testSession -> R.string.account_test_session
+        state.hasPaidAccess -> when (grant?.plan) {
+            PurchasePlan.MONTHLY -> R.string.account_monthly_active
+            PurchasePlan.YEARLY -> R.string.account_yearly_active
+            PurchasePlan.LIFETIME -> R.string.account_lifetime
+            null -> if (grant?.paidAccess == PaidAccess.Lifetime) R.string.account_lifetime else R.string.account_paid
+        }
+        trialActive -> R.string.account_trial_active
+        grant?.trialAvailable == true -> R.string.account_trial_not_started
+        else -> R.string.account_status_expired
+    }
+    val deadline = when {
+        checking || state.testSession || grant?.paidAccess == PaidAccess.Lifetime -> null
+        state.hasPaidAccess -> subscription?.expiresAtMillis
+        trialActive -> grant?.trialEndsAtMillis
+        subscription != null -> subscription.expiresAtMillis
+        else -> grant?.trialEndsAtMillis?.takeIf { it > 0 }
+    }
+    val deadlineLabel = when {
+        state.hasPaidAccess || subscription != null -> R.string.account_valid_until
+        trialActive -> R.string.account_trial_end_label
+        else -> R.string.account_trial_ended_label
+    }
+    Column(
+        modifier = modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite },
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = when {
+                expired -> MaterialTheme.colorScheme.errorContainer
+                checking || grant?.trialAvailable == true -> MaterialTheme.colorScheme.surfaceContainerHighest
+                else -> MaterialTheme.colorScheme.secondaryContainer
+            },
+            contentColor = when {
+                expired -> MaterialTheme.colorScheme.onErrorContainer
+                checking || grant?.trialAvailable == true -> MaterialTheme.colorScheme.onSurface
+                else -> MaterialTheme.colorScheme.onSecondaryContainer
+            }
+        ) {
+            Text(stringResource(status), modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                style = MaterialTheme.typography.labelLarge)
+        }
+        if (deadline != null) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(stringResource(deadlineLabel), style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(formatAccessDeadline(deadline), style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+}
+
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true)
 @androidx.compose.ui.tooling.preview.Preview(name = "Japanese", locale = "ja")
+@androidx.compose.ui.tooling.preview.Preview(name = "Dark", uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
+@androidx.compose.ui.tooling.preview.Preview(name = "Large text", widthDp = 320, fontScale = 2f)
 @Composable
 private fun SubscribedAccountPreview() {
     com.smyddevstudio.kanako.ui.theme.KanakoTheme {

@@ -36,4 +36,10 @@
     <string name="account_test_session">Reviewer account</string>
     <string name="account_trial_not_started">Hindi pa nagsisimula ang trial</string>
     <string name="account_trial_expired">Natapos ang trial noong %1$s</string>
+    <string name="account_status_checking">Sinusuri</string>
+    <string name="account_trial_active">Libreng pagsubok</string>
+    <string name="account_status_expired">Nag-expire</string>
+    <string name="account_valid_until">May bisa hanggang</string>
+    <string name="account_trial_end_label">Matatapos ang pagsubok</string>
+    <string name="account_trial_ended_label">Natapos ang pagsubok</string>
 </resources>

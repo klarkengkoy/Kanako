@@ -36,4 +36,10 @@
     <string name="account_test_session">Reviewer account</string>
     <string name="account_trial_not_started">Trial not started</string>
     <string name="account_trial_expired">Trial ended %1$s</string>
+    <string name="account_status_checking">Checking</string>
+    <string name="account_trial_active">Free trial</string>
+    <string name="account_status_expired">Expired</string>
+    <string name="account_valid_until">Valid until</string>
+    <string name="account_trial_end_label">Trial ends</string>
+    <string name="account_trial_ended_label">Trial ended</string>
 </resources>

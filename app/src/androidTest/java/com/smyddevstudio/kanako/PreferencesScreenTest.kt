@@ -466,4 +466,37 @@ class PreferencesScreenTest {
         compose.onNodeWithText(context.getString(R.string.guided_skip)).assertIsDisplayed()
     }
 
+
+    @Test fun paidDeadlineDisappearsWhenTheAccountHasLifetimeAccess() {
+        val expiry = 1_802_000_000_000L
+        val grant = com.smyddevstudio.kanako.data.account.AccountGrant(
+            "reader", 1_800_000_000_000L, 0, 0,
+            com.smyddevstudio.kanako.data.billing.PaidAccess.Subscription(expiry), 86_400_000, 0,
+            plan = com.smyddevstudio.kanako.data.billing.PurchasePlan.MONTHLY
+        )
+        val account = mutableStateOf(AccountState(configured = true, userId = "reader", grant = grant))
+        compose.setContent {
+            KanakoTheme {
+                AccountSettingsContent(
+                    state = account.value, onSignIn = {}, onSignOut = {}, onDelete = {},
+                    onRetry = {}, onManageSubscription = {}, onPurchaseOptions = {}
+                )
+            }
+        }
+        compose.onNodeWithText(context.getString(R.string.account_monthly_active)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.account_valid_until)).assertIsDisplayed()
+        compose.onNodeWithText(com.smyddevstudio.kanako.ui.screens.formatAccessDeadline(expiry)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.account_purchase_options)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.account_restore)).assertDoesNotExist()
+        compose.runOnIdle {
+            account.value = account.value.copy(grant = grant.copy(
+                paidAccess = com.smyddevstudio.kanako.data.billing.PaidAccess.Lifetime,
+                plan = com.smyddevstudio.kanako.data.billing.PurchasePlan.LIFETIME
+            ))
+        }
+        compose.onNodeWithText(context.getString(R.string.account_lifetime)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.account_valid_until)).assertDoesNotExist()
+        compose.onNodeWithText(com.smyddevstudio.kanako.ui.screens.formatAccessDeadline(expiry)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.account_purchase_options)).assertDoesNotExist()
+    }
 }

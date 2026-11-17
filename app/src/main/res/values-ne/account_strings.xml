@@ -36,4 +36,10 @@
     <string name="account_test_session">समीक्षक खाता</string>
     <string name="account_trial_not_started">परीक्षण सुरु भएको छैन</string>
     <string name="account_trial_expired">परीक्षण %1$s मा सकियो</string>
+    <string name="account_status_checking">जाँच हुँदैछ</string>
+    <string name="account_trial_active">निःशुल्क परीक्षण</string>
+    <string name="account_status_expired">म्याद सकिएको</string>
+    <string name="account_valid_until">सम्म मान्य</string>
+    <string name="account_trial_end_label">परीक्षण सकिने समय</string>
+    <string name="account_trial_ended_label">परीक्षण सकिएको समय</string>
 </resources>

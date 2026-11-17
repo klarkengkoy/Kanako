@@ -1,5 +1,6 @@
 package com.smyddevstudio.kanako.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
@@ -52,6 +53,8 @@ internal fun KanakoOutlinedButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     shape: Shape = ButtonDefaults.outlinedShape,
+    colors: ButtonColors = ButtonDefaults.outlinedButtonColors(),
+    border: BorderStroke? = ButtonDefaults.outlinedButtonBorder(enabled),
     content: @Composable RowScope.() -> Unit
 ) {
     val interaction = remember { MutableInteractionSource() }
@@ -61,6 +64,8 @@ internal fun KanakoOutlinedButton(
         modifier = modifier.kanakoPressResponse(pressure),
         enabled = enabled,
         shape = shape,
+        colors = colors,
+        border = border,
         interactionSource = interaction,
         content = content
     )

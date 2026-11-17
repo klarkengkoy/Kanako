@@ -36,4 +36,10 @@
     <string name="account_test_session">Account revisore</string>
     <string name="account_trial_not_started">Prova non iniziata</string>
     <string name="account_trial_expired">Prova terminata il %1$s</string>
+    <string name="account_status_checking">Verifica in corso</string>
+    <string name="account_trial_active">Prova gratuita</string>
+    <string name="account_status_expired">Scaduto</string>
+    <string name="account_valid_until">Valido fino al</string>
+    <string name="account_trial_end_label">La prova termina il</string>
+    <string name="account_trial_ended_label">Prova terminata il</string>
 </resources>
