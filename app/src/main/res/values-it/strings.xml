@@ -1,6 +1,5 @@
 <resources>
     <string name="language_button">Lingua: %1$s</string>
-    <string name="language_follow_device">Usa la lingua del dispositivo</string>
     <string name="language_menu_expanded">Espanso</string>
     <string name="language_menu_collapsed">Compresso</string>
     <string name="app_name">Kanako</string>

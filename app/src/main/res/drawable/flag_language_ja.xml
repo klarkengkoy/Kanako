@@ -1,8 +1,19 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="32dp"
     android:height="32dp"
     android:viewportWidth="32"
     android:viewportHeight="32">
-    <path android:fillColor="#FFFFFF" android:pathData="M0,0h32v32h-32z" />
+    <!-- Full-flag geometry curved into a disc instead of cropped. -->
+    <path android:fillColor="#FFFFFF" android:pathData="M16,0A16,16 0,1 1,16,32A16,16 0,1 1,16,0Z" />
     <path android:fillColor="#BC002D" android:pathData="M9,16a7,7 0,1 0,14 0a7,7 0,1 0,-14 0" />
+    <path android:pathData="M16,0A16,16 0,1 1,16,32A16,16 0,1 1,16,0Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="radial" android:centerX="11" android:centerY="8" android:gradientRadius="25">
+                <item android:offset="0" android:color="#24FFFFFF" />
+                <item android:offset="0.48" android:color="#00FFFFFF" />
+                <item android:offset="1" android:color="#28000000" />
+            </gradient>
+        </aapt:attr>
+    </path>
 </vector>

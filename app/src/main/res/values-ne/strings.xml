@@ -1,6 +1,5 @@
 <resources>
     <string name="language_button">भाषा: %1$s</string>
-    <string name="language_follow_device">उपकरणको भाषा प्रयोग गर्नुहोस्</string>
     <string name="language_menu_expanded">खोलिएको</string>
     <string name="language_menu_collapsed">बन्द गरिएको</string>
     <string name="app_name">Kanako</string>

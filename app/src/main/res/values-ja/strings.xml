@@ -1,6 +1,5 @@
 <resources>
     <string name="language_button">言語：%1$s</string>
-    <string name="language_follow_device">端末の言語に合わせる</string>
     <string name="language_menu_expanded">展開中</string>
     <string name="language_menu_collapsed">折りたたみ</string>
     <string name="app_name">かなこ</string>

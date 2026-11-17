@@ -1,8 +1,10 @@
 package com.smyddevstudio.kanako
 
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -11,7 +13,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.smyddevstudio.kanako.ui.components.LanguagePickerContent
 import com.smyddevstudio.kanako.ui.theme.KanakoTheme
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -38,20 +39,20 @@ class HomeLanguagePickerTest {
         compose.onNodeWithText("日本語").assertDoesNotExist()
     }
 
-    @Test fun followingDeviceLanguageClearsTheExplicitChoice() {
-        var selectedTag: String? = "ja"
+    @Test fun deviceDefaultSelectsItsSingleLanguageRow() {
+        var selectedTag: String? = null
         compose.setContent {
             KanakoTheme {
-                LanguagePickerContent("ja", "ja", { selectedTag = it })
+                LanguagePickerContent(null, "en", { selectedTag = it })
             }
         }
 
-        compose.onNodeWithContentDescription(context.getString(R.string.language_button, "日本語"))
+        compose.onNodeWithContentDescription(context.getString(R.string.language_button, "English"))
             .performClick()
-        compose.onNodeWithText("日本語").assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.language_follow_device)).performClick()
+        compose.onAllNodesWithText("English").assertCountEquals(1)
+        compose.onNodeWithText("English").assertIsSelected().performClick()
 
-        compose.runOnIdle { assertNull(selectedTag) }
-        compose.onNodeWithText(context.getString(R.string.language_follow_device)).assertDoesNotExist()
+        compose.runOnIdle { assertEquals("en", selectedTag) }
+        compose.onNodeWithText("English").assertDoesNotExist()
     }
 }

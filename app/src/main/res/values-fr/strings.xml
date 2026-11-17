@@ -1,6 +1,5 @@
 <resources>
     <string name="language_button">Langue : %1$s</string>
-    <string name="language_follow_device">Suivre la langue de l’appareil</string>
     <string name="language_menu_expanded">Développé</string>
     <string name="language_menu_collapsed">Réduit</string>
     <string name="app_name">Kanako</string>

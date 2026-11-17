@@ -2,6 +2,7 @@ package com.smyddevstudio.kanako.ui.components
 
 import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -17,7 +18,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -25,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -33,7 +34,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -42,9 +44,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.app.LocaleManagerCompat
 import androidx.core.os.LocaleListCompat
 import com.smyddevstudio.kanako.R
+import com.smyddevstudio.kanako.service.MascotSpeechBubbleShape
 import com.smyddevstudio.kanako.ui.theme.KanakoTheme
 import com.smyddevstudio.kanako.ui.theme.KanakoUiProfile
 import java.util.Locale
@@ -77,19 +79,17 @@ internal fun HomeLanguagePicker(
     val configuration = LocalConfiguration.current
     val selectedTag = AppCompatDelegate.getApplicationLocales().get(0)?.toLanguageTag()
     val displayLanguage = LocaleListCompat.wrap(configuration.locales).interfaceLanguage()
-    val deviceLanguage = LocaleManagerCompat.getSystemLocales(LocalContext.current).interfaceLanguage()
     LanguagePickerContent(
         selectedLanguageTag = selectedTag,
         displayLanguageTag = displayLanguage.tag,
         onLanguageSelected = { tag ->
-            val locales = LocaleListCompat.forLanguageTags(tag.orEmpty())
+            val locales = LocaleListCompat.forLanguageTags(tag)
             if (locales != AppCompatDelegate.getApplicationLocales()) {
                 AppCompatDelegate.setApplicationLocales(locales)
             }
         },
         modifier = modifier,
-        enabled = enabled,
-        deviceLanguageTag = deviceLanguage.tag
+        enabled = enabled
     )
 }
 
@@ -102,14 +102,21 @@ private fun LocaleListCompat.interfaceLanguage(): InterfaceLanguage =
 internal fun LanguagePickerContent(
     selectedLanguageTag: String?,
     displayLanguageTag: String,
-    onLanguageSelected: (String?) -> Unit,
+    onLanguageSelected: (String) -> Unit,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    deviceLanguageTag: String = displayLanguageTag
+    enabled: Boolean = true
 ) {
     var expanded by remember { mutableStateOf(false) }
     val displayLanguage = InterfaceLanguage.fromTag(displayLanguageTag) ?: InterfaceLanguage.ENGLISH
-    val selectedLanguage = selectedLanguageTag?.let(InterfaceLanguage::fromTag)
+    val selectedLanguage = selectedLanguageTag?.let(InterfaceLanguage::fromTag) ?: displayLanguage
+    var menuWidth by remember { mutableIntStateOf(0) }
+    val pointerInset = with(LocalDensity.current) { 24.dp.toPx() }
+    val menuShape = remember(menuWidth, pointerInset) {
+        MascotSpeechBubbleShape(
+            aboveMascot = false,
+            tipFraction = if (menuWidth > 0) 1f - (pointerInset / menuWidth) else 0.9f
+        )
+    }
     val description = stringResource(R.string.language_button, displayLanguage.nativeName)
     val menuState = stringResource(
         if (expanded) R.string.language_menu_expanded else R.string.language_menu_collapsed
@@ -141,22 +148,14 @@ internal fun LanguagePickerContent(
         DropdownMenu(
             expanded = expanded && enabled,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.widthIn(min = 224.dp, max = 320.dp),
-            shape = KanakoUiProfile.groupShape,
+            modifier = Modifier.widthIn(min = 224.dp, max = 320.dp)
+                .onSizeChanged { menuWidth = it.width }
+                .border(1.dp, MaterialTheme.colorScheme.primaryContainer, menuShape),
+            shape = menuShape,
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
             tonalElevation = 3.dp,
             shadowElevation = 8.dp
         ) {
-            LanguageMenuItem(
-                label = stringResource(R.string.language_follow_device),
-                flag = (InterfaceLanguage.fromTag(deviceLanguageTag) ?: InterfaceLanguage.ENGLISH).flag,
-                isSelected = selectedLanguageTag == null,
-                onClick = {
-                    expanded = false
-                    onLanguageSelected(null)
-                }
-            )
-            HorizontalDivider(Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
             InterfaceLanguage.entries.forEach { language ->
                 LanguageMenuItem(
                     label = language.nativeName,
@@ -217,7 +216,7 @@ private fun LanguageFlag(
     Image(
         painter = painterResource(flag),
         contentDescription = null,
-        modifier = modifier.size(28.dp).clip(CircleShape)
+        modifier = modifier.size(28.dp)
             .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape)
     )
 }
@@ -239,7 +238,11 @@ private fun HomeLanguagePickerPreview() {
 @Composable
 private fun LanguageMenuPreview() {
     KanakoTheme {
-        Surface(shape = KanakoUiProfile.groupShape, color = MaterialTheme.colorScheme.surfaceContainer) {
+        Surface(
+            shape = MascotSpeechBubbleShape(false, 0.9f),
+            color = MaterialTheme.colorScheme.surfaceContainer,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer)
+        ) {
             Column(Modifier.widthIn(max = 320.dp).padding(vertical = 8.dp)) {
                 InterfaceLanguage.entries.forEach { language ->
                     LanguageMenuItem(language.nativeName, language.flag, language == InterfaceLanguage.JAPANESE, {})

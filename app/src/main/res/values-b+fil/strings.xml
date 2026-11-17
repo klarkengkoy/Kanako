@@ -1,6 +1,5 @@
 <resources>
     <string name="language_button">Wika: %1$s</string>
-    <string name="language_follow_device">Sundin ang wika ng device</string>
     <string name="language_menu_expanded">Nakabukas</string>
     <string name="language_menu_collapsed">Nakasara</string>
     <string name="app_name">Kanako</string>
