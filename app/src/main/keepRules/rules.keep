@@ -1,3 +1,8 @@
+# R8 9.6.0-alpha09 can repackage a Kotlin string facade away from its
+# package-private superclass, crashing DataStore initialization in optimized builds.
+# Preserve package access while still allowing shrinking, optimization and renaming.
+-keeppackagenames kotlin.text.**
+
 # Add project specific R8 rules here.
 # AGP will combine all keep rule files in src/main/keepRules to pass to R8
 #

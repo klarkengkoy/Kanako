@@ -27,6 +27,12 @@ fun quotedAccountSetting(name: String, fallback: String = ""): String {
     return "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 }
 
+// Versions 1 and 2 were uploaded. Override only with another unused Play version.
+val nextVersionCode = accountSetting("kanakoVersionCode", "3").toIntOrNull()
+require(nextVersionCode != null && nextVersionCode in 3..2_100_000_000) {
+    "kanakoVersionCode must be an unused integer from 3 through 2100000000; versions 1 and 2 were already uploaded."
+}
+
 val sudachiTrial = providers.gradleProperty("sudachiTrial").orNull == "true"
 val readingPerformance = providers.gradleProperty("readingPerformance").orNull == "true"
 val readingEvaluation = providers.gradleProperty("readingEvaluation").orNull == "true"
@@ -145,7 +151,7 @@ android {
         buildConfigField("String", "LIFETIME_PRODUCT_ID", quotedAccountSetting("kanakoLifetimeId", "kanako_lifetime"))
         buildConfigField("String", "LIFETIME_PURCHASE_OPTION_ID", quotedAccountSetting("kanakoLifetimeOptionId", "buy"))
         targetSdk = 37
-        versionCode = 1
+        versionCode = nextVersionCode
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
