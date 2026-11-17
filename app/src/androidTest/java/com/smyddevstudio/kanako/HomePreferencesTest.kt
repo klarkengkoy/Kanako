@@ -454,4 +454,38 @@ class HomePreferencesTest {
         compose.onNodeWithText("ローマ字").assertIsDisplayed()
         compose.onNodeWithText(localized.getString(R.string.preferences_preview)).assertIsDisplayed()
     }
+
+    @Test fun tutorialSettingsGearKeepsItsOwnTargetBesideTheDisabledLanguagePicker() {
+        var opens = 0
+        val focus = com.smyddevstudio.kanako.ui.components.TutorialFocus(5, setOf("preferences"))
+        compose.setContent {
+            KanakoTheme {
+                CompositionLocalProvider(com.smyddevstudio.kanako.ui.components.LocalTutorialFocus provides focus) {
+                    com.smyddevstudio.kanako.ui.screens.TutorialLayout(
+                        5, com.smyddevstudio.kanako.model.TutorialPath.FLOATING, {}, {},
+                        modifier = Modifier.requiredSize(320.dp, 600.dp)
+                    ) { modifier ->
+                        HomeScreen({}, {}, { opens++ }, modifier = modifier,
+                            preferences = KanakoPreferences(), animationsEnabled = false, tutorialActive = true)
+                    }
+                }
+            }
+        }
+        val settings = compose.onNodeWithContentDescription(context.getString(R.string.preferences_title))
+            .assertIsDisplayed().assertIsEnabled()
+        val language = compose.onNode(SemanticsMatcher.expectValue(
+            androidx.compose.ui.semantics.SemanticsProperties.StateDescription,
+            context.getString(R.string.language_menu_collapsed)
+        )).assertIsDisplayed().assertIsNotEnabled()
+        val gearBounds = settings.fetchSemanticsNode().boundsInRoot
+        val languageBounds = language.fetchSemanticsNode().boundsInRoot
+        assertTrue(gearBounds.right <= languageBounds.left)
+        compose.runOnIdle {
+            val target = focus.bounds.getValue("preferences")
+            assertEquals(gearBounds.width, target.width, 1f)
+            assertEquals(gearBounds.height, target.height, 1f)
+        }
+        settings.performClick()
+        compose.runOnIdle { assertEquals(1, opens) }
+    }
 }

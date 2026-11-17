@@ -199,14 +199,14 @@
     <string name="tutorial_auto_read">Apri i comandi di Kanako e tocca Modalità per passare al lettore automatico. Il consenso è richiesto solo la prima volta.</string>
     <string name="tutorial_auto_scroll">Con la modalità di lettura automatica attiva, scorri questo testo e fermati. Kanako lo legge dopo una breve pausa, senza toccare il pulsante. Se selezioni una parola, aspetta che tocchi altrove prima di leggere di nuovo.</string>
     <string name="tutorial_preferences">Leggi più comodamente</string>
-    <string name="tutorial_preferences_body">Scegli Kana o Romaji, oppure prova dimensioni, colore e sfondo delle letture. Valgono per entrambi i lettori.</string>
-    <string name="tutorial_open_preferences">Tocca Impostazioni, l’icona a ingranaggio, per provare le impostazioni di lettura.</string>
+    <string name="tutorial_preferences_body">Prova Kana o Romaji, dimensioni, colore e sfondo nell’anteprima.</string>
+    <string name="tutorial_open_preferences">Tocca l’ingranaggio delle impostazioni accanto alla bandiera della lingua.</string>
     <string name="tutorial_setup">Prepariamoci</string>
     <string name="tutorial_setup_floating">Configura gli accessi del lettore mobile nella schermata iniziale.</string>
     <string name="tutorial_setup_camera">Tocca %1$s per aprire la fotocamera.</string>
     <string name="tutorial_dismiss">Tocca di nuovo la parola selezionata o tocca altrove per tornare alle letture che hanno spazio.</string>
     <string name="tutorial_menu">Tocca due volte o tieni premuto Kanako per aprire i comandi.</string>
-    <string name="tutorial_script">Tocca Scrittura per provare Kana o Romaji. Fai tutte le prove che vuoi, poi tocca Avanti.</string>
+    <string name="tutorial_script">Tocca Scrittura per provare Kana o Romaji, poi la freccia Avanti.</string>
     <string name="tutorial_photo_toggle">Tocca Kanako per nascondere o mostrare le letture della foto.</string>
     <string name="tutorial_tile_setup">Scorri due volte verso il basso dalla cima dello schermo. Tocca Modifica e aggiungi il riquadro Kanako.</string>
     <string name="tutorial_tile_use">Tocca il riquadro Kanako per mostrare o fermare il lettore mobile.</string>

@@ -199,14 +199,14 @@
     <string name="tutorial_auto_read">Ouvrez les commandes de Kanako et touchez Mode pour activer le lecteur automatique. L’accord n’est demandé que la première fois.</string>
     <string name="tutorial_auto_scroll">Avec le mode de lecture automatique activé, faites défiler ce texte, puis arrêtez-vous. Kanako le lit après une courte pause, sans toucher le bouton. Si vous sélectionnez un mot, il attend que vous touchiez ailleurs avant de relire.</string>
     <string name="tutorial_preferences">Adapter à votre confort</string>
-    <string name="tutorial_preferences_body">Choisissez Kana ou Romaji, ou essayez une taille, une couleur ou un fond. Ces réglages servent aux deux lecteurs.</string>
-    <string name="tutorial_open_preferences">Touchez Paramètres, l’icône en forme d’engrenage, pour essayer les réglages de lecture.</string>
+    <string name="tutorial_preferences_body">Essayez Kana ou Romaji, la taille, la couleur et le fond dans l’aperçu.</string>
+    <string name="tutorial_open_preferences">Touchez l’engrenage des paramètres à côté du drapeau de langue.</string>
     <string name="tutorial_setup">Préparons Kanako</string>
     <string name="tutorial_setup_floating">Configurez les accès du lecteur flottant sur l’accueil.</string>
     <string name="tutorial_setup_camera">Touchez %1$s pour ouvrir la caméra.</string>
     <string name="tutorial_dismiss">Touchez à nouveau le mot sélectionné ou touchez ailleurs pour retrouver les lectures qui ont assez de place.</string>
     <string name="tutorial_menu">Touchez deux fois Kanako ou maintenez le doigt dessus pour ouvrir les commandes.</string>
-    <string name="tutorial_script">Touchez Écriture pour essayer Kana ou Romaji. Prenez votre temps, puis touchez Suivant.</string>
+    <string name="tutorial_script">Touchez Écriture pour essayer Kana ou Romaji, puis la flèche Suivant.</string>
     <string name="tutorial_photo_toggle">Touchez Kanako pour masquer ou afficher les lectures de la photo.</string>
     <string name="tutorial_tile_setup">Balayez deux fois vers le bas depuis le haut de l’écran. Touchez Modifier et ajoutez la tuile Kanako.</string>
     <string name="tutorial_tile_use">Touchez la tuile Kanako pour afficher ou arrêter le lecteur flottant.</string>

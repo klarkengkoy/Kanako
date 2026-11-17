@@ -198,14 +198,14 @@
     <string name="tutorial_auto_read">かなこの操作メニューで「モード」をタップし、自動リーダーに切り替えます。同意の確認は初回だけです。</string>
     <string name="tutorial_auto_scroll">自動読み取りモードをオンにしたら、この文章をスクロールして止めてみましょう。少し待つと、タップせずに読み取ります。単語を選んでいる間は、外側をタップするまで新しい読み取りを待ちます。</string>
     <string name="tutorial_preferences">読みやすく調整する</string>
-    <string name="tutorial_preferences_body">かな・ローマ字や、読み方の大きさ・色・背景を選べます。どちらの読み取りでも使えます。</string>
-    <string name="tutorial_open_preferences">設定の歯車アイコンをタップして、読み方の設定を試しましょう。</string>
+    <string name="tutorial_preferences_body">プレビューで、かな・ローマ字や読み方の大きさ・色・背景を試しましょう。</string>
+    <string name="tutorial_open_preferences">言語の旗の隣にある設定の歯車アイコンをタップしましょう。</string>
     <string name="tutorial_setup">使う準備をしよう</string>
     <string name="tutorial_setup_floating">ホームでフローティングリーダーの利用を許可しましょう。</string>
     <string name="tutorial_setup_camera">「%1$s」をタップしてカメラを開きましょう。</string>
     <string name="tutorial_dismiss">選んだ言葉をもう一度タップするか、外側をタップすると、表示する場所がある読み方に戻ります。</string>
     <string name="tutorial_menu">かなこをダブルタップするか長押しすると、操作メニューが開きます。</string>
-    <string name="tutorial_script">表記をタップして、かな・ローマ字を試しましょう。試し終えたら「次へ」をタップしてください。</string>
+    <string name="tutorial_script">表記をタップして、かな・ローマ字を試しましょう。終わったら「次へ」の矢印をタップしてください。</string>
     <string name="tutorial_photo_toggle">かなこをタップすると、写真の読み方を表示・非表示にできます。</string>
     <string name="tutorial_tile_setup">画面の上から下に2回スワイプし、編集からかなこのタイルを追加しましょう。</string>
     <string name="tutorial_tile_use">かなこのタイルをタップすると、フローティングリーダーを表示・停止できます。</string>

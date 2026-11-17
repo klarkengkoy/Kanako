@@ -105,7 +105,7 @@ internal fun TutorialScreen(
             if (!floatingSupported) Text(stringResource(R.string.setup_unsupported))
         } else if (step == 3) {
             OutlinedButton(onClick = onPreferences, modifier = Modifier.heightIn(min = 48.dp)) {
-                Text(stringResource(R.string.tutorial_open_preferences))
+                Text(stringResource(R.string.preferences_title))
             }
         } else {
             if (sample) {

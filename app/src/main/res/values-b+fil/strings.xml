@@ -199,14 +199,14 @@
     <string name="tutorial_auto_read">Buksan ang mga control ng Kanako at i-tap ang Mode para lumipat sa Auto Reader. Sa unang beses lang kailangan ang kumpirmasyon.</string>
     <string name="tutorial_auto_scroll">Kapag naka-on ang Auto read mode, i-scroll ang sample na ito at huminto. Pagkatapos ng maikling sandali, babasahin ito ni Kanako nang hindi mo kailangang mag-tap. Kapag pumili ka ng salita, maghihintay ang bagong pagbasa hanggang mag-tap ka sa labas.</string>
     <string name="tutorial_preferences">Gawing komportable ang pagbasa</string>
-    <string name="tutorial_preferences_body">Pumili ng Kana o Romaji, o subukan ang laki, kulay at background ng pagbasa. Para ito sa parehong reader.</string>
-    <string name="tutorial_open_preferences">I-tap ang Mga setting, ang gear icon, para subukan ang mga setting ng pagbasa.</string>
+    <string name="tutorial_preferences_body">Subukan ang Kana o Romaji, laki, kulay, at background sa preview.</string>
+    <string name="tutorial_open_preferences">I-tap ang gear ng Mga setting sa tabi ng bandila ng wika.</string>
     <string name="tutorial_setup">Maghanda muna tayo</string>
     <string name="tutorial_setup_floating">Ayusin ang access ng floating reader sa Home.</string>
     <string name="tutorial_setup_camera">I-tap ang %1$s para buksan ang camera.</string>
     <string name="tutorial_dismiss">I-tap ulit ang piniling salita o mag-tap sa labas nito para bumalik sa mga pagbasa na kasya.</string>
     <string name="tutorial_menu">I-double-tap o pindutin nang matagal ang Kanako para buksan ang mga kontrol.</string>
-    <string name="tutorial_script">I-tap ang Sistema ng pagsulat para subukan ang Kana o Romaji. Subukan muna, saka i-tap ang Susunod.</string>
+    <string name="tutorial_script">I-tap ang Sistema ng pagsulat para subukan ang Kana o Romaji, saka ang arrow na Susunod.</string>
     <string name="tutorial_photo_toggle">I-tap ang Kanako para itago o ipakita ang mga pagbasa sa litrato.</string>
     <string name="tutorial_tile_setup">Mag-swipe pababa nang dalawang beses mula sa itaas ng screen. I-tap ang I-edit at idagdag ang Kanako tile.</string>
     <string name="tutorial_tile_use">I-tap ang Kanako tile para ipakita o ihinto ang floating reader.</string>

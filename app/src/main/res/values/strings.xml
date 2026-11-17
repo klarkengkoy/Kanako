@@ -201,14 +201,14 @@
     <string name="tutorial_auto_read">Open Kanako’s controls and tap Mode to switch to Auto Reader. Confirmation is only needed the first time.</string>
     <string name="tutorial_auto_scroll">With Auto read mode on, scroll this sample and stop. Kanako reads it after a short pause—no tap needed. Selecting a word makes new readings wait until you tap away.</string>
     <string name="tutorial_preferences">Make it comfortable</string>
-    <string name="tutorial_preferences_body">Choose Kana or Romaji, or try a reading size, color or background. These work for both readers.</string>
-    <string name="tutorial_open_preferences">Tap Settings (the gear icon) to try the reading settings.</string>
+    <string name="tutorial_preferences_body">Try Kana or Romaji, size, color, and background in the preview.</string>
+    <string name="tutorial_open_preferences">Tap the Settings gear beside the language flag.</string>
     <string name="tutorial_setup">Let’s get ready</string>
     <string name="tutorial_setup_floating">Set up floating-reader access on Home.</string>
     <string name="tutorial_setup_camera">Tap %1$s to open the camera.</string>
     <string name="tutorial_dismiss">Tap the selected word again, or tap outside it, to return to the readings that fit.</string>
     <string name="tutorial_menu">Double-tap or hold Kanako to open the controls.</string>
-    <string name="tutorial_script">Tap Script to try Kana or Romaji. Take your time, then tap Next.</string>
+    <string name="tutorial_script">Tap Script to try Kana or Romaji, then tap the Next arrow.</string>
     <string name="tutorial_photo_toggle">Tap Kanako to hide or show the photo’s readings.</string>
     <string name="tutorial_tile_setup">Swipe down twice from the top of your screen. Tap Edit and add the Kanako tile.</string>
     <string name="tutorial_tile_use">Tap the Kanako tile to show or stop the floating reader.</string>

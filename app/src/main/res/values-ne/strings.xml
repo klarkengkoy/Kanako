@@ -199,14 +199,14 @@
     <string name="tutorial_auto_read">Kanako का नियन्त्रण खोलेर मोड थिची स्वतः पढ्ने रिडरमा जानुहोस्। पहिलो पटक मात्र सहमति चाहिन्छ।</string>
     <string name="tutorial_auto_scroll">स्वतः पढाइ मोड सक्रिय हुँदा यो नमुना स्क्रोल गरेर रोक्नुहोस्। केही बेरमा Kanako ले नछोई पढ्छ। कुनै शब्द छान्नुभयो भने बाहिर नछोएसम्म नयाँ पढाइ पर्खन्छ।</string>
     <string name="tutorial_preferences">पढ्न सजिलो बनाउनुहोस्</string>
-    <string name="tutorial_preferences_body">Kana वा Romaji छान्नुहोस् वा पढाइको आकार, रङ र पृष्ठभूमि बदल्नुहोस्। यी दुवै रिडरमा लागू हुन्छन्।</string>
-    <string name="tutorial_open_preferences">पढाइका सेटिङ हेर्न सेटिङको गियर आइकनमा ट्याप गर्नुहोस्।</string>
+    <string name="tutorial_preferences_body">पूर्वावलोकनमा Kana वा Romaji, आकार, रङ र पृष्ठभूमि प्रयास गर्नुहोस्।</string>
+    <string name="tutorial_open_preferences">भाषाको झन्डाको छेउमा रहेको सेटिङको गियरमा ट्याप गर्नुहोस्।</string>
     <string name="tutorial_setup">तयारी गरौँ</string>
     <string name="tutorial_setup_floating">गृहपृष्ठमा फ्लोटिङ रिडरको पहुँच मिलाउनुहोस्।</string>
     <string name="tutorial_setup_camera">क्यामेरा खोल्न %1$s मा ट्याप गर्नुहोस्।</string>
     <string name="tutorial_dismiss">छानिएको शब्दमा फेरि ट्याप गर्नुहोस् वा बाहिर ट्याप गर्नुहोस्। यसपछि ठाउँ पुग्ने पढाइहरू फेरि देखिन्छन्।</string>
     <string name="tutorial_menu">नियन्त्रण खोल्न Kanako मा दुई पटक ट्याप गर्नुहोस् वा थिचिराख्नुहोस्।</string>
-    <string name="tutorial_script">Kana वा Romaji प्रयास गर्न लिपिमा ट्याप गर्नुहोस्। मन लागेसम्म प्रयास गरेर अर्कोमा ट्याप गर्नुहोस्।</string>
+    <string name="tutorial_script">Kana वा Romaji प्रयास गर्न लिपिमा ट्याप गर्नुहोस्, त्यसपछि अर्कोको तीरमा ट्याप गर्नुहोस्।</string>
     <string name="tutorial_photo_toggle">फोटोको पढाइ लुकाउन वा देखाउन Kanako मा ट्याप गर्नुहोस्।</string>
     <string name="tutorial_tile_setup">स्क्रिनको माथिबाट दुई पटक तल स्वाइप गर्नुहोस्। सम्पादनमा ट्याप गरी Kanako टाइल थप्नुहोस्।</string>
     <string name="tutorial_tile_use">फ्लोटिङ रिडर देखाउन वा रोक्न Kanako टाइलमा ट्याप गर्नुहोस्।</string>
