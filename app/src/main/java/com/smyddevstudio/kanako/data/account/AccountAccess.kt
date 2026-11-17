@@ -15,14 +15,21 @@ internal data class AccountGrant(
     val leaseDurationMillis: Long,
     val receivedAtElapsedMillis: Long,
     val plan: PurchasePlan? = null,
-    val testCheckoutAllowed: Boolean = false
+    val testCheckoutAllowed: Boolean = false,
+    val reviewerAccess: Boolean = false,
+    val checkoutAllowed: Boolean = false
 ) {
     init {
         require(userId.isNotBlank())
-        require(serverNowMillis > 0 && trialStartedAtMillis > 0)
-        require(trialEndsAtMillis > trialStartedAtMillis)
-        require(trialEndsAtMillis - trialStartedAtMillis == TRIAL_DURATION_MILLIS)
-        require(trialStartedAtMillis <= serverNowMillis)
+        require(serverNowMillis > 0)
+        if (reviewerAccess) {
+            require(trialStartedAtMillis == 0L && trialEndsAtMillis == 0L)
+            require(paidAccess == PaidAccess.None && plan == null && !testCheckoutAllowed && !checkoutAllowed)
+        } else if (trialStartedAtMillis != 0L || trialEndsAtMillis != 0L) {
+            require(trialStartedAtMillis > 0 && trialStartedAtMillis <= serverNowMillis)
+            require(trialEndsAtMillis > trialStartedAtMillis)
+            require(trialEndsAtMillis - trialStartedAtMillis == TRIAL_DURATION_MILLIS)
+        }
         require(leaseDurationMillis in 1..MAX_ACCESS_LEASE_MILLIS)
         require(receivedAtElapsedMillis >= 0)
         require(plan == null || when (paidAccess) {
@@ -31,6 +38,8 @@ internal data class AccountGrant(
             is PaidAccess.Subscription -> plan == PurchasePlan.MONTHLY || plan == PurchasePlan.YEARLY
         })
     }
+
+    val trialAvailable: Boolean get() = !reviewerAccess && trialStartedAtMillis == 0L && trialEndsAtMillis == 0L
 
     fun serverNow(elapsedMillis: Long): Long {
         val duration = (elapsedMillis - receivedAtElapsedMillis).coerceAtLeast(0)
@@ -52,10 +61,10 @@ internal data class AccountGrant(
 
     fun canRead(userId: String?, elapsedMillis: Long): Boolean =
         this.userId == userId && isFresh(elapsedMillis) &&
-            (trialRemaining(elapsedMillis) > 0 || hasPaidAccess(elapsedMillis))
+            (reviewerAccess || trialRemaining(elapsedMillis) > 0 || hasPaidAccess(elapsedMillis))
 }
 
-internal enum class AccountIssue { SETUP, SIGN_IN, CONNECTION, DELETION }
+internal enum class AccountIssue { SETUP, SIGN_IN, CONNECTION, DELETION, TRIAL }
 
 internal data class AccountState(
     val configured: Boolean,
@@ -66,13 +75,31 @@ internal data class AccountState(
     val elapsedMillis: Long = 0,
     val issue: AccountIssue? = null,
     val accessServiceConfigured: Boolean = false,
-    val testSession: Boolean = false
+    val reviewerSignInPending: Boolean = false,
+    val loginChoicePending: Boolean = false,
+    val paywallRequested: Boolean = false,
+    val accessResolved: Boolean = false,
+    val displayName: String? = null,
+    val profilePhotoUrl: String? = null
 ) {
-    val hasSession: Boolean get() = userId != null || testSession
-    val canRead: Boolean get() = testSession || grant?.canRead(userId, elapsedMillis) == true
-    val needsPurchase: Boolean get() = !testSession && userId != null && grant?.let {
-        it.userId == userId && it.isFresh(elapsedMillis) &&
-            (it.trialRemaining(elapsedMillis) == 0L || it.testCheckoutAllowed) &&
-            !it.hasPaidAccess(elapsedMillis)
+    val testSession: Boolean get() = grant?.let { it.userId == userId && it.reviewerAccess } == true
+    val hasSession: Boolean get() = userId != null && !reviewerSignInPending
+    val canRead: Boolean get() = grant?.canRead(userId, elapsedMillis) == true
+    val hasFreshGrant: Boolean get() = grant?.let { it.userId == userId && it.isFresh(elapsedMillis) } == true
+    val hasPaidAccess: Boolean get() = hasFreshGrant && grant?.hasPaidAccess(elapsedMillis) == true
+    val subscriptionNeedsRefresh: Boolean get() = grant?.let {
+        val subscription = it.paidAccess as? PaidAccess.Subscription
+        subscription != null && !it.hasPaidAccess(elapsedMillis) && it.serverNowMillis < subscription.expiresAtMillis
     } == true
+    val needsPurchase: Boolean get() = hasFreshGrant && !testSession && !hasPaidAccess &&
+        !subscriptionNeedsRefresh && grant?.trialRemaining(elapsedMillis) == 0L
+    val canPurchase: Boolean get() = hasFreshGrant && !testSession && !hasPaidAccess &&
+        !subscriptionNeedsRefresh && (needsPurchase || grant?.checkoutAllowed == true || grant?.testCheckoutAllowed == true)
+
+    fun withVerifiedGrant(verified: AccountGrant, elapsed: Long): AccountState {
+        val next = copy(grant = verified, elapsedMillis = elapsed, issue = null, accessResolved = true)
+        val showChoice = next.hasFreshGrant && !next.testSession && !next.hasPaidAccess &&
+            (paywallRequested || loginChoicePending || (next.needsPurchase && (!needsPurchase || !accessResolved)))
+        return next.copy(paywallRequested = showChoice, loginChoicePending = false)
+    }
 }

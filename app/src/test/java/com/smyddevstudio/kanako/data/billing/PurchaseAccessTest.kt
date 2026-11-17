@@ -9,6 +9,18 @@ class PurchaseAccessTest {
     private val catalog = BillingCatalog("premium", "monthly", "yearly", "lifetime", "buy")
     private val start = 1_000L
 
+    @Test fun catalogMatchesOnlyTheConfiguredProductAndOptionIds() {
+        val realCatalog = BillingCatalog("kanako_premium", "monthly", "yearly", "kanako_lifetime", "buy")
+        assertEquals(PurchasePlan.MONTHLY, catalogPlan(realCatalog, "kanako_premium", basePlanId = "monthly"))
+        assertEquals(PurchasePlan.YEARLY, catalogPlan(realCatalog, "kanako_premium", basePlanId = "yearly"))
+        assertEquals(PurchasePlan.LIFETIME, catalogPlan(realCatalog, "kanako_lifetime", purchaseOptionId = "buy"))
+        assertEquals(null, catalogPlan(realCatalog, "other", basePlanId = "monthly"))
+        assertEquals(null, catalogPlan(realCatalog, "kanako_premium", basePlanId = "weekly"))
+        assertEquals(null, catalogPlan(realCatalog, "kanako_lifetime", purchaseOptionId = "rent"))
+        assertEquals(null, catalogPlan(realCatalog, "kanako_premium", purchaseOptionId = "buy"))
+        assertEquals(null, catalogPlan(realCatalog, "kanako_lifetime", basePlanId = "monthly", purchaseOptionId = "buy"))
+    }
+
     @Test fun trialEndsAtExactlySevenDaysAndNeverCreatesPaidAccess() {
         assertEquals(TRIAL_DURATION_MILLIS, remainingTrialMillis(start, start))
         assertEquals(1L, remainingTrialMillis(start, start + TRIAL_DURATION_MILLIS - 1))

@@ -23,6 +23,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -53,7 +55,7 @@ internal fun LoginDialog(
     state: AccountState,
     testLoginEnabled: Boolean,
     onSignIn: () -> Unit,
-    onTestLogin: (String, String) -> Boolean,
+    onTestLogin: suspend (String, String) -> Boolean,
     onPrivacy: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -62,13 +64,20 @@ internal fun LoginDialog(
     var password by remember { mutableStateOf("") }
     var invalidCredentials by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
+    val scope = rememberCoroutineScope()
+    var submitting by remember { mutableStateOf(false) }
     val duration = if (LocalKanakoMotionEnabled.current) KanakoUiProfile.expandDuration else 0
-    val canSubmit = showTestLogin && !state.busy && username.isNotEmpty() && password.isNotEmpty()
+    val canSubmit = showTestLogin && !state.busy && !submitting && username.isNotEmpty() && password.isNotEmpty()
 
     fun submit() {
         if (!canSubmit) return
-        invalidCredentials = !onTestLogin(username, password)
+        val enteredPassword = password
         password = ""
+        submitting = true
+        scope.launch {
+            try { invalidCredentials = !onTestLogin(username, enteredPassword) }
+            finally { submitting = false }
+        }
     }
 
     KanakoDialog(
@@ -86,12 +95,6 @@ internal fun LoginDialog(
                     style = MaterialTheme.typography.headlineMedium,
                     modifier = Modifier.semantics { heading() }
                 )
-                Text(
-                    stringResource(if (state.accessServiceConfigured)
-                        R.string.account_intro else R.string.account_sign_in_intro),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
             }
             AccountSettingsContent(
                 state = state,
@@ -99,10 +102,10 @@ internal fun LoginDialog(
                 onSignOut = {},
                 onDelete = {},
                 onRetry = {},
-                onRestore = {},
                 onManageSubscription = {},
                 onPurchaseOptions = {},
-                showIntroduction = false
+                showIntroduction = false,
+                signInOnly = true
             )
             if (testLoginEnabled) {
                 Column(
@@ -115,7 +118,7 @@ internal fun LoginDialog(
                             password = ""
                             invalidCredentials = false
                         },
-                        enabled = !state.busy,
+                        enabled = !state.busy && !submitting,
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     ) {
                         Text(stringResource(R.string.account_test_login), fontWeight = FontWeight.Bold)
@@ -131,11 +134,12 @@ internal fun LoginDialog(
                                 onValueChange = { username = it; invalidCredentials = false },
                                 label = { Text(stringResource(R.string.account_test_username)) },
                                 singleLine = true,
-                                enabled = !state.busy && showTestLogin,
+                                enabled = !state.busy && !submitting && showTestLogin,
                                 isError = invalidCredentials,
                                 shape = MaterialTheme.shapes.large,
                                 keyboardOptions = KeyboardOptions(
                                     autoCorrectEnabled = false,
+                                    keyboardType = KeyboardType.Email,
                                     imeAction = ImeAction.Next
                                 ),
                                 keyboardActions = KeyboardActions(
@@ -148,7 +152,7 @@ internal fun LoginDialog(
                                 onValueChange = { password = it; invalidCredentials = false },
                                 label = { Text(stringResource(R.string.account_test_password)) },
                                 singleLine = true,
-                                enabled = !state.busy && showTestLogin,
+                                enabled = !state.busy && !submitting && showTestLogin,
                                 isError = invalidCredentials,
                                 shape = MaterialTheme.shapes.large,
                                 visualTransformation = PasswordVisualTransformation(),

@@ -32,6 +32,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -93,6 +94,18 @@ fun KanakoApp(
     val state by accounts.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     var showPrivacy by rememberSaveable { mutableStateOf(false) }
+    var enteredApp by rememberSaveable(state.userId) { mutableStateOf(false) }
+    var startWithHelp by rememberSaveable(state.userId) { mutableStateOf(false) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner, accounts) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) accounts.resume()
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+    val accessReady = state.hasPaidAccess || state.testSession ||
+        state.canRead && !state.loginChoicePending && !state.paywallRequested
     if (!state.hasSession) {
         androidx.compose.material3.Surface(
             modifier.fillMaxSize(),
@@ -107,15 +120,33 @@ fun KanakoApp(
             modifier = modifier
         )
         if (showPrivacy) PrivacyPolicyDialog(onDismiss = { showPrivacy = false })
+    } else if (!enteredApp && !accessReady) {
+        androidx.compose.material3.Surface(
+            modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {}
+        AccountAccessDialog(
+            onHelp = {
+                accounts.dismissPaywall()
+                startWithHelp = true
+                enteredApp = true
+            },
+            onClose = {
+                accounts.dismissPaywall()
+                enteredApp = true
+            }
+        )
     } else {
-        KanakoSignedInApp(modifier, startCaptureRequest)
+        SideEffect { enteredApp = true }
+        KanakoSignedInApp(modifier, startCaptureRequest, startWithHelp)
     }
 }
 
 @Composable
 private fun KanakoSignedInApp(
     modifier: Modifier,
-    startCaptureRequest: Int
+    startCaptureRequest: Int,
+    startWithHelp: Boolean
 ) {
     val context = LocalContext.current
     val resources = LocalResources.current
@@ -127,7 +158,8 @@ private fun KanakoSignedInApp(
     val readerActive by KanakoOverlaySession.isActive.collectAsStateWithLifecycle()
     val preferences = savedPreferences.copy(isOverlayActive = readerActive)
     val coroutineScope = rememberCoroutineScope()
-    val backStack = rememberNavBackStack(Screen.Home)
+    val backStack = if (startWithHelp) rememberNavBackStack(Screen.Home, Screen.HowItWorks)
+        else rememberNavBackStack(Screen.Home)
     val accounts = remember(context) { (context.applicationContext as KanakoApplication).accounts }
     val accountState by accounts.state.collectAsStateWithLifecycle()
     var showAccessPrompt by rememberSaveable { mutableStateOf(false) }
@@ -139,8 +171,10 @@ private fun KanakoSignedInApp(
         showAccessPrompt = true
         return false
     }
-    LaunchedEffect(accountState.canRead) {
-        if (accountState.canRead) showAccessPrompt = false
+    LaunchedEffect(accountState.paywallRequested, accountState.canRead, accountState.hasPaidAccess, accountState.testSession) {
+        if (accountState.hasPaidAccess || accountState.testSession ||
+            accountState.canRead && !accountState.paywallRequested) showAccessPrompt = false
+        else if (accountState.paywallRequested) showAccessPrompt = true
     }
     var onboardingInitialized by remember { mutableStateOf(false) }
     var guidedSetup by rememberSaveable { mutableStateOf(false) }
@@ -233,7 +267,8 @@ private fun KanakoSignedInApp(
     var resumeEpoch by remember { mutableIntStateOf(0) }
     var pendingActivation by rememberSaveable { mutableStateOf(false) }
     var showDisclosure by rememberSaveable { mutableStateOf(false) }
-    if (preferences.offerAutoRead && !preferences.offerGuidedSetup && !guidedSetup && backStack.lastOrNull() == Screen.Home && !showDisclosure) {
+    if (preferences.offerAutoRead && !preferences.offerGuidedSetup && !guidedSetup && backStack.lastOrNull() == Screen.Home &&
+        !showDisclosure && accountState.canRead && !accountState.paywallRequested) {
         com.smyddevstudio.kanako.ui.components.AutoReadDisclosure(
             onConfirm = { coroutineScope.launch { repository.updateAutoReadAfterScroll(true) } },
             onDismiss = { coroutineScope.launch { repository.updateAutoReadAfterScroll(false) } }
@@ -245,7 +280,6 @@ private fun KanakoSignedInApp(
                 overlayGranted = KanakoOverlayService.canDrawOverlays(context)
                 accessibilityEnabled = KanakoAccessibilityService.isEnabled(context)
                 cameraGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
-                accounts.refresh()
                 resumeEpoch++
             }
         }
@@ -517,32 +551,16 @@ private fun KanakoSignedInApp(
             }
         }
     }
-    if (showAccessPrompt && !ReadingAccess.allowedNow()) {
-        AlertDialog(
-            onDismissRequest = { showAccessPrompt = false },
-            title = { Text(stringResource(R.string.account_welcome)) },
-            text = {
-                androidx.compose.foundation.layout.Column(Modifier.verticalScroll(rememberScrollState())) {
-                    Text(stringResource(R.string.account_check_needed))
-                    AccountSettings(
-                        onHelp = {
-                            showAccessPrompt = false
-                            backStack.add(Screen.Help(HelpTopic.PRIVACY))
-                        },
-                        showPurchaseInitially = accountState.needsPurchase
-                    )
-                }
+    if (showAccessPrompt && !accountState.hasPaidAccess && !accountState.testSession) {
+        AccountAccessDialog(
+            onHelp = {
+                accounts.dismissPaywall()
+                showAccessPrompt = false
+                backStack.add(Screen.Help(HelpTopic.PRIVACY))
             },
-            confirmButton = {
-                TextButton(onClick = { showAccessPrompt = false }) {
-                    Text(stringResource(R.string.account_close))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    showAccessPrompt = false
-                    showPrivacy = true
-                }) { Text(stringResource(R.string.account_privacy)) }
+            onClose = {
+                accounts.dismissPaywall()
+                showAccessPrompt = false
             }
         )
     }
@@ -781,7 +799,7 @@ private fun KanakoSignedInApp(
                         showPrivacy = true
                     },
                     accountContent = if (guidedSetup) null else {
-                        { AccountSettings(onHelp = { backStack.add(Screen.Help(HelpTopic.PRIVACY)) }) }
+                        { AccountSettings() }
                     },
                     onBack = { handleBack() }
                 )

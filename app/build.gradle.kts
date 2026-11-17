@@ -15,7 +15,7 @@ plugins {
 
 val accountConfigPresent = file("google-services.json").isFile
 val accountAccessEnforced = providers.gradleProperty("kanakoEnforceReadingAccess").orElse("true").get()
-require(accountAccessEnforced == "true" || accountAccessEnforced == "false")
+require(accountAccessEnforced == "true") { "Reading access must be enforced; use a server-authorized reviewer account for testing." }
 if (accountConfigPresent) apply(plugin = "com.google.gms.google-services")
 
 fun accountSetting(name: String, fallback: String = ""): String =
@@ -32,6 +32,46 @@ val nextVersionCode = accountSetting("kanakoVersionCode", "3").toIntOrNull()
 require(nextVersionCode != null && nextVersionCode in 3..2_100_000_000) {
     "kanakoVersionCode must be an unused integer from 3 through 2100000000; versions 1 and 2 were already uploaded."
 }
+
+abstract class ValidatePlayConfiguration : DefaultTask() {
+    @get:Input abstract val firebaseConfigPresent: Property<Boolean>
+    @get:Input abstract val webClientId: Property<String>
+    @get:Input abstract val accountServerUrl: Property<String>
+
+    @TaskAction fun validate() {
+        val problems = mutableListOf<String>()
+        if (!firebaseConfigPresent.get()) problems += "Add app/google-services.json for com.smyddevstudio.kanako."
+        if (!webClientId.get().matches(Regex("[A-Za-z0-9_-]+[.]apps[.]googleusercontent[.]com"))) {
+            problems += "Set kanakoGoogleWebClientId to the Firebase Google sign-in web client ID."
+        }
+        val secureUrl = runCatching {
+            val uri = URI(accountServerUrl.get())
+            uri.scheme == "https" && !uri.host.isNullOrBlank() &&
+                uri.userInfo == null && uri.query == null && uri.fragment == null
+        }.getOrDefault(false)
+        if (!secureUrl) {
+            problems += "Set kanakoAccountServerUrl to the deployed HTTPS accountApi base URL (no /session suffix, credentials, query or fragment)."
+        }
+        check(problems.isEmpty()) {
+            "Play bundle configuration is incomplete:\n" + problems.joinToString("\n") { " - $it" } +
+                "\nSupply Gradle properties privately or with -P. URL validation checks format, not a live deployment."
+        }
+    }
+}
+
+val validatePlayConfiguration = tasks.register<ValidatePlayConfiguration>("validatePlayConfiguration") {
+    group = "verification"
+    description = "Checks required account configuration before creating a Play review/release bundle."
+    firebaseConfigPresent.set(accountConfigPresent)
+    webClientId.set(accountSetting("kanakoGoogleWebClientId"))
+    accountServerUrl.set(accountSetting("kanakoAccountServerUrl"))
+}
+
+// Cover both the public bundle lifecycle task and its direct packaging/signing entry points.
+tasks.matching {
+    it.name in setOf("bundleReview", "packageReviewBundle", "signReviewBundle",
+        "bundleRelease", "packageReleaseBundle", "signReleaseBundle")
+}.configureEach { dependsOn(validatePlayConfiguration) }
 
 val sudachiTrial = providers.gradleProperty("sudachiTrial").orNull == "true"
 val readingPerformance = providers.gradleProperty("readingPerformance").orNull == "true"
@@ -181,6 +221,7 @@ android {
         }
         create("review") {
             initWith(getByName("release"))
+            isDebuggable = false
             matchingFallbacks += "release"
             buildConfigField("boolean", "TEST_LOGIN_ENABLED", "true")
         }

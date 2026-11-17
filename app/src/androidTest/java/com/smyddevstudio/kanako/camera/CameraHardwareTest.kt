@@ -66,7 +66,10 @@ class CameraHardwareTest {
             if (!accounts.state.value.testSession) {
                 assertTrue(
                     "Use a test-enabled build with Firebase signed out for isolated camera verification",
-                    accounts.testLogin("tester", "tester")
+                    accounts.testLogin(
+                        requireNotNull(InstrumentationRegistry.getArguments().getString("reviewerEmail")),
+                        requireNotNull(InstrumentationRegistry.getArguments().getString("reviewerPassword"))
+                    )
                 )
                 startedTestSession = true
             }

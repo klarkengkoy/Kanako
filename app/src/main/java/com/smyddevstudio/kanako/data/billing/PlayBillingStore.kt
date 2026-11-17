@@ -2,7 +2,6 @@ package com.smyddevstudio.kanako.data.billing
 
 import android.app.Activity
 import android.content.Context
-import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingFlowParams
@@ -30,14 +29,14 @@ import kotlin.coroutines.resumeWithException
 internal class PlayBillingStore(
     context: Context,
     private val catalog: BillingCatalog,
-    private val verifier: PurchaseVerifier,
+    verifier: PurchaseVerifier,
     private val purchasesAllowed: () -> Boolean,
     private val nowMillis: () -> Long = System::currentTimeMillis,
     private val obfuscatedAccountId: String? = null
 ) : AutoCloseable {
     private data class ProductOffer(
         val details: ProductDetails,
-        val token: String?,
+        val token: String,
         val offer: StoreOffer
     )
 
@@ -49,63 +48,83 @@ internal class PlayBillingStore(
     val state = mutableState.asStateFlow()
     private var closed = false
     private var products = emptyMap<PurchasePlan, ProductOffer>()
+    private var revision = 0L
+    private val reportedPurchases = mutableMapOf<String, Purchase>()
+    private val reconciler = PurchaseReconciler(catalog, verifier, mutableState, nowMillis)
+
+    private fun update(request: Long, transform: (BillingState) -> BillingState) {
+        if (!closed && revision == request) mutableState.update(transform)
+    }
 
     private val client = BillingClient.newBuilder(context.applicationContext)
         .enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().build())
         .enableAutoServiceReconnection()
-        .setListener { result, _ ->
+        .setListener { result, purchases ->
             if (!closed) {
+                val completed = purchases.orEmpty().any { it.purchaseState == Purchase.PurchaseState.PURCHASED }
+                val pending = purchases.orEmpty().any { it.purchaseState == Purchase.PurchaseState.PENDING }
+                purchases.orEmpty().forEach { reportedPurchases[it.purchaseToken] = it }
                 mutableState.update {
                     it.copy(
                         purchasing = false,
+                        verifying = it.verifying || completed,
+                        showFeedback = true,
+                        pendingPurchase = pending,
                         issue = if (result.responseCode == BillingClient.BillingResponseCode.OK ||
                             result.responseCode == BillingClient.BillingResponseCode.USER_CANCELED) null
                         else BillingIssue.PURCHASE
                     )
                 }
                 if (result.responseCode == BillingClient.BillingResponseCode.OK ||
-                    result.responseCode == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) refresh()
+                    result.responseCode == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) refresh(userInitiated = true)
             }
         }
         .build()
 
-    fun refresh(restoring: Boolean = false) {
+    fun refresh(restoring: Boolean = false, userInitiated: Boolean = false) {
         if (closed) return
+        val request = ++revision
+        mutableState.update { it.copy(refreshing = true, issue = null, showFeedback = userInitiated || restoring || it.purchasing || it.showFeedback && it.verifying) }
         scope.launch {
             mutex.withLock {
-                mutableState.update { it.copy(refreshing = true, issue = null) }
+                if (request != revision) return@withLock
                 try {
                     connect()
-                    refreshPurchases(restoring)
-                    refreshProducts()
+                    try { refreshPurchases(restoring, request) }
+                    finally { if (request == revision) refreshProducts(request) }
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (failure: Failure) {
-                    mutableState.update { it.copy(issue = failure.issue) }
+                    update(request) { it.copy(issue = failure.issue) }
                 } catch (_: Exception) {
-                    mutableState.update { it.copy(issue = BillingIssue.UNAVAILABLE) }
+                    update(request) { it.copy(issue = BillingIssue.UNAVAILABLE) }
                 } finally {
-                    mutableState.update { it.copy(refreshing = false) }
+                    update(request) { it.copy(refreshing = false, verifying = false) }
                 }
             }
         }
     }
 
     fun purchase(activity: Activity, plan: PurchasePlan) {
-        if (closed || !purchasesAllowed() || state.value.purchasing || state.value.refreshing) return
+        if (closed || !purchasesAllowed() || state.value.purchasing || state.value.refreshing ||
+            state.value.verifying || state.value.issue == BillingIssue.VERIFICATION) return
+        val request = ++revision
+        mutableState.update { it.copy(refreshing = true, issue = null, showFeedback = true) }
         scope.launch {
             mutex.withLock {
-                mutableState.update { it.copy(refreshing = true, issue = null) }
+                if (request != revision) return@withLock
                 try {
                     connect()
-                    refreshPurchases(restoring = false)
-                    if (!purchasesAllowed() || state.value.access.isActive(nowMillis()) ||
+                    refreshPurchases(restoring = false, request = request)
+                    if (request != revision || state.value.issue == BillingIssue.VERIFICATION ||
+                        !purchasesAllowed() || state.value.access.isActive(nowMillis()) ||
                         state.value.pendingPurchase || activity.isFinishing || activity.isDestroyed) return@withLock
-                    refreshProducts()
+                    refreshProducts(request)
+                    if (request != revision) return@withLock
                     val product = products[plan] ?: throw Failure(BillingIssue.PRODUCTS)
                     val params = BillingFlowParams.ProductDetailsParams.newBuilder()
                         .setProductDetails(product.details)
-                        .apply { product.token?.let { setOfferToken(it) } }
+                        .setOfferToken(product.token)
                         .build()
                     mutableState.update { it.copy(purchasing = true) }
                     val result = client.launchBillingFlow(
@@ -120,11 +139,11 @@ internal class PlayBillingStore(
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (failure: Failure) {
-                    mutableState.update { it.copy(purchasing = false, issue = failure.issue) }
+                    update(request) { it.copy(purchasing = false, issue = failure.issue) }
                 } catch (_: Exception) {
-                    mutableState.update { it.copy(purchasing = false, issue = BillingIssue.UNAVAILABLE) }
+                    update(request) { it.copy(purchasing = false, issue = BillingIssue.UNAVAILABLE) }
                 } finally {
-                    mutableState.update { it.copy(refreshing = false) }
+                    update(request) { it.copy(refreshing = false, verifying = false) }
                 }
             }
         }
@@ -143,28 +162,33 @@ internal class PlayBillingStore(
 
                 override fun onBillingServiceDisconnected() {
                     if (continuation.isActive) continuation.resumeWithException(Failure(BillingIssue.CONNECTION))
-                    if (!closed) mutableState.update { it.copy(issue = BillingIssue.CONNECTION) }
+                    if (!closed && !state.value.verifying) {
+                        mutableState.update { it.copy(issue = BillingIssue.CONNECTION) }
+                    }
                 }
             })
         }
     }
 
-    private suspend fun refreshProducts() {
+    private suspend fun refreshProducts(request: Long) {
         products = emptyMap()
         mutableState.update { it.copy(offers = emptyList()) }
-        val subscription = queryProducts(catalog.subscriptionId, BillingClient.ProductType.SUBS)
-        val lifetime = queryProducts(catalog.lifetimeId, BillingClient.ProductType.INAPP)
+        suspend fun availableProduct(id: String, type: String): ProductDetails? = try {
+            queryProducts(id, type)
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            null
+        }
+        val subscription = availableProduct(catalog.subscriptionId, BillingClient.ProductType.SUBS)
+        val lifetime = availableProduct(catalog.lifetimeId, BillingClient.ProductType.INAPP)
         val available = mutableMapOf<PurchasePlan, ProductOffer>()
         subscription?.subscriptionOfferDetails.orEmpty().forEach { offer ->
-            val plan = when (offer.basePlanId) {
-                catalog.monthlyBasePlanId -> PurchasePlan.MONTHLY
-                catalog.yearlyBasePlanId -> PurchasePlan.YEARLY
-                else -> null
-            }
+            val plan = catalogPlan(catalog, subscription!!.productId, basePlanId = offer.basePlanId)
             val phases = offer.pricingPhases.pricingPhaseList
             val phase = phases.singleOrNull()
             val expectedPeriod = if (plan == PurchasePlan.MONTHLY) "P1M" else "P1Y"
-            if (plan != null && offer.offerId == null && phase != null &&
+            if (plan != null && offer.offerId == null && offer.offerToken.isNotBlank() && phase != null &&
                 phase.priceAmountMicros > 0 && phase.billingPeriod == expectedPeriod &&
                 phase.recurrenceMode == ProductDetails.RecurrenceMode.INFINITE_RECURRING) {
                 available[plan] = ProductOffer(subscription!!, offer.offerToken,
@@ -172,15 +196,17 @@ internal class PlayBillingStore(
             }
         }
         val lifetimeOffer = lifetime?.oneTimePurchaseOfferDetailsList.orEmpty().firstOrNull {
-            it.purchaseOptionId == catalog.lifetimePurchaseOptionId && it.offerId == null &&
+            catalogPlan(catalog, lifetime!!.productId, purchaseOptionId = it.purchaseOptionId) == PurchasePlan.LIFETIME &&
+                !it.offerToken.isNullOrBlank() && it.offerId == null &&
                 it.rentalDetails == null && it.preorderDetails == null && it.priceAmountMicros > 0
         }
         if (lifetime != null && lifetimeOffer != null) {
-            available[PurchasePlan.LIFETIME] = ProductOffer(lifetime, lifetimeOffer.offerToken,
+            available[PurchasePlan.LIFETIME] = ProductOffer(lifetime, checkNotNull(lifetimeOffer.offerToken),
                 StoreOffer(PurchasePlan.LIFETIME, lifetimeOffer.formattedPrice))
         }
+        if (request != revision || closed) return
         products = available
-        mutableState.update {
+        update(request) {
             it.copy(
                 offers = PurchasePlan.entries.mapNotNull { plan -> available[plan]?.offer },
                 issue = it.issue ?: if (available.size != PurchasePlan.entries.size) BillingIssue.PRODUCTS else null
@@ -213,49 +239,33 @@ internal class PlayBillingStore(
             }
         }
 
-    private suspend fun refreshPurchases(restoring: Boolean) {
-        val purchases = (queryPurchases(BillingClient.ProductType.SUBS) +
-            queryPurchases(BillingClient.ProductType.INAPP))
+    private suspend fun refreshPurchases(restoring: Boolean, request: Long) {
+        val queried = try {
+            queryPurchases(BillingClient.ProductType.SUBS) + queryPurchases(BillingClient.ProductType.INAPP)
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (failure: Failure) {
+            if (reportedPurchases.isEmpty()) throw failure
+            emptyList()
+        }
+        val purchases = (reportedPurchases.values.toList() + queried)
             .distinctBy { it.purchaseToken }
             .filter { it.products.any { id -> id == catalog.subscriptionId || id == catalog.lifetimeId } }
-        val completed = purchases.filter { it.purchaseState == Purchase.PurchaseState.PURCHASED }
-        val verified = completed.map { purchase ->
-            val result = try {
-                verifier.verify(PurchaseEvidence(purchase.purchaseToken, purchase.products,
-                    purchase.originalJson, purchase.signature))
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (_: Exception) {
-                throw Failure(BillingIssue.VERIFICATION)
-            }
-            purchase to verifiedAccess(catalog, purchase.products, result, nowMillis())
-        }
-        val access = combinedPaidAccess(verified.map { it.second }, nowMillis())
-        val pending = purchases.any { it.purchaseState == Purchase.PurchaseState.PENDING }
-        mutableState.update {
-            it.copy(
-                access = access,
-                pendingPurchase = pending,
-                issue = when {
-                    completed.isNotEmpty() && verified.any { pair -> pair.second == PaidAccess.None } -> BillingIssue.VERIFICATION
-                    restoring && access == PaidAccess.None && !pending -> BillingIssue.NO_PURCHASES
+        reconciler.reconcile(
+            purchases.mapNotNull { purchase ->
+                when (purchase.purchaseState) {
+                    Purchase.PurchaseState.PURCHASED, Purchase.PurchaseState.PENDING -> StorePurchase(
+                        PurchaseEvidence(purchase.purchaseToken, purchase.products,
+                            purchase.originalJson, purchase.signature),
+                        pending = purchase.purchaseState == Purchase.PurchaseState.PENDING
+                    )
                     else -> null
                 }
-            )
-        }
-        for ((purchase, entitlement) in verified) {
-            if (entitlement.isActive(nowMillis()) && !purchase.isAcknowledged) acknowledge(purchase.purchaseToken)
-        }
-    }
-
-    private suspend fun acknowledge(token: String) {
-        val result: BillingResult = suspendCancellableCoroutine { continuation ->
-            client.acknowledgePurchase(AcknowledgePurchaseParams.newBuilder().setPurchaseToken(token).build()) {
-                if (continuation.isActive) continuation.resume(it)
-            }
-        }
-        if (result.responseCode != BillingClient.BillingResponseCode.OK)
-            mutableState.update { it.copy(issue = BillingIssue.ACKNOWLEDGEMENT) }
+            },
+            restoring,
+            isCurrent = { !closed && request == revision }
+        )
+        if (request == revision && state.value.issue != BillingIssue.VERIFICATION) reportedPurchases.clear()
     }
 
     override fun close() {
@@ -264,5 +274,6 @@ internal class PlayBillingStore(
         scope.cancel()
         client.endConnection()
         products = emptyMap()
+        reportedPurchases.clear()
     }
 }

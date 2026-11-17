@@ -17,6 +17,23 @@ internal data class BillingCatalog(
     }
 }
 
+internal fun catalogPlan(
+    catalog: BillingCatalog,
+    productId: String,
+    basePlanId: String? = null,
+    purchaseOptionId: String? = null
+): PurchasePlan? = when {
+    productId == catalog.subscriptionId && purchaseOptionId == null ->
+        when (basePlanId) {
+            catalog.monthlyBasePlanId -> PurchasePlan.MONTHLY
+            catalog.yearlyBasePlanId -> PurchasePlan.YEARLY
+            else -> null
+        }
+    productId == catalog.lifetimeId && basePlanId == null &&
+        purchaseOptionId == catalog.lifetimePurchaseOptionId -> PurchasePlan.LIFETIME
+    else -> null
+}
+
 internal data class StoreOffer(
     val plan: PurchasePlan,
     val formattedPrice: String
@@ -45,6 +62,8 @@ internal data class VerifiedPurchase(
     val productId: String,
     val access: PaidAccess
 )
+
+internal class TemporaryPurchaseVerificationException(cause: Exception) : Exception(cause)
 
 internal fun interface PurchaseVerifier {
     suspend fun verify(evidence: PurchaseEvidence): VerifiedPurchase?
@@ -88,6 +107,9 @@ internal enum class BillingIssue {
 internal data class BillingState(
     val refreshing: Boolean = false,
     val purchasing: Boolean = false,
+    val verifying: Boolean = false,
+    val showFeedback: Boolean = false,
+    val purchasesResolved: Boolean = false,
     val offers: List<StoreOffer> = emptyList(),
     val access: PaidAccess = PaidAccess.None,
     val pendingPurchase: Boolean = false,

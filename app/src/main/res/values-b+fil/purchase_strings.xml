@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="purchase_title">Tapos na ang iyong pitong araw na trial</string>
-    <string name="purchase_test_title">Mga test na pagbili</string>
-    <string name="purchase_test_intro">Hindi nagbago ang iyong trial. Gumamit ng itinalagang Google Play license-test account at pumili ng test na paraan ng pagbabayad. Kung hindi sinasabi ng Google Play na test na pagbili ito, kanselahin.</string>
+    <string name="purchase_title">Mga pagpipilian sa pagbili</string>
     <string name="purchase_intro">Walang singil o awtomatikong subscription mula sa trial. Piliin kung paano magpatuloy sa pagbabasa gamit ang Kanako.</string>
     <string name="purchase_monthly">Buwanan</string>
     <string name="purchase_yearly">Taunan</string>
@@ -21,11 +19,19 @@
     <string name="purchase_access_ready">Available na ang iyong bayad na access.</string>
     <string name="purchase_pending">Nakabinbin ang iyong bayad. Magiging available ang access kapag nakumpleto at na-verify ang bayad.</string>
     <string name="purchase_loading">Sinusuri ang Google Play…</string>
+    <string name="purchase_verifying">Vine-verify ang iyong pagbili…</string>
     <string name="purchase_unavailable">Hindi available ang Google Play. Suriin ang koneksyon at subukan ulit.</string>
     <string name="purchase_products_unavailable">Hindi available ang ilang plano para sa Google Play account na ito. Subukan ulit mamaya.</string>
     <string name="purchase_failed">Hindi nakumpleto ang pagbili. Walang bagong access na na-activate.</string>
-    <string name="purchase_verification_failed">Hindi namin ma-verify ang iyong pagbili. Subukan ulit gamit ang Ibalik ang mga pagbili.</string>
+    <string name="purchase_verification_failed">Hindi pa namin ma-verify ang iyong pagbili. Subukan ulit gamit ang Ibalik ang mga pagbili.</string>
     <string name="purchase_acknowledgement_failed">Na-verify ang pagbili, pero kailangang ulitin ang kumpirmasyon sa Google Play. Ibalik ang mga pagbili habang online.</string>
     <string name="purchase_none_found">Walang nahanap na aktibong pagbili para sa Google Play account na ito.</string>
     <string name="purchase_retry">Subukan ulit</string>
+    <string name="purchase_option_unavailable">Hindi available sa Google Play account na ito</string>
+    <string name="purchase_trial_offer">Subukan ang lahat ng feature sa pagbabasa sa loob ng pitong araw. Walang kailangang bayad. Walang awtomatikong subscription.</string>
+    <string name="purchase_start_trial">Simulan ang libreng 7-araw na trial</string>
+    <string name="purchase_continue_trial">Ipagpatuloy ang libreng trial</string>
+    <string name="purchase_trial_active">Kasalukuyan kang nasa libreng trial. Matatapos ito sa %1$s.</string>
+    <string name="purchase_trial_ended">Tapos na ang iyong libreng trial. Pumili ng plano para magpatuloy sa pagbabasa.</string>
+    <string name="purchase_trial_failed">Hindi pa namin masimulan ang iyong trial. Pakisubukan muli.</string>
 </resources>

@@ -1,6 +1,11 @@
 package com.smyddevstudio.kanako.ui.screens
 
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -21,17 +26,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.smyddevstudio.kanako.R
 import com.smyddevstudio.kanako.data.account.AccountIssue
 import com.smyddevstudio.kanako.data.account.AccountState
@@ -47,6 +57,12 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
+internal fun formatAccessDeadline(epochMillis: Long): String {
+    val local = Instant.ofEpochMilli(epochMillis).atZone(ZoneId.systemDefault())
+    val date = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT).format(local)
+    return "$date (" + DateTimeFormatter.ofPattern("z").format(local) + ")"
+}
+
 @Composable
 internal fun AccountSettingsContent(
     state: AccountState,
@@ -54,25 +70,25 @@ internal fun AccountSettingsContent(
     onSignOut: () -> Unit,
     onDelete: () -> Unit,
     onRetry: () -> Unit,
-    onRestore: () -> Unit,
     onManageSubscription: () -> Unit,
     onPurchaseOptions: () -> Unit,
     modifier: Modifier = Modifier,
     billing: BillingState = BillingState(),
-    showIntroduction: Boolean = true
+    showIntroduction: Boolean = true,
+    signInOnly: Boolean = false
 ) {
     var confirmDelete by rememberSaveable(state.userId) { mutableStateOf(false) }
-    val busy = state.busy || billing.refreshing || billing.purchasing
+    val busy = state.busy || billing.purchasing || billing.showFeedback && (billing.refreshing || billing.verifying)
     Column(
         modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        if (state.testSession) {
+        if (state.testSession && !signInOnly) {
             Text(stringResource(R.string.account_test_session))
             KanakoTextButton(onClick = onSignOut) {
                 Text(stringResource(R.string.account_sign_out))
             }
-        } else if (state.userId == null) {
+        } else if (state.userId == null || signInOnly) {
             if (showIntroduction) {
                 Text(stringResource(if (state.accessServiceConfigured)
                     R.string.account_intro else R.string.account_sign_in_intro),
@@ -94,52 +110,85 @@ internal fun AccountSettingsContent(
                     fontFamily = FontFamily.SansSerif, fontSize = 14.sp, fontWeight = FontWeight.Medium)
             }
         } else {
-            Text(stringResource(R.string.account_signed_in, state.email ?: state.userId))
+            val accountName = state.displayName?.takeIf { it.isNotBlank() }
+                ?: state.email?.takeIf { it.isNotBlank() }
+                ?: stringResource(R.string.account_title)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Box(
+                    modifier = Modifier.size(36.dp).clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.secondaryContainer)
+                        .clearAndSetSemantics {},
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        accountName.take(1).uppercase(),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                    state.profilePhotoUrl?.takeIf { it.startsWith("https://") }?.let { url ->
+                        AsyncImage(
+                            model = url,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.matchParentSize()
+                        )
+                    }
+                }
+                Text(
+                    accountName,
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
             state.grant?.takeIf { it.isFresh(state.elapsedMillis) }?.let { grant ->
-                if (grant.hasPaidAccess(state.elapsedMillis)) {
+                if (state.subscriptionNeedsRefresh) {
+                    Text(stringResource(R.string.account_checking))
+                } else if (grant.hasPaidAccess(state.elapsedMillis)) {
                     Text(stringResource(when (grant.plan) {
-                        PurchasePlan.MONTHLY -> R.string.purchase_monthly
-                        PurchasePlan.YEARLY -> R.string.purchase_yearly
-                        PurchasePlan.LIFETIME -> R.string.purchase_lifetime
-                        null -> R.string.account_paid
-                    }))
+                        PurchasePlan.MONTHLY -> R.string.account_monthly_active
+                        PurchasePlan.YEARLY -> R.string.account_yearly_active
+                        PurchasePlan.LIFETIME -> R.string.account_lifetime
+                        null -> if (grant.paidAccess == PaidAccess.Lifetime)
+                            R.string.account_lifetime else R.string.account_paid
+                    }), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                } else if (grant.trialAvailable) {
+                    Text(stringResource(R.string.account_trial_not_started))
                 } else {
-                    val date = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
-                        .format(Instant.ofEpochMilli(grant.trialEndsAtMillis).atZone(ZoneId.systemDefault()))
-                    Text(stringResource(R.string.account_trial_ends, date))
-                    Text(stringResource(R.string.account_no_auto_charge))
+                    Text(stringResource(if (grant.trialRemaining(state.elapsedMillis) > 0)
+                        R.string.account_trial_ends else R.string.account_trial_expired,
+                        formatAccessDeadline(grant.trialEndsAtMillis)))
                 }
             }
-            if (state.needsPurchase) {
+            if (state.hasFreshGrant && !state.hasPaidAccess && !state.subscriptionNeedsRefresh) {
                 KanakoButton(onClick = onPurchaseOptions, enabled = !busy,
                     modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
                     Text(stringResource(R.string.account_purchase_options))
                 }
             }
-            if (state.accessServiceConfigured) {
-                KanakoOutlinedButton(onClick = onRestore, enabled = !busy) {
-                    Text(stringResource(R.string.account_restore))
-                }
-            }
             if (state.grant?.paidAccess is PaidAccess.Subscription) {
-                KanakoTextButton(onClick = onManageSubscription) {
+                KanakoOutlinedButton(onClick = onManageSubscription, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.account_manage_subscription))
                 }
             }
-            KanakoTextButton(onClick = onSignOut, enabled = !busy) {
-                Text(stringResource(R.string.account_sign_out))
-            }
-            KanakoTextButton(onClick = { confirmDelete = true }, enabled = !busy) {
-                Text(stringResource(R.string.account_delete))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                KanakoTextButton(onClick = onSignOut, enabled = !busy) {
+                    Text(stringResource(R.string.account_sign_out))
+                }
+                KanakoTextButton(onClick = { confirmDelete = true }, enabled = !busy) {
+                    Text(stringResource(R.string.account_delete), color = MaterialTheme.colorScheme.error)
+                }
             }
         }
         if (busy) {
             LinearProgressIndicator(Modifier.fillMaxWidth())
-            Text(stringResource(R.string.account_checking),
+            Text(stringResource(if (billing.verifying) R.string.purchase_verifying else R.string.account_checking),
                 modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
         }
         if (billing.pendingPurchase) Text(stringResource(R.string.purchase_pending))
-        billing.issue?.let { issue ->
+        billing.issue?.takeUnless { billing.verifying || !billing.showFeedback }?.let { issue ->
             Text(stringResource(when (issue) {
                 BillingIssue.UNAVAILABLE, BillingIssue.CONNECTION -> R.string.purchase_unavailable
                 BillingIssue.PRODUCTS -> R.string.purchase_products_unavailable
@@ -149,15 +198,16 @@ internal fun AccountSettingsContent(
                 BillingIssue.NO_PURCHASES -> R.string.purchase_none_found
             }), modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
         }
-        state.issue?.let { issue ->
+        state.issue?.takeUnless { billing.verifying && it == AccountIssue.CONNECTION }?.let { issue ->
             Text(stringResource(when (issue) {
                 AccountIssue.SETUP -> R.string.account_setup_needed
                 AccountIssue.SIGN_IN -> R.string.account_sign_in_failed
                 AccountIssue.CONNECTION -> R.string.account_connection_failed
                 AccountIssue.DELETION -> R.string.account_delete_failed
+                AccountIssue.TRIAL -> R.string.purchase_trial_failed
             }), modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
         }
-        if (state.userId != null && state.accessServiceConfigured) {
+        if (!signInOnly && state.userId != null && state.accessServiceConfigured && state.issue != null) {
             KanakoTextButton(onClick = onRetry, enabled = !busy) {
                 Text(stringResource(R.string.account_retry))
             }
@@ -183,5 +233,29 @@ internal fun AccountSettingsContent(
                 }
             }
         )
+    }
+}
+
+@androidx.compose.ui.tooling.preview.Preview(showBackground = true)
+@androidx.compose.ui.tooling.preview.Preview(name = "Japanese", locale = "ja")
+@Composable
+private fun SubscribedAccountPreview() {
+    com.smyddevstudio.kanako.ui.theme.KanakoTheme {
+        androidx.compose.material3.Surface {
+            AccountSettingsContent(
+                state = AccountState(
+                    configured = true, userId = "preview", email = "reader@example.com",
+                    displayName = "Kanako Reader",
+                    accessServiceConfigured = true,
+                    grant = com.smyddevstudio.kanako.data.account.AccountGrant(
+                        "preview", 1_800_000_000_000L, 0, 0,
+                        PaidAccess.Subscription(1_802_000_000_000L), 86_400_000, 0,
+                        plan = PurchasePlan.MONTHLY
+                    )
+                ),
+                onSignIn = {}, onSignOut = {}, onDelete = {}, onRetry = {},
+                onManageSubscription = {}, onPurchaseOptions = {}
+            )
+        }
     }
 }

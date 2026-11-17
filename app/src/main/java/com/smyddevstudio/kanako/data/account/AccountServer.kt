@@ -34,8 +34,13 @@ internal class AccountServer(private val baseUrl: String) {
 
     suspend fun session(userId: String, token: String): AccountGrant {
         val requestedAt = SystemClock.elapsedRealtime()
-        val response = request("session", token, JSONObject())
+        val response = request("session/choice", token, JSONObject())
         return response.toGrant(userId, requestedAt)
+    }
+
+    suspend fun startTrial(userId: String, token: String): AccountGrant {
+        val requestedAt = SystemClock.elapsedRealtime()
+        return request("trial/start", token, JSONObject()).toGrant(userId, requestedAt)
     }
 
     suspend fun verify(
@@ -84,7 +89,9 @@ internal class AccountServer(private val baseUrl: String) {
                     else -> throw IOException("Invalid account plan")
                 }
             },
-            testCheckoutAllowed = optBoolean("testCheckoutAllowed", false)
+            testCheckoutAllowed = optBoolean("testCheckoutAllowed", false),
+            reviewerAccess = optBoolean("reviewerAccess", false),
+            checkoutAllowed = optBoolean("checkoutAllowed", false)
         )
     }
 
@@ -94,6 +101,7 @@ internal class AccountServer(private val baseUrl: String) {
                 .url("$baseUrl/$path")
                 .header("Authorization", "Bearer $token")
                 .header("Accept", "application/json")
+                .header("X-Kanako-Trial-Choice", "explicit")
                 .post(body.toString().toRequestBody("application/json".toMediaType()))
                 .build())
             continuation.invokeOnCancellation { call.cancel() }

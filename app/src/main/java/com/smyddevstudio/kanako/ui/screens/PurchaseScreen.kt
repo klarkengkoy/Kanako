@@ -26,9 +26,10 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.smyddevstudio.kanako.R
+import com.smyddevstudio.kanako.data.account.AccountState
+import com.smyddevstudio.kanako.data.account.AccountIssue
 import com.smyddevstudio.kanako.data.billing.BillingIssue
 import com.smyddevstudio.kanako.data.billing.BillingState
-import com.smyddevstudio.kanako.data.billing.PaidAccess
 import com.smyddevstudio.kanako.data.billing.PurchasePlan
 import com.smyddevstudio.kanako.ui.components.KanakoButton
 import com.smyddevstudio.kanako.ui.components.KanakoOutlinedButton
@@ -41,13 +42,14 @@ internal fun PurchaseScreen(
     onPurchase: (PurchasePlan) -> Unit,
     onRestore: () -> Unit,
     onRetry: () -> Unit,
-    onManageSubscription: () -> Unit,
     onHelp: () -> Unit,
     onPrivacy: () -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
     onAccount: (() -> Unit)? = null,
-    testCheckout: Boolean = false
+    account: AccountState? = null,
+    onStartTrial: () -> Unit = {},
+    onContinueTrial: () -> Unit = {}
 ) {
     Column(
         modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)
@@ -62,11 +64,7 @@ internal fun PurchaseScreen(
                 KanakoTextButton(onClick = onClose) { Text(stringResource(R.string.purchase_close)) }
             }
             Text(
-                stringResource(when {
-                    accessGranted -> R.string.purchase_access_ready
-                    testCheckout -> R.string.purchase_test_title
-                    else -> R.string.purchase_title
-                }),
+                stringResource(if (accessGranted) R.string.purchase_access_ready else R.string.purchase_title),
                 style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier.semantics { heading() }
             )
@@ -75,19 +73,42 @@ internal fun PurchaseScreen(
                     Text(stringResource(R.string.purchase_continue))
                 }
             } else {
-                Text(stringResource(if (testCheckout) R.string.purchase_test_intro else R.string.purchase_intro),
+                Text(stringResource(R.string.purchase_intro),
                     style = MaterialTheme.typography.bodyLarge)
             }
-            if (billing.refreshing || billing.purchasing) {
+            val trial = account?.grant
+            val trialActive = account?.canRead == true && !account.hasPaidAccess && !account.testSession
+            if (trial?.trialAvailable == true) {
+                Text(stringResource(R.string.purchase_trial_offer), style = MaterialTheme.typography.bodyLarge)
+                KanakoButton(
+                    onClick = onStartTrial,
+                    enabled = !account.busy && !billing.purchasing && !(billing.showFeedback && billing.verifying),
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)
+                ) { Text(stringResource(R.string.purchase_start_trial)) }
+            } else if (trialActive && trial != null) {
+                Text(stringResource(R.string.purchase_trial_active, formatAccessDeadline(trial.trialEndsAtMillis)),
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
+                KanakoButton(onClick = onContinueTrial, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
+                    Text(stringResource(R.string.purchase_continue_trial))
+                }
+            } else if (trial != null && !accessGranted) {
+                Text(stringResource(R.string.purchase_trial_ended))
+            }
+            if (account?.issue != null) {
+                Text(stringResource(if (account.issue == AccountIssue.TRIAL)
+                    R.string.purchase_trial_failed else R.string.account_connection_failed),
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
+            }
+            if (account?.busy == true || billing.showFeedback && (billing.refreshing || billing.purchasing || billing.verifying)) {
                 LinearProgressIndicator(Modifier.fillMaxWidth())
-                Text(stringResource(R.string.purchase_loading),
+                Text(stringResource(if (billing.verifying) R.string.purchase_verifying else R.string.purchase_loading),
                     modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
             }
             if (billing.pendingPurchase) {
                 Text(stringResource(R.string.purchase_pending),
                     modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
             }
-            billing.issue?.let { issue ->
+            billing.issue?.takeUnless { billing.verifying || !billing.showFeedback }?.let { issue ->
                 Text(
                     stringResource(when (issue) {
                         BillingIssue.UNAVAILABLE, BillingIssue.CONNECTION -> R.string.purchase_unavailable
@@ -99,15 +120,17 @@ internal fun PurchaseScreen(
                     }),
                     modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }
                 )
-                KanakoTextButton(onClick = onRetry, enabled = !billing.refreshing && !billing.purchasing) {
+                KanakoTextButton(onClick = onRetry, enabled = !billing.refreshing && !billing.purchasing && !billing.verifying) {
                     Text(stringResource(R.string.purchase_retry))
                 }
             }
             if (!accessGranted) {
-                billing.offers.forEach { offer ->
+                PurchasePlan.entries.forEach { plan ->
+                    val offer = billing.offers.singleOrNull { it.plan == plan }
                     KanakoOutlinedButton(
-                        onClick = { onPurchase(offer.plan) },
-                        enabled = !billing.refreshing && !billing.purchasing && !billing.pendingPurchase,
+                        onClick = { onPurchase(plan) },
+                        enabled = offer != null && account?.canPurchase != false && account?.busy != true && !billing.refreshing && !billing.purchasing && !billing.verifying &&
+                            !billing.pendingPurchase && billing.issue != BillingIssue.VERIFICATION,
                         modifier = Modifier.fillMaxWidth().heightIn(min = 72.dp)
                     ) {
                         Column(
@@ -115,12 +138,13 @@ internal fun PurchaseScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            Text(stringResource(when (offer.plan) {
+                            Text(stringResource(when (plan) {
                                 PurchasePlan.MONTHLY -> R.string.purchase_monthly
                                 PurchasePlan.YEARLY -> R.string.purchase_yearly
                                 PurchasePlan.LIFETIME -> R.string.purchase_lifetime
                             }), style = MaterialTheme.typography.titleMedium)
-                            Text(stringResource(when (offer.plan) {
+                            if (offer == null) Text(stringResource(R.string.purchase_option_unavailable))
+                            else Text(stringResource(when (plan) {
                                 PurchasePlan.MONTHLY -> R.string.purchase_monthly_price
                                 PurchasePlan.YEARLY -> R.string.purchase_yearly_price
                                 PurchasePlan.LIFETIME -> R.string.purchase_lifetime_price
@@ -131,13 +155,8 @@ internal fun PurchaseScreen(
                 Text(stringResource(R.string.purchase_subscriptions_terms), style = MaterialTheme.typography.bodyMedium)
                 Text(stringResource(R.string.purchase_lifetime_terms), style = MaterialTheme.typography.bodyMedium)
             }
-            KanakoTextButton(onClick = onRestore, enabled = !billing.refreshing && !billing.purchasing) {
+            KanakoTextButton(onClick = onRestore, enabled = !billing.refreshing && !billing.purchasing && !billing.verifying) {
                 Text(stringResource(R.string.purchase_restore))
-            }
-            if (billing.access is PaidAccess.Subscription) {
-                KanakoTextButton(onClick = onManageSubscription) {
-                    Text(stringResource(R.string.purchase_manage))
-                }
             }
             onAccount?.let { openAccount ->
                 KanakoTextButton(onClick = openAccount) { Text(stringResource(R.string.account_title)) }
@@ -145,5 +164,28 @@ internal fun PurchaseScreen(
             KanakoTextButton(onClick = onHelp) { Text(stringResource(R.string.purchase_help)) }
             KanakoTextButton(onClick = onPrivacy) { Text(stringResource(R.string.purchase_privacy)) }
         }
+    }
+}
+
+@androidx.compose.ui.tooling.preview.Preview(showBackground = true)
+@androidx.compose.ui.tooling.preview.Preview(name = "Compact large text", widthDp = 320, heightDp = 640, fontScale = 2f)
+@androidx.compose.ui.tooling.preview.Preview(name = "Japanese", locale = "ja")
+@Composable
+private fun PurchaseChoicePreview() {
+    com.smyddevstudio.kanako.ui.theme.KanakoTheme {
+        PurchaseScreen(
+            billing = BillingState(purchasesResolved = true),
+            accessGranted = false,
+            account = AccountState(
+                configured = true, userId = "preview", accessServiceConfigured = true,
+                grant = com.smyddevstudio.kanako.data.account.AccountGrant(
+                    "preview", 1_800_000_000_000L, 0, 0,
+                    com.smyddevstudio.kanako.data.billing.PaidAccess.None,
+                    86_400_000, 0, checkoutAllowed = true
+                )
+            ),
+            onPurchase = {}, onRestore = {}, onRetry = {},
+            onHelp = {}, onPrivacy = {}, onClose = {}
+        )
     }
 }

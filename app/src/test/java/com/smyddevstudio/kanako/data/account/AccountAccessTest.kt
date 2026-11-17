@@ -73,17 +73,18 @@ class AccountAccessTest {
         val original = grant()
         val testGrant = original.copy(testCheckoutAllowed = true)
         val state = AccountState(true, "reader-a", grant = testGrant, elapsedMillis = received)
-        assertTrue(state.needsPurchase)
+        assertTrue(state.canPurchase)
+        assertFalse(state.needsPurchase)
         assertTrue(state.canRead)
         assertEquals(original.trialStartedAtMillis, testGrant.trialStartedAtMillis)
         assertEquals(original.trialEndsAtMillis, testGrant.trialEndsAtMillis)
         assertFalse(testGrant.hasPaidAccess(received))
-        assertFalse(state.copy(userId = "reader-b").needsPurchase)
-        assertFalse(state.copy(userId = null).needsPurchase)
-        assertFalse(state.copy(elapsedMillis = received + MAX_ACCESS_LEASE_MILLIS).needsPurchase)
-        assertFalse(state.copy(grant = testGrant.copy(paidAccess = PaidAccess.Lifetime)).needsPurchase)
+        assertFalse(state.copy(userId = "reader-b").canPurchase)
+        assertFalse(state.copy(userId = null).canPurchase)
+        assertFalse(state.copy(elapsedMillis = received + MAX_ACCESS_LEASE_MILLIS).canPurchase)
+        assertFalse(state.copy(grant = testGrant.copy(paidAccess = PaidAccess.Lifetime)).canPurchase)
         assertFalse(state.copy(grant = testGrant.copy(
-            paidAccess = PaidAccess.Subscription(started + 1_000))).needsPurchase)
+            paidAccess = PaidAccess.Subscription(started + 1_000))).canPurchase)
     }
 
     @Test fun testCheckoutNeverGrantsReadingAccessAfterTrialExpiry() {
@@ -117,15 +118,36 @@ class AccountAccessTest {
             com.smyddevstudio.kanako.data.billing.PurchasePlan.LIFETIME)
     }
 
-    @Test fun testSessionUnlocksReadingWithoutCreatingATrialOrPurchase() {
-        val state = AccountState(configured = false, testSession = true)
+    @Test fun reviewerGrantHasNoTrialOrPaidEntitlementAndNeverOpensCheckout() {
+        val reviewer = AccountGrant(
+            "reader-a", started + TRIAL_DURATION_MILLIS * 100, 0, 0,
+            PaidAccess.None, MAX_ACCESS_LEASE_MILLIS, received, reviewerAccess = true
+        )
+        val state = AccountState(true, "reader-a", grant = reviewer, elapsedMillis = received)
         assertTrue(state.hasSession)
         assertTrue(state.canRead)
+        assertTrue(state.testSession)
         assertFalse(state.needsPurchase)
-        assertEquals(null, state.userId)
-        assertEquals(null, state.grant)
-        assertFalse(state.copy(testSession = false).hasSession)
-        assertFalse(state.copy(testSession = false).canRead)
+        assertEquals(0L, reviewer.trialRemaining(received))
+        assertFalse(reviewer.hasPaidAccess(received))
+        assertFalse(state.copy(userId = "reader-b").canRead)
+        assertFalse(state.copy(userId = null).hasSession)
+        assertFalse(state.copy(elapsedMillis = received + MAX_ACCESS_LEASE_MILLIS).canRead)
+    }
+
+    @Test fun pendingReviewerAuthenticationDoesNotOpenTheApp() {
+        assertFalse(AccountState(true, "reader-a", reviewerSignInPending = true).hasSession)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun aReviewerGrantCannotPretendToBeAPurchasedLifetime() {
+        AccountGrant("reader-a", started, 0, 0, PaidAccess.Lifetime,
+            MAX_ACCESS_LEASE_MILLIS, received, reviewerAccess = true)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun aReviewerGrantCannotStartATrialOrOpenEarlyCheckout() {
+        grant().copy(reviewerAccess = true, testCheckoutAllowed = true)
     }
 
     @Test fun signedInSessionDoesNotBypassAnExpiredTrial() {
@@ -137,6 +159,97 @@ class AccountAccessTest {
         assertFalse(state.canRead)
         assertTrue(state.needsPurchase)
         assertFalse(AccountState(configured = true).hasSession)
+    }
+
+    @Test fun aNewAccountCanChooseWithoutStartingItsTrial() {
+        val available = AccountGrant("reader-a", started, 0, 0, PaidAccess.None,
+            MAX_ACCESS_LEASE_MILLIS, received, checkoutAllowed = true)
+        val state = AccountState(true, "reader-a", loginChoicePending = true)
+            .withVerifiedGrant(available, received)
+        assertTrue(available.trialAvailable)
+        assertFalse(state.canRead)
+        assertTrue(state.canPurchase)
+        assertTrue(state.paywallRequested)
+        assertEquals(0L, available.trialStartedAtMillis)
+        assertEquals(0L, available.trialEndsAtMillis)
+    }
+
+    @Test fun eachExplicitSignInOffersTheExistingTrialWithoutResettingItsDeadline() {
+        val original = grant().copy(checkoutAllowed = true)
+        val first = AccountState(true, "reader-a", loginChoicePending = true)
+            .withVerifiedGrant(original, received)
+        assertTrue(first.paywallRequested)
+        assertTrue(first.canRead)
+        val dismissed = first.copy(paywallRequested = false)
+        val refreshed = dismissed.withVerifiedGrant(original, received + 1)
+        assertFalse(refreshed.paywallRequested)
+        val signedInAgain = refreshed.copy(loginChoicePending = true).withVerifiedGrant(original, received + 2)
+        assertTrue(signedInAgain.paywallRequested)
+        assertEquals(original.trialStartedAtMillis, signedInAgain.grant?.trialStartedAtMillis)
+        assertEquals(original.trialEndsAtMillis, signedInAgain.grant?.trialEndsAtMillis)
+    }
+
+    @Test fun restoredActiveTrialContinuesAndExpiredTrialOffersPurchases() {
+        val restored = AccountState(true, "reader-a").withVerifiedGrant(grant(), received)
+        assertTrue(restored.canRead)
+        assertFalse(restored.paywallRequested)
+        val expired = restored.withVerifiedGrant(
+            grant(serverNow = started + TRIAL_DURATION_MILLIS), received)
+        assertFalse(expired.canRead)
+        assertTrue(expired.paywallRequested)
+        assertTrue(expired.needsPurchase)
+    }
+
+    @Test fun paidAndReviewerAccountsNeverPresentTheSignInPaywall() {
+        for (paid in listOf(PaidAccess.Lifetime, PaidAccess.Subscription(started + 1000))) {
+            val state = AccountState(true, "reader-a", loginChoicePending = true, paywallRequested = true)
+                .withVerifiedGrant(grant(access = paid), received)
+            assertTrue(state.canRead)
+            assertFalse(state.paywallRequested)
+            assertFalse(state.canPurchase)
+        }
+        val reviewer = AccountGrant("reader-a", started, 0, 0, PaidAccess.None,
+            MAX_ACCESS_LEASE_MILLIS, received, reviewerAccess = true)
+        val state = AccountState(true, "reader-a", loginChoicePending = true, paywallRequested = true)
+            .withVerifiedGrant(reviewer, received)
+        assertTrue(state.canRead)
+        assertFalse(state.paywallRequested)
+        assertFalse(state.canPurchase)
+    }
+
+    @Test fun subscriptionDeadlineRequiresServerConfirmationBeforeShowingThePaywall() {
+        val now = started + TRIAL_DURATION_MILLIS
+        val active = grant(serverNow = now, access = PaidAccess.Subscription(now + 100))
+        val state = AccountState(true, "reader-a").withVerifiedGrant(active, received)
+            .copy(elapsedMillis = received + 100)
+        assertFalse(state.canRead)
+        assertTrue(state.subscriptionNeedsRefresh)
+        assertFalse(state.needsPurchase)
+        assertFalse(state.canPurchase)
+        assertFalse(state.paywallRequested)
+        val renewed = state.withVerifiedGrant(
+            grant(serverNow = now + 100, access = PaidAccess.Subscription(now + 1000)), received + 100)
+        assertTrue(renewed.hasPaidAccess)
+        assertFalse(renewed.paywallRequested)
+        val expired = state.withVerifiedGrant(grant(serverNow = now + 100), received + 100)
+        assertTrue(expired.paywallRequested)
+        assertFalse(expired.canRead)
+    }
+
+    @Test fun aConnectionFailureDoesNotTurnACachedSubscriberIntoAnUnpaidCustomer() {
+        val state = AccountState(true, "reader-a", grant = grant(access = PaidAccess.Lifetime),
+            elapsedMillis = received, loginChoicePending = true, issue = AccountIssue.CONNECTION)
+        assertTrue(state.canRead)
+        assertTrue(state.hasPaidAccess)
+        assertFalse(state.paywallRequested)
+        assertFalse(state.canPurchase)
+        assertFalse(state.accessResolved)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun anUnstartedTrialCannotCarryOnlyOneDate() {
+        AccountGrant("reader-a", started, 0, started + TRIAL_DURATION_MILLIS,
+            PaidAccess.None, 100, received)
     }
 
     @Test fun missingSetupOrMissingSessionNeverInventsReadingAccess() {

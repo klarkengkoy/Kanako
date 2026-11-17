@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="purchase_title">7日間の無料体験が終了しました</string>
-    <string name="purchase_test_title">テスト購入</string>
-    <string name="purchase_test_intro">無料体験の期間は変わりません。指定されたGoogle Playライセンステスト用アカウントで、テスト用のお支払い方法を選んでください。Google Playにテスト購入と表示されない場合は、キャンセルしてください。</string>
+    <string name="purchase_title">購入プラン</string>
     <string name="purchase_intro">無料体験で料金が請求されたり、定期購入が始まったりすることはありません。かなこを引き続き使うプランをお選びください。</string>
     <string name="purchase_monthly">月額</string>
     <string name="purchase_yearly">年額</string>
@@ -21,11 +19,19 @@
     <string name="purchase_access_ready">有料機能をご利用いただけます。</string>
     <string name="purchase_pending">お支払いは保留中です。完了と確認後に有料機能をご利用いただけます。</string>
     <string name="purchase_loading">Google Playを確認中…</string>
+    <string name="purchase_verifying">購入を確認しています…</string>
     <string name="purchase_unavailable">Google Playを利用できません。接続を確認して、もう一度お試しください。</string>
     <string name="purchase_products_unavailable">このGoogle Playアカウントでは一部のプランを利用できません。後でもう一度お試しください。</string>
     <string name="purchase_failed">購入を完了できませんでした。新しい有料機能は有効になっていません。</string>
-    <string name="purchase_verification_failed">購入を確認できませんでした。「購入を復元」からもう一度お試しください。</string>
+    <string name="purchase_verification_failed">購入をまだ確認できていません。「購入を復元」からもう一度お試しください。</string>
     <string name="purchase_acknowledgement_failed">購入は確認できましたが、Google Playへの通知を再試行する必要があります。オンラインで購入を復元してください。</string>
     <string name="purchase_none_found">このGoogle Playアカウントに有効な購入は見つかりませんでした。</string>
     <string name="purchase_retry">再試行</string>
+    <string name="purchase_option_unavailable">このGoogle Playアカウントでは利用できません</string>
+    <string name="purchase_trial_offer">すべての読み取り機能を7日間お試しいただけます。お支払いは不要で、定期購入は自動で始まりません。</string>
+    <string name="purchase_start_trial">7日間の無料体験を開始</string>
+    <string name="purchase_continue_trial">無料体験を続ける</string>
+    <string name="purchase_trial_active">現在、無料体験中です。終了日時：%1$s</string>
+    <string name="purchase_trial_ended">無料体験が終了しました。引き続き使うプランをお選びください。</string>
+    <string name="purchase_trial_failed">無料体験をまだ開始できませんでした。もう一度お試しください。</string>
 </resources>

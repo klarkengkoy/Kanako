@@ -1,0 +1,16 @@
+{
+  "functions": [
+    {
+      "source": "server",
+      "codebase": "kanako-account",
+      "runtime": "nodejs22",
+      "ignore": [
+        "node_modules",
+        ".git",
+        ".env*",
+        "*.test.mjs",
+        "*-debug.log*"
+      ]
+    }
+  ]
+}

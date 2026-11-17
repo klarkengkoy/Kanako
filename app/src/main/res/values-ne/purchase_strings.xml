@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="purchase_title">तपाईंको सात दिनको परीक्षण अवधि सकियो</string>
-    <string name="purchase_test_title">परीक्षण खरिद</string>
-    <string name="purchase_test_intro">तपाईंको परीक्षण अवधि परिवर्तन हुँदैन। तोकिएको Google Play लाइसेन्स परीक्षण खाता प्रयोग गरी परीक्षण भुक्तानी विधि छान्नुहोस्। Google Play ले परीक्षण खरिद भनेर नदेखाएमा रद्द गर्नुहोस्।</string>
+    <string name="purchase_title">खरिद विकल्पहरू</string>
     <string name="purchase_intro">परीक्षणले शुल्क लिँदैन वा सदस्यता सुरु गर्दैन। Kanako सँग पढिरहन योजना छान्नुहोस्।</string>
     <string name="purchase_monthly">मासिक</string>
     <string name="purchase_yearly">वार्षिक</string>
@@ -21,11 +19,19 @@
     <string name="purchase_access_ready">तपाईंको सशुल्क पहुँच उपलब्ध छ।</string>
     <string name="purchase_pending">तपाईंको भुक्तानी बाँकी छ। भुक्तानी पूरा र प्रमाणित भएपछि पहुँच उपलब्ध हुनेछ।</string>
     <string name="purchase_loading">Google Play जाँच्दै…</string>
+    <string name="purchase_verifying">तपाईंको खरिद प्रमाणित गर्दै…</string>
     <string name="purchase_unavailable">Google Play उपलब्ध छैन। जडान जाँचेर फेरि प्रयास गर्नुहोस्।</string>
     <string name="purchase_products_unavailable">यो Google Play खाताका लागि केही योजनाहरू उपलब्ध छैनन्। पछि फेरि प्रयास गर्नुहोस्।</string>
     <string name="purchase_failed">खरिद पूरा हुन सकेन। नयाँ पहुँच सक्रिय गरिएको छैन।</string>
-    <string name="purchase_verification_failed">तपाईंको खरिद प्रमाणित गर्न सकेनौँ। खरिद पुनर्स्थापना गरेर फेरि प्रयास गर्नुहोस्।</string>
+    <string name="purchase_verification_failed">तपाईंको खरिद अझै प्रमाणित गर्न सकेनौँ। खरिद पुनर्स्थापना गरेर फेरि प्रयास गर्नुहोस्।</string>
     <string name="purchase_acknowledgement_failed">खरिद प्रमाणित भयो, तर Google Play लाई पुष्टि गर्न फेरि प्रयास गर्नुपर्छ। अनलाइन हुँदा खरिद पुनर्स्थापना गर्नुहोस्।</string>
     <string name="purchase_none_found">यो Google Play खातामा सक्रिय खरिद भेटिएन।</string>
     <string name="purchase_retry">फेरि प्रयास गर्नुहोस्</string>
+    <string name="purchase_option_unavailable">यो Google Play खातामा उपलब्ध छैन</string>
+    <string name="purchase_trial_offer">सबै पढ्ने सुविधाहरू सात दिन निःशुल्क प्रयोग गर्नुहोस्। भुक्तानी आवश्यक छैन। सदस्यता स्वतः सुरु हुँदैन।</string>
+    <string name="purchase_start_trial">७ दिने निःशुल्क परीक्षण सुरु गर्नुहोस्</string>
+    <string name="purchase_continue_trial">निःशुल्क परीक्षण जारी राख्नुहोस्</string>
+    <string name="purchase_trial_active">तपाईंको निःशुल्क परीक्षण चलिरहेको छ। यो %1$s मा सकिन्छ।</string>
+    <string name="purchase_trial_ended">तपाईंको निःशुल्क परीक्षण सकियो। पढिरहन योजना छान्नुहोस्।</string>
+    <string name="purchase_trial_failed">तपाईंको परीक्षण अझै सुरु गर्न सकेनौँ। फेरि प्रयास गर्नुहोस्।</string>
 </resources>

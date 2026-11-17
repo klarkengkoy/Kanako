@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="purchase_title">Votre essai de sept jours est terminé</string>
-    <string name="purchase_test_title">Achats de test</string>
-    <string name="purchase_test_intro">Votre essai reste inchangé. Utilisez un compte de test de licence Google Play désigné et sélectionnez un mode de paiement de test. Si Google Play ne présente pas cet achat comme un test, annulez.</string>
+    <string name="purchase_title">Options d’achat</string>
     <string name="purchase_intro">L’essai ne vous facture rien et ne démarre aucun abonnement. Choisissez comment continuer à lire avec Kanako.</string>
     <string name="purchase_monthly">Mensuel</string>
     <string name="purchase_yearly">Annuel</string>
@@ -21,11 +19,19 @@
     <string name="purchase_access_ready">Votre accès payant est disponible.</string>
     <string name="purchase_pending">Votre paiement est en attente. L’accès sera disponible après son traitement et sa vérification.</string>
     <string name="purchase_loading">Vérification de Google Play…</string>
+    <string name="purchase_verifying">Vérification de votre achat…</string>
     <string name="purchase_unavailable">Google Play est indisponible. Vérifiez votre connexion et réessayez.</string>
     <string name="purchase_products_unavailable">Certaines formules sont indisponibles pour ce compte Google Play. Réessayez plus tard.</string>
     <string name="purchase_failed">L’achat n’a pas pu être effectué. Aucun nouvel accès n’a été activé.</string>
-    <string name="purchase_verification_failed">Nous n’avons pas pu vérifier votre achat. Réessayez avec Restaurer les achats.</string>
+    <string name="purchase_verification_failed">Nous n’avons pas encore pu vérifier votre achat. Réessayez avec Restaurer les achats.</string>
     <string name="purchase_acknowledgement_failed">Votre achat est vérifié, mais sa confirmation auprès de Google Play doit être réessayée. Restaurez vos achats en ligne.</string>
     <string name="purchase_none_found">Aucun achat actif n’a été trouvé pour ce compte Google Play.</string>
     <string name="purchase_retry">Réessayer</string>
+    <string name="purchase_option_unavailable">Indisponible pour ce compte Google Play</string>
+    <string name="purchase_trial_offer">Essayez toutes les fonctions de lecture pendant sept jours. Aucun paiement requis. Aucun abonnement automatique.</string>
+    <string name="purchase_start_trial">Commencer l’essai gratuit de 7 jours</string>
+    <string name="purchase_continue_trial">Continuer l’essai gratuit</string>
+    <string name="purchase_trial_active">Votre essai gratuit est déjà en cours. Il se termine le %1$s.</string>
+    <string name="purchase_trial_ended">Votre essai gratuit est terminé. Choisissez une formule pour continuer à lire.</string>
+    <string name="purchase_trial_failed">Nous n’avons pas encore pu démarrer votre essai. Veuillez réessayer.</string>
 </resources>

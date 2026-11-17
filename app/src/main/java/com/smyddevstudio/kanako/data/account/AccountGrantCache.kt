@@ -36,7 +36,7 @@ internal class AccountGrantCache(context: Context) {
         cipher.init(Cipher.DECRYPT_MODE, existingKey() ?: return null, GCMParameterSpec(128, iv))
         cipher.updateAAD((authority + "\n" + userId).toByteArray(Charsets.UTF_8))
         val data = JSONObject(cipher.doFinal(encrypted).toString(Charsets.UTF_8))
-        require(data.getInt("version") == 2 && data.getInt("boot") == boot)
+        require(data.getInt("version") == 3 && data.getInt("boot") == boot)
         require(data.getString("authority") == authority)
         require(data.getString("userId") == userId)
         val access = when (data.getString("kind")) {
@@ -49,7 +49,8 @@ internal class AccountGrantCache(context: Context) {
             userId, data.getLong("serverNowMillis"), data.getLong("trialStartedAtMillis"),
             data.getLong("trialEndsAtMillis"), access, data.getLong("leaseDurationMillis"),
             data.getLong("receivedAtElapsedMillis"),
-            data.optString("plan").takeIf { it.isNotBlank() }?.let { PurchasePlan.valueOf(it) }
+            data.optString("plan").takeIf { it.isNotBlank() }?.let { PurchasePlan.valueOf(it) },
+            reviewerAccess = data.optBoolean("reviewerAccess", false)
         )
     }.getOrNull()
 
@@ -58,7 +59,7 @@ internal class AccountGrantCache(context: Context) {
         val boot = bootCount()
         if (boot < 0) return
         val data = JSONObject()
-            .put("version", 2).put("boot", boot).put("userId", grant.userId).put("authority", authority)
+            .put("version", 3).put("reviewerAccess", grant.reviewerAccess).put("boot", boot).put("userId", grant.userId).put("authority", authority)
             .put("serverNowMillis", grant.serverNowMillis)
             .put("trialStartedAtMillis", grant.trialStartedAtMillis)
             .put("trialEndsAtMillis", grant.trialEndsAtMillis)

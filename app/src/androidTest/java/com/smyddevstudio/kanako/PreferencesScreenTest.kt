@@ -361,7 +361,7 @@ class PreferencesScreenTest {
                         AccountSettingsContent(
                             state = AccountState(configured = true),
                             onSignIn = { signIns++ },
-                            onSignOut = {}, onDelete = {}, onRetry = {}, onRestore = {},
+                            onSignOut = {}, onDelete = {}, onRetry = {},
                             onManageSubscription = {}, onPurchaseOptions = {}
                         )
                     }
@@ -388,7 +388,7 @@ class PreferencesScreenTest {
                         AccountSettingsContent(
                             state = AccountState(configured = true, userId = "reader-a", email = "reader@example.com"),
                             onSignIn = {}, onSignOut = {}, onDelete = { deletions++ },
-                            onRetry = {}, onRestore = {}, onManageSubscription = {}, onPurchaseOptions = {}
+                            onRetry = {}, onManageSubscription = {}, onPurchaseOptions = {}
                         )
                     }
                 )
@@ -414,7 +414,7 @@ class PreferencesScreenTest {
                     state = AccountState(configured = true, accessServiceConfigured = true,
                         userId = "reader-a", email = "reader@example.com"),
                     onSignIn = {}, onSignOut = {}, onDelete = { deletions++ },
-                    onRetry = {}, onRestore = {}, onManageSubscription = {}, onPurchaseOptions = {}
+                    onRetry = {}, onManageSubscription = {}, onPurchaseOptions = {}
                 )
             }
         }
